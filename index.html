@@ -8526,6 +8526,8 @@ const PageTasks = (function () {
 
   // 当前查看的事务详情
   let currentDetailEvent = null;
+  // 当前筛选的优先级（all / high / medium / low）
+  let currentFilter = 'all';
 
   /**
    * 渲染待办事务页面
@@ -8540,6 +8542,11 @@ const PageTasks = (function () {
       renderEventDetail(container, currentDetailEvent);
       return;
     }
+
+    // 根据筛选条件过滤待办
+    const filteredPending = currentFilter === 'all' 
+      ? pending 
+      : pending.filter(e => e.priority === currentFilter);
 
     container.innerHTML = `
       <div class="page-header">
@@ -8569,23 +8576,29 @@ const PageTasks = (function () {
         </div>
       </div>
 
-      <!-- 待处理事务列表 -->
+      <!-- 筛选和操作栏 -->
       <div class="section">
-        <div class="section-header">
-          <span class="section-title">待处理 (${pending.length})</span>
-          ${pending.length > 0 ? `<button class="btn btn-secondary btn-small" onclick="PageTasks.generateMore()">生成更多</button>` : ''}
+        <div class="section-header" style="flex-wrap: wrap; gap: 8px;">
+          <span class="section-title">待处理 (${filteredPending.length}/${pending.length})</span>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button class="btn ${currentFilter === 'all' ? 'btn-primary' : 'btn-secondary'} btn-small" onclick="PageTasks.setFilter('all')">全部</button>
+            <button class="btn ${currentFilter === 'high' ? 'btn-primary' : 'btn-secondary'} btn-small" onclick="PageTasks.setFilter('high')">紧急</button>
+            <button class="btn ${currentFilter === 'medium' ? 'btn-primary' : 'btn-secondary'} btn-small" onclick="PageTasks.setFilter('medium')">重要</button>
+            <button class="btn ${currentFilter === 'low' ? 'btn-primary' : 'btn-secondary'} btn-small" onclick="PageTasks.setFilter('low')">常规</button>
+            ${pending.length > 0 ? `<button class="btn btn-danger btn-small" onclick="PageTasks.clearExpired()">清理过期(7天+)</button>` : ''}
+          </div>
         </div>
 
-        ${pending.length > 0 ? `
+        ${filteredPending.length > 0 ? `
           <div class="task-list">
-            ${pending.map((event, index) => renderTaskCard(event, index)).join('')}
+            ${filteredPending.map((event, index) => renderTaskCard(event, pending.indexOf(event))).join('')}
           </div>
         ` : `
           <div class="empty-state">
             <div class="empty-state-icon">📋</div>
             <div class="empty-state-text">
-              <p>今日暂无待处理事务</p>
-              <p style="font-size: 11px; margin-top: 8px; opacity: 0.7;">事务会在每日结算时自动生成</p>
+              <p>${pending.length === 0 ? '暂无待处理事务' : '当前筛选条件下暂无事务'}</p>
+              <p style="font-size: 11px; margin-top: 8px; opacity: 0.7;">事务会随现实时间流逝自动生成</p>
             </div>
           </div>
         `}
@@ -8877,6 +8890,65 @@ const PageTasks = (function () {
     render(document.getElementById('app-content'));
   }
 
+  /**
+   * 设置筛选优先级
+   */
+  function setFilter(filter) {
+    currentFilter = filter;
+    render(document.getElementById('app-content'));
+  }
+
+  /**
+   * 清理超过7天未处理的过期事务
+   */
+  async function clearExpired() {
+    const state = SongState.getState();
+    const pending = state.events?.pending || [];
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    // 分离过期和未过期的事务
+    const expired = [];
+    const active = [];
+    pending.forEach(event => {
+      const createdAt = event.createdAt ? new Date(event.createdAt) : null;
+      if (createdAt && createdAt < sevenDaysAgo) {
+        expired.push(event);
+      } else {
+        active.push(event);
+      }
+    });
+
+    if (expired.length === 0) {
+      SongApp.showToast('没有超过7天的过期事务');
+      return;
+    }
+
+    if (!confirm(`确定要清理 ${expired.length} 条超过7天未处理的事务吗？此操作不可撤销！`)) {
+      return;
+    }
+
+    // 将过期事务标记为已过期并移到历史
+    const expiredHistory = expired.map(event => ({
+      ...event,
+      status: 'expired',
+      processedDate: now.toISOString(),
+      selectedOption: -1,
+      effects: { note: '超时未处理，自动清理' }
+    }));
+
+    const history = state.events?.history || [];
+    const updatedHistory = [...expiredHistory, ...history];
+
+    await SongState.batchUpdate({
+      'events.pending': active,
+      'events.history': updatedHistory
+    });
+
+    SongApp.showToast(`✅ 已清理 ${expired.length} 条过期事务`);
+    render(document.getElementById('app-content'));
+  }
+
   // 公开 API
   return {
     render,
@@ -8884,7 +8956,9 @@ const PageTasks = (function () {
     backToList,
     selectOption,
     confirmDecision,
-    generateMore
+    generateMore,
+    setFilter,
+    clearExpired
   };
 })();
 
@@ -11206,6 +11280,25 @@ const PageSettings = (function () {
             <p class="form-hint">24小时制，例如 19-10 表示晚上7点到第二天上午10点不生成新待办</p>
           </div>
 
+          <div class="form-group">
+            <label class="form-label">下次生成预估</label>
+            <div id="next-gen-info" class="data-info" style="background: var(--color-bg-elevated, #1a1a2e); border-radius: 8px; padding: 12px;">
+              <div class="data-info-item">
+                <span class="data-info-label">上次生成</span>
+                <span class="data-info-value" id="last-gen-time">${state.settings?.lastEventGenerationAt ? new Date(state.settings.lastEventGenerationAt).toLocaleString('zh-CN') : '首次启动'}</span>
+              </div>
+              <div class="data-info-item">
+                <span class="data-info-label">当前状态</span>
+                <span class="data-info-value" id="current-gen-status">计算中...</span>
+              </div>
+              <div class="data-info-item">
+                <span class="data-info-label">距离下次生成</span>
+                <span class="data-info-value" id="next-gen-countdown">--</span>
+              </div>
+            </div>
+            <p class="form-hint">根据当前设置的频率和静默时段自动计算</p>
+          </div>
+
           <div class="form-actions">
             <button class="btn btn-primary" id="save-event-settings">保存设置</button>
             <button class="btn btn-secondary" id="trigger-gen-now">立即生成测试</button>
@@ -11432,11 +11525,95 @@ const PageSettings = (function () {
         resultEl.className = 'form-result form-result-success';
         resultEl.textContent = '✅ 已执行待办生成检查，请查看待办列表';
         showToast('✅ 已执行待办生成检查');
+        // 更新下次生成信息
+        updateNextGenInfo();
       } catch (error) {
         resultEl.className = 'form-result form-result-error';
         resultEl.textContent = `❌ 生成失败：${error.message}`;
       }
     });
+
+    // 计算并显示下次生成时间
+    updateNextGenInfo();
+  }
+
+  /**
+   * 更新下次生成时间信息
+   */
+  function updateNextGenInfo() {
+    const state = SongState.getState();
+    const settings = state.settings || {};
+    const now = new Date();
+    const lastGenAt = settings.lastEventGenerationAt ? new Date(settings.lastEventGenerationAt) : null;
+    const eventsPerHour = settings.eventsPerHour || 1;
+    const quietStart = settings.quietHoursStart ?? 19;
+    const quietEnd = settings.quietHoursEnd ?? 10;
+
+    const statusEl = document.getElementById('current-gen-status');
+    const countdownEl = document.getElementById('next-gen-countdown');
+    const lastGenEl = document.getElementById('last-gen-time');
+
+    if (!statusEl || !countdownEl) return;
+
+    // 更新上次生成时间
+    if (lastGenEl) {
+      lastGenEl.textContent = lastGenAt ? lastGenAt.toLocaleString('zh-CN') : '首次启动';
+    }
+
+    // 检查是否在静默时段
+    const currentHour = now.getHours();
+    let inQuietHours = false;
+    if (quietStart < quietEnd) {
+      inQuietHours = currentHour >= quietStart && currentHour < quietEnd;
+    } else {
+      inQuietHours = currentHour >= quietStart || currentHour < quietEnd;
+    }
+
+    if (inQuietHours) {
+      statusEl.textContent = '🔕 静默时段中';
+      statusEl.style.color = 'var(--color-text-muted)';
+      // 计算静默时段结束时间
+      let quietEndTime = new Date(now);
+      quietEndTime.setHours(quietEnd, 0, 0, 0);
+      if (quietEndTime <= now) quietEndTime.setDate(quietEndTime.getDate() + 1);
+      const diff = quietEndTime - now;
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      countdownEl.textContent = `${hours}小时${minutes}分钟后恢复`;
+      countdownEl.style.color = 'var(--color-text-muted)';
+      return;
+    }
+
+    // 计算距离下次生成的时间
+    statusEl.textContent = '✅ 正常生成中';
+    statusEl.style.color = 'var(--color-success, #4caf50)';
+
+    if (!lastGenAt) {
+      countdownEl.textContent = '首次启动，已初始化';
+      countdownEl.style.color = 'var(--color-info, #2196f3)';
+      return;
+    }
+
+    // 每小时生成 eventsPerHour 项，计算生成1项需要多少分钟
+    const minutesPerEvent = 60 / eventsPerHour;
+    // 计算从上次生成到现在经过了多少分钟
+    const elapsedMinutes = (now - lastGenAt) / (1000 * 60);
+    // 计算距离下次生成还有多少分钟
+    const nextEventIn = minutesPerEvent - (elapsedMinutes % minutesPerEvent);
+
+    if (nextEventIn <= 0) {
+      countdownEl.textContent = '即将生成（刷新页面触发）';
+      countdownEl.style.color = 'var(--color-accent-gold, #d4af37)';
+    } else {
+      const hours = Math.floor(nextEventIn / 60);
+      const minutes = Math.floor(nextEventIn % 60);
+      if (hours > 0) {
+        countdownEl.textContent = `约 ${hours}小时${minutes}分钟后`;
+      } else {
+        countdownEl.textContent = `约 ${minutes}分钟后`;
+      }
+      countdownEl.style.color = 'var(--color-info, #2196f3)';
+    }
   }
 
   function showToast(message) {
