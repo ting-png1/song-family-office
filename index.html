@@ -4628,7 +4628,13 @@ const SongState = (function () {
       aiDailyNewsLimit: 3,      // 每日 AI 新闻生成上限
       aiGeneratedToday: 0,      // 今日已生成 AI 内容数
       soundEnabled: true,        // 音效开关
-      animationsEnabled: true    // 动画开关
+      animationsEnabled: true,   // 动画开关
+      // 待办生成设置（现实时间）
+      realtimeEventGeneration: true,  // 启用现实时间生成待办
+      eventsPerHour: 1,               // 每小时生成几项待办
+      quietHoursStart: 19,            // 静默时段开始（小时，24小时制）
+      quietHoursEnd: 10,              // 静默时段结束（小时，24小时制）
+      lastEventGenerationAt: null     // 上次生成待办的时间戳
     }
   };
 
@@ -11148,6 +11154,67 @@ const PageSettings = (function () {
         </div>
       </div>
 
+      <!-- 待办生成设置 -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">待办生成设置</span>
+          <span class="tag ${state.settings?.realtimeEventGeneration ? 'tag-success' : 'tag-muted'}">
+            ${state.settings?.realtimeEventGeneration ? '已启用' : '已关闭'}
+          </span>
+        </div>
+
+        <div class="settings-form">
+          <div class="form-group">
+            <label class="form-label">启用现实时间生成</label>
+            <div class="form-toggle">
+              <input type="checkbox" id="realtime-gen-enabled" ${state.settings?.realtimeEventGeneration ? 'checked' : ''}>
+              <label for="realtime-gen-enabled" class="toggle-switch"></label>
+              <span class="toggle-label">${state.settings?.realtimeEventGeneration ? '开启' : '关闭'}</span>
+            </div>
+            <p class="form-hint">开启后，待办事项会随现实时间流逝自动生成，不再每次打开都刷新</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">每小时生成几项</label>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <input type="range" id="events-per-hour" min="0.5" max="5" step="0.5" 
+                     value="${state.settings?.eventsPerHour ?? 1}" style="flex: 1;">
+              <span id="events-per-hour-value" style="min-width: 60px; text-align: center; color: var(--color-accent-gold); font-weight: bold;">
+                ${state.settings?.eventsPerHour ?? 1} 项/小时
+              </span>
+            </div>
+            <p class="form-hint">设置每小时自动生成的待办数量，0.5表示每2小时1项</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">静默时段（不生成新待办）</label>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="flex: 1;">
+                <label style="font-size: 12px; color: var(--color-text-muted); display: block; margin-bottom: 4px;">开始时间</label>
+                <input type="number" id="quiet-start" min="0" max="23" 
+                       value="${state.settings?.quietHoursStart ?? 19}" 
+                       class="form-input" style="width: 100%;">
+              </div>
+              <span style="color: var(--color-text-muted);">—</span>
+              <div style="flex: 1;">
+                <label style="font-size: 12px; color: var(--color-text-muted); display: block; margin-bottom: 4px;">结束时间</label>
+                <input type="number" id="quiet-end" min="0" max="23" 
+                       value="${state.settings?.quietHoursEnd ?? 10}" 
+                       class="form-input" style="width: 100%;">
+              </div>
+            </div>
+            <p class="form-hint">24小时制，例如 19-10 表示晚上7点到第二天上午10点不生成新待办</p>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-primary" id="save-event-settings">保存设置</button>
+            <button class="btn btn-secondary" id="trigger-gen-now">立即生成测试</button>
+          </div>
+
+          <div id="event-settings-result" class="form-result" style="display: none;"></div>
+        </div>
+      </div>
+
       <!-- 数据管理 -->
       <div class="card">
         <div class="card-header">
@@ -11296,6 +11363,80 @@ const PageSettings = (function () {
       const label = e.target.parentElement.querySelector('.toggle-label');
       label.textContent = e.target.checked ? '开启' : '关闭';
     });
+
+    // 待办生成设置：滑块联动显示
+    const eventsPerHourSlider = document.getElementById('events-per-hour');
+    const eventsPerHourValue = document.getElementById('events-per-hour-value');
+    eventsPerHourSlider?.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      eventsPerHourValue.textContent = val + ' 项/小时';
+    });
+
+    // 待办生成设置：开关联动
+    document.getElementById('realtime-gen-enabled')?.addEventListener('change', (e) => {
+      const label = e.target.parentElement.querySelector('.toggle-label');
+      label.textContent = e.target.checked ? '开启' : '关闭';
+    });
+
+    // 保存待办生成设置
+    document.getElementById('save-event-settings')?.addEventListener('click', async () => {
+      const resultEl = document.getElementById('event-settings-result');
+      const enabled = document.getElementById('realtime-gen-enabled').checked;
+      const eventsPerHour = parseFloat(document.getElementById('events-per-hour').value);
+      const quietStart = parseInt(document.getElementById('quiet-start').value);
+      const quietEnd = parseInt(document.getElementById('quiet-end').value);
+
+      // 验证输入
+      if (isNaN(quietStart) || quietStart < 0 || quietStart > 23) {
+        resultEl.style.display = 'block';
+        resultEl.className = 'form-result form-result-error';
+        resultEl.textContent = '❌ 静默开始时间必须是 0-23 的整数';
+        return;
+      }
+      if (isNaN(quietEnd) || quietEnd < 0 || quietEnd > 23) {
+        resultEl.style.display = 'block';
+        resultEl.className = 'form-result form-result-error';
+        resultEl.textContent = '❌ 静默结束时间必须是 0-23 的整数';
+        return;
+      }
+
+      try {
+        await SongState.batchUpdate({
+          'settings.realtimeEventGeneration': enabled,
+          'settings.eventsPerHour': eventsPerHour,
+          'settings.quietHoursStart': quietStart,
+          'settings.quietHoursEnd': quietEnd,
+          'settings.lastEventGenerationAt': new Date().toISOString() // 重置时间戳，避免设置变更后一次性生成太多
+        });
+
+        resultEl.style.display = 'block';
+        resultEl.className = 'form-result form-result-success';
+        resultEl.textContent = `✅ 设置已保存！每小时生成 ${eventsPerHour} 项，静默时段 ${quietStart}:00-${quietEnd}:00`;
+        showToast('✅ 待办生成设置已保存');
+      } catch (error) {
+        resultEl.style.display = 'block';
+        resultEl.className = 'form-result form-result-error';
+        resultEl.textContent = `❌ 保存失败：${error.message}`;
+      }
+    });
+
+    // 立即生成测试
+    document.getElementById('trigger-gen-now')?.addEventListener('click', async () => {
+      const resultEl = document.getElementById('event-settings-result');
+      resultEl.style.display = 'block';
+      resultEl.className = 'form-result form-result-info';
+      resultEl.textContent = '正在生成待办...';
+
+      try {
+        await SongApp.checkAndGenerateRealtimeEvents();
+        resultEl.className = 'form-result form-result-success';
+        resultEl.textContent = '✅ 已执行待办生成检查，请查看待办列表';
+        showToast('✅ 已执行待办生成检查');
+      } catch (error) {
+        resultEl.className = 'form-result form-result-error';
+        resultEl.textContent = `❌ 生成失败：${error.message}`;
+      }
+    });
   }
 
   function showToast(message) {
@@ -11386,6 +11527,9 @@ const SongApp = (function () {
 
       // 3.8 如果是新的一天，执行每日结算
       await checkAndRunDailySettlement();
+
+      // 3.9 基于现实时间检查并生成待办事项
+      await checkAndGenerateRealtimeEvents();
 
       // 4. 绑定状态变更监听（刷新当前页面）
       SongState.subscribe(() => {
@@ -11632,11 +11776,117 @@ const SongApp = (function () {
   }
 
   /**
+   * 检查是否在静默时段内
+   * @param {Date} date - 要检查的时间
+   * @param {number} startHour - 静默开始小时
+   * @param {number} endHour - 静默结束小时
+   * @returns {boolean}
+   */
+  function isInQuietHours(date, startHour, endHour) {
+    const hour = date.getHours();
+    if (startHour === endHour) return false; // 开始和结束相同表示不静默
+    if (startHour < endHour) {
+      // 同一天内的静默时段，如 10:00-19:00
+      return hour >= startHour && hour < endHour;
+    } else {
+      // 跨天的静默时段，如 19:00-次日10:00
+      return hour >= startHour || hour < endHour;
+    }
+  }
+
+  /**
+   * 计算两个时间点之间的有效小时数（排除静默时段）
+   * @param {Date} start - 开始时间
+   * @param {Date} end - 结束时间
+   * @param {number} quietStart - 静默开始小时
+   * @param {number} quietEnd - 静默结束小时
+   * @returns {number} 有效小时数
+   */
+  function calculateEffectiveHours(start, end, quietStart, quietEnd) {
+    if (end <= start) return 0;
+    let effectiveHours = 0;
+    const current = new Date(start);
+    // 按小时遍历计算
+    while (current < end) {
+      const nextHour = new Date(current);
+      nextHour.setHours(current.getHours() + 1, 0, 0, 0);
+      const segmentEnd = nextHour < end ? nextHour : end;
+      const segmentDuration = (segmentEnd - current) / (1000 * 60 * 60);
+      // 检查这个小时是否在静默时段
+      if (!isInQuietHours(current, quietStart, quietEnd)) {
+        effectiveHours += segmentDuration;
+      }
+      current.setTime(nextHour.getTime());
+    }
+    return effectiveHours;
+  }
+
+  /**
+   * 基于现实时间检查并生成待办事项
+   * 根据用户设置的频率和静默时段，随时间流逝生成新待办
+   */
+  async function checkAndGenerateRealtimeEvents() {
+    const state = SongState.getState();
+    const settings = state.settings || {};
+
+    // 如果未启用现实时间生成，直接返回
+    if (!settings.realtimeEventGeneration) {
+      console.log('[SongApp] 现实时间生成待办已关闭');
+      return;
+    }
+
+    const now = new Date();
+    const lastGenAt = settings.lastEventGenerationAt ? new Date(settings.lastEventGenerationAt) : null;
+    const eventsPerHour = settings.eventsPerHour || 1;
+    const quietStart = settings.quietHoursStart ?? 19;
+    const quietEnd = settings.quietHoursEnd ?? 10;
+
+    // 如果是第一次生成，初始化时间戳，不生成事件
+    if (!lastGenAt) {
+      console.log('[SongApp] 首次启动，初始化待办生成时间戳');
+      await SongState.update('settings.lastEventGenerationAt', now.toISOString());
+      return;
+    }
+
+    // 计算有效小时数（排除静默时段）
+    const effectiveHours = calculateEffectiveHours(lastGenAt, now, quietStart, quietEnd);
+
+    // 计算应该生成的事件数量
+    const shouldGenerate = Math.floor(effectiveHours * eventsPerHour);
+
+    if (shouldGenerate <= 0) {
+      console.log(`[SongApp] 待办生成检查：有效小时 ${effectiveHours.toFixed(2)}，无需生成新待办`);
+      // 更新时间戳（即使没生成，也更新，避免静默时段结束后一次性生成太多）
+      await SongState.update('settings.lastEventGenerationAt', now.toISOString());
+      return;
+    }
+
+    console.log(`[SongApp] 待办生成：有效小时 ${effectiveHours.toFixed(2)}，生成 ${shouldGenerate} 条新待办`);
+
+    // 生成新事件
+    const newEvents = SongEvents.generateDailyEvents(state, shouldGenerate);
+
+    // 合并到现有待办
+    const existingPending = state.events?.pending || [];
+    const updatedPending = [...newEvents, ...existingPending];
+
+    // 更新状态
+    await SongState.batchUpdate({
+      'events.pending': updatedPending,
+      'settings.lastEventGenerationAt': now.toISOString()
+    });
+
+    // 提示用户
+    showToast(`📋 新增 ${shouldGenerate} 条待处理事务`);
+  }
+
+  /**
    * 执行每日结算
    * 1. 更新子公司经营数据
    * 2. 计算集团财务
-   * 3. 生成每日事件
-   * 4. 更新股票市场
+   * 3. 更新股票市场
+   * 4. 更新基金净值
+   * 注意：事件生成已改为基于现实时间，由 checkAndGenerateRealtimeEvents 负责
    */
   async function runDailySettlement() {
     const state = SongState.getState();
@@ -11645,18 +11895,7 @@ const SongApp = (function () {
     // 1. 更新子公司数据 + 计算集团财务
     const settlementResult = SongFinance.dailySettlement(state);
 
-    // 2. 生成每日事件（3-5条）
-    const eventCount = Math.floor(Math.random() * 3) + 3; // 3-5条
-    const newEvents = SongEvents.generateDailyEvents({
-      ...state,
-      ...settlementResult
-    }, eventCount);
-
-    // 合并现有待办事件（未处理的保留）
-    const existingPending = state.events?.pending || [];
-    const allPending = [...newEvents, ...existingPending];
-
-    // 3. 更新股票市场
+    // 2. 更新股票市场
     const updatedStockMarket = SongStockMarket.dailyUpdate(state.stockMarket, {
       ...state,
       ...settlementResult
@@ -11699,7 +11938,6 @@ const SongApp = (function () {
     await SongState.batchUpdate({
       'subsidiaries': settlementResult.subsidiaries,
       'company': settlementResult.company,
-      'events.pending': allPending,
       'stockMarket': updatedStockMarket,
       'funds': updatedFunds,
       'heir.milestones': milestoneResult.allMilestones,
@@ -11716,7 +11954,7 @@ const SongApp = (function () {
       });
     }
 
-    console.log(`[SongApp] 每日结算完成：生成 ${newEvents.length} 条新事件，子公司数据已更新，股票市场已更新，基金净值已更新，里程碑检查完成（新解锁 ${milestoneResult.newMilestones.length} 个）`);
+    console.log(`[SongApp] 每日结算完成：子公司数据已更新，股票市场已更新，基金净值已更新，里程碑检查完成（新解锁 ${milestoneResult.newMilestones.length} 个）`);
   }
 
   /**
@@ -11757,7 +11995,8 @@ const SongApp = (function () {
     getCurrentPage,
     isInitialized,
     showToast,
-    renderCurrentPage
+    renderCurrentPage,
+    checkAndGenerateRealtimeEvents
   };
 })();
 
