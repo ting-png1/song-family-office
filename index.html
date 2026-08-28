@@ -3651,6 +3651,547 @@ body::before {
   80%, 100% { content: '...'; }
 }
 
+/* ═══════════════════════════════════════════════
+   驾驶舱样式（第二阶段升级）
+   ═══════════════════════════════════════════════ */
+
+.dashboard-section {
+  margin-bottom: var(--spacing-md);
+}
+
+.dashboard-section .card-link {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-serif);
+}
+
+/* 核心指标区 */
+.dashboard-core-metrics {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.core-metric-card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.core-metric-card:hover {
+  border-color: var(--color-accent-gold);
+  transform: translateY(-1px);
+}
+
+.core-metric-card.primary {
+  background: linear-gradient(135deg, var(--color-bg-elevated) 0%, rgba(212, 175, 55, 0.05) 100%);
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.metric-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--color-accent-gold);
+}
+
+.metric-icon.positive {
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+}
+
+.metric-icon.negative {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+}
+
+.metric-icon.warning {
+  background: rgba(241, 196, 15, 0.1);
+  color: #f1c40f;
+}
+
+.metric-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.metric-value-large {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-family: var(--font-serif);
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.metric-value {
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font-serif);
+  line-height: 1.2;
+}
+
+.metric-value.positive {
+  color: #2ecc71;
+}
+
+.metric-value.negative {
+  color: #e74c3c;
+}
+
+.metric-value.gold {
+  color: var(--color-accent-gold);
+}
+
+.metric-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+  font-family: var(--font-serif);
+  letter-spacing: 0.3px;
+}
+
+.metric-sparkline {
+  position: absolute;
+  right: var(--spacing-sm);
+  bottom: var(--spacing-sm);
+  opacity: 0.6;
+}
+
+.mini-sparkline {
+  display: block;
+}
+
+/* 今日重点 */
+.today-focus-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.focus-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.focus-item:hover {
+  border-color: var(--color-accent-gold);
+  background: rgba(212, 175, 55, 0.03);
+}
+
+.focus-priority {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-accent-gold), #b8941f);
+  color: var(--color-bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.focus-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.focus-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  font-family: var(--font-serif);
+  margin-bottom: 2px;
+}
+
+.focus-desc {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-family: var(--font-serif);
+  line-height: 1.4;
+}
+
+.focus-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-accent-gold);
+  flex-shrink: 0;
+}
+
+.focus-action-text {
+  font-size: 11px;
+  font-family: var(--font-serif);
+}
+
+/* 风险预警 */
+.risk-alerts-section {
+  border-left: 3px solid #e74c3c;
+}
+
+.risk-alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.risk-alert-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.risk-alert-item:hover {
+  border-color: currentColor;
+}
+
+.risk-alert-item.alert-high {
+  border-left: 3px solid #e74c3c;
+  color: #e74c3c;
+}
+
+.risk-alert-item.alert-medium {
+  border-left: 3px solid #f1c40f;
+  color: #f1c40f;
+}
+
+.alert-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: currentColor;
+  opacity: 0.15;
+}
+
+.alert-icon svg {
+  opacity: 1;
+}
+
+.alert-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  font-family: var(--font-serif);
+  margin-bottom: 2px;
+}
+
+.alert-desc {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-family: var(--font-serif);
+  line-height: 1.4;
+}
+
+.alert-action {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+/* 子公司概览网格 */
+.subsidiary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.sub-mini-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm);
+  position: relative;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.sub-mini-card:hover {
+  border-color: var(--color-accent-gold);
+  transform: translateY(-1px);
+}
+
+.sub-mini-card.risk {
+  border-color: rgba(231, 76, 60, 0.4);
+  background: rgba(231, 76, 60, 0.03);
+}
+
+.sub-mini-card.negative {
+  border-color: rgba(231, 76, 60, 0.3);
+}
+
+.sub-mini-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  font-family: var(--font-serif);
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub-mini-profit {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-serif);
+  margin-bottom: 6px;
+}
+
+.sub-mini-profit.positive {
+  color: #2ecc71;
+}
+
+.sub-mini-profit.negative {
+  color: #e74c3c;
+}
+
+.sub-mini-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.sub-meta-item {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-family: var(--font-serif);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sub-meta-item.positive {
+  color: #2ecc71;
+}
+
+.sub-meta-item.negative {
+  color: #e74c3c;
+}
+
+.sub-risk-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e74c3c;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* 投资组合概览 */
+.investment-overview-row {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.inv-main {
+  flex: 1;
+}
+
+.inv-value {
+  font-size: 22px;
+  font-weight: 600;
+  font-family: var(--font-serif);
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.inv-value.positive {
+  color: #2ecc71;
+}
+
+.inv-value.negative {
+  color: #e74c3c;
+}
+
+.inv-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-family: var(--font-serif);
+  margin-bottom: 6px;
+}
+
+.inv-profit {
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-serif);
+}
+
+.inv-profit.positive {
+  color: #2ecc71;
+}
+
+.inv-profit.negative {
+  color: #e74c3c;
+}
+
+.inv-allocation {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.allocation-bar {
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  background: var(--color-bg);
+  margin-bottom: 8px;
+}
+
+.alloc-segment {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.alloc-segment.stock {
+  background: linear-gradient(90deg, #d4af37, #b8941f);
+}
+
+.alloc-segment.fund {
+  background: linear-gradient(90deg, #3498db, #2980b9);
+}
+
+.alloc-segment.cash {
+  background: linear-gradient(90deg, #2ecc71, #27ae60);
+}
+
+.alloc-segment.other {
+  background: var(--color-text-muted);
+}
+
+.allocation-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.legend-item {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-family: var(--font-serif);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.legend-dot.stock {
+  background: #d4af37;
+}
+
+.legend-dot.fund {
+  background: #3498db;
+}
+
+.legend-dot.cash {
+  background: #2ecc71;
+}
+
+.inv-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.inv-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.inv-stat-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-family: var(--font-serif);
+}
+
+.inv-stat-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  font-family: var(--font-serif);
+}
+
+/* 响应式适配 */
+@media (max-width: 480px) {
+  .dashboard-core-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .core-metric-card.primary {
+    grid-column: span 2;
+  }
+
+  .subsidiary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .investment-overview-row {
+    flex-direction: column;
+  }
+
+  .inv-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .ai-error {
   color: var(--color-danger);
   font-size: 13px;
@@ -9584,21 +10125,331 @@ if (typeof window !== 'undefined') {
 
 /* ===== js/pages/dashboard.js ===== */
 /**
- * 松氏家族办公室 - 首页 / 控制中心
- * 展示：当前日期、待处理事务、总资产、今日收益、市场指数、重要新闻、紧急事件
+ * 松氏家族办公室 - 首页 / 控制中心（驾驶舱版）
+ * 核心指标 + 今日重点 + 风险预警 + 子公司概览 + 投资概览 + 待办 + 市场 + 继承人
  */
 
 const PageDashboard = (function () {
   'use strict';
 
+  // ═══════════════════════════════════════════════
+  // 数据计算函数
+  // ═══════════════════════════════════════════════
+
   /**
-   * 渲染首页
+   * 计算风险预警
    */
+  function calculateRiskAlerts(state) {
+    const alerts = [];
+    const company = state.company || {};
+    const subsidiaries = state.subsidiaries || [];
+    const heir = state.heir || {};
+    const abilities = heir.abilities || {};
+
+    // 现金流预警
+    if (company.cashFlow < 300000000) {
+      alerts.push({
+        level: 'high',
+        title: '现金流紧张',
+        description: `当前现金流仅 ${formatMoney(company.cashFlow)}，低于安全线 3 亿`,
+        action: '去投资页面减持',
+        actionPage: 'investment',
+        icon: 'alert'
+      });
+    } else if (company.cashFlow < 500000000) {
+      alerts.push({
+        level: 'medium',
+        title: '现金流偏低',
+        description: `当前现金流 ${formatMoney(company.cashFlow)}，建议关注资金流动性`,
+        action: '查看财务详情',
+        actionPage: 'company',
+        icon: 'alert'
+      });
+    }
+
+    // 子公司预警
+    subsidiaries.forEach(sub => {
+      if (sub.type === '公益') return;
+      // 连续亏损
+      if (sub.profit < 0) {
+        alerts.push({
+          level: 'high',
+          title: `${sub.name} 亏损`,
+          description: `当前利润 ${formatMoney(sub.profit)}，需要关注经营状况`,
+          action: '查看详情',
+          actionPage: 'company',
+          icon: 'trending-down'
+        });
+      }
+      // 员工满意度低
+      if (sub.satisfaction < 55) {
+        alerts.push({
+          level: 'medium',
+          title: `${sub.name} 员工满意度低`,
+          description: `满意度仅 ${sub.satisfaction}%，可能影响运营效率`,
+          action: '查看详情',
+          actionPage: 'company',
+          icon: 'users'
+        });
+      }
+      // 声誉低
+      if (sub.reputation < 55) {
+        alerts.push({
+          level: 'medium',
+          title: `${sub.name} 市场声誉下滑`,
+          description: `声誉值 ${sub.reputation}，建议关注品牌形象`,
+          action: '查看详情',
+          actionPage: 'company',
+          icon: 'star'
+        });
+      }
+    });
+
+    // 继承人能力预警
+    if (abilities.familyTrust < 40) {
+      alerts.push({
+        level: 'high',
+        title: '家族信任度不足',
+        description: `家族信任度仅 ${abilities.familyTrust}，重大决策可能受到限制`,
+        action: '查看档案',
+        actionPage: 'heir',
+        icon: 'shield'
+      });
+    }
+
+    // 待办过多
+    const pendingCount = state.events?.pending?.length || 0;
+    if (pendingCount > 8) {
+      alerts.push({
+        level: 'medium',
+        title: '待办事务积压',
+        description: `当前有 ${pendingCount} 项待处理事务，建议及时处理`,
+        action: '去处理',
+        actionPage: 'tasks',
+        icon: 'list'
+      });
+    }
+
+    return alerts.slice(0, 5); // 最多显示5条
+  }
+
+  /**
+   * 计算今日重点建议
+   */
+  function calculateTodayFocus(state, alerts) {
+    const focus = [];
+    const pending = state.events?.pending || [];
+
+    // 1. 紧急待办优先
+    const highPriority = pending.filter(e => e.priority === 'high');
+    if (highPriority.length > 0) {
+      focus.push({
+        priority: 1,
+        title: `处理紧急事务：${highPriority[0].title}`,
+        description: '该事务优先级为紧急，建议优先处理',
+        action: '立即处理',
+        actionPage: 'tasks',
+        icon: 'alert'
+      });
+    }
+
+    // 2. 风险预警
+    if (alerts.length > 0) {
+      const highAlert = alerts.find(a => a.level === 'high');
+      if (highAlert) {
+        focus.push({
+          priority: 2,
+          title: highAlert.title,
+          description: highAlert.description,
+          action: highAlert.action,
+          actionPage: highAlert.actionPage,
+          icon: highAlert.icon
+        });
+      }
+    }
+
+    // 3. 普通待办
+    const mediumPriority = pending.filter(e => e.priority === 'medium');
+    if (focus.length < 3 && mediumPriority.length > 0) {
+      focus.push({
+        priority: 3,
+        title: `处理重要事务：${mediumPriority[0].title}`,
+        description: '该事务优先级为重要',
+        action: '去处理',
+        actionPage: 'tasks',
+        icon: 'list'
+      });
+    }
+
+    // 4. 如果没有待办，建议查看市场
+    if (focus.length === 0) {
+      focus.push({
+        priority: 1,
+        title: '今日暂无紧急事务',
+        description: '可以查看市场动态，或审视子公司经营状况',
+        action: '查看市场',
+        actionPage: 'market',
+        icon: 'trending-up'
+      });
+    }
+
+    return focus.slice(0, 3);
+  }
+
+  /**
+   * 计算子公司概览数据
+   */
+  function calculateSubsidiaryOverview(subsidiaries) {
+    return (subsidiaries || []).map(sub => {
+      const profitPositive = sub.profit >= 0;
+      const satisfactionLevel = sub.satisfaction >= 75 ? 'high' : sub.satisfaction >= 55 ? 'medium' : 'low';
+      const isRisk = sub.profit < 0 || sub.satisfaction < 55 || sub.reputation < 55;
+
+      return {
+        id: sub.id,
+        name: sub.name,
+        type: sub.type,
+        revenue: sub.revenue,
+        profit: sub.profit,
+        profitMargin: sub.profitMargin,
+        satisfaction: sub.satisfaction,
+        reputation: sub.reputation,
+        growthRate: sub.growthRate,
+        profitPositive,
+        satisfactionLevel,
+        isRisk,
+        employees: sub.employees
+      };
+    });
+  }
+
+  /**
+   * 计算投资组合概览
+   */
+  function calculateInvestmentOverview(state) {
+    const stockPortfolio = state.portfolio || [];
+    const fundPortfolio = state.fundPortfolio || [];
+    const stocks = state.stockMarket?.stocks || [];
+    const funds = state.funds || [];
+
+    // 股票市值
+    const stockValue = stockPortfolio.reduce((sum, p) => {
+      const stock = stocks.find(s => s.id === p.stockId);
+      return sum + (stock ? stock.price * p.shares : 0);
+    }, 0);
+
+    // 股票成本
+    const stockCost = stockPortfolio.reduce((sum, p) => {
+      return sum + (p.avgCost * p.shares);
+    }, 0);
+
+    // 基金市值
+    const fundValue = fundPortfolio.reduce((sum, p) => {
+      const fund = funds.find(f => f.id === p.fundId);
+      return sum + (fund ? fund.nav * p.shares : 0);
+    }, 0);
+
+    // 基金成本
+    const fundCost = fundPortfolio.reduce((sum, p) => {
+      return sum + (p.avgCost * p.shares);
+    }, 0);
+
+    const totalValue = stockValue + fundValue;
+    const totalCost = stockCost + fundCost;
+    const totalProfit = totalValue - totalCost;
+    const profitPercent = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
+
+    // 持仓分布
+    const cash = state.company?.cashFlow || 0;
+    const totalAssets = state.company?.totalAssets || 0;
+    const stockPercent = totalAssets > 0 ? (stockValue / totalAssets) * 100 : 0;
+    const fundPercent = totalAssets > 0 ? (fundValue / totalAssets) * 100 : 0;
+    const cashPercent = totalAssets > 0 ? (cash / totalAssets) * 100 : 0;
+    const otherPercent = Math.max(0, 100 - stockPercent - fundPercent - cashPercent);
+
+    return {
+      totalValue,
+      totalCost,
+      totalProfit,
+      profitPercent,
+      stockValue,
+      fundValue,
+      stockCount: stockPortfolio.length,
+      fundCount: fundPortfolio.length,
+      allocation: {
+        stock: stockPercent,
+        fund: fundPercent,
+        cash: cashPercent,
+        other: otherPercent
+      }
+    };
+  }
+
+  /**
+   * 生成迷你趋势图 SVG（简单折线）
+   */
+  function generateMiniSparkline(data, color = '#d4af37', width = 80, height = 24) {
+    if (!data || data.length < 2) return '';
+    const values = data.map(d => typeof d === 'number' ? d : (d.value || d.revenue || 0));
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min || 1;
+    const stepX = width / (values.length - 1);
+
+    const points = values.map((v, i) => {
+      const x = i * stepX;
+      const y = height - ((v - min) / range) * (height - 4) - 2;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+
+    return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" class="mini-sparkline">
+      <polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  }
+
+  // ═══════════════════════════════════════════════
+  // SVG 图标
+  // ═══════════════════════════════════════════════
+
+  function getIcon(name, size = 16) {
+    const icons = {
+      'alert': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+      'trending-up': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`,
+      'trending-down': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>`,
+      'users': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+      'star': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+      'shield': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+      'list': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
+      'briefcase': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
+      'dollar': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+      'activity': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+      'arrow-right': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`,
+      'building': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="18"/><line x1="15" y1="22" x2="15" y2="18"/><line x1="8" y1="6" x2="8" y2="6"/><line x1="12" y1="6" x2="12" y2="6"/><line x1="16" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>`
+    };
+    return icons[name] || icons['activity'];
+  }
+
+  // ═══════════════════════════════════════════════
+  // 渲染函数
+  // ═══════════════════════════════════════════════
+
   function render(container) {
     const state = SongState.getState();
     const gameDate = state.gameDate;
     const company = state.company;
     const pendingCount = state.events.pending.length;
+
+    // 计算各类数据
+    const alerts = calculateRiskAlerts(state);
+    const todayFocus = calculateTodayFocus(state, alerts);
+    const subsidiaryOverview = calculateSubsidiaryOverview(state.subsidiaries);
+    const investmentOverview = calculateInvestmentOverview(state);
+
+    // 子公司历史数据（用于迷你趋势图）
+    const getSubHistory = (sub, key) => {
+      const history = sub.history || [];
+      return history.slice(0, 7).reverse().map(h => h[key] || 0);
+    };
 
     container.innerHTML = `
       <div class="page-header">
@@ -9606,26 +10457,175 @@ const PageDashboard = (function () {
         <p class="page-subtitle">${SongDate.formatDateChinese(gameDate.current)}</p>
       </div>
 
-      <!-- 总资产卡片 -->
-      <div class="card metric-card">
-        <div class="metric-large">
-          <div class="metric-value">${formatMoney(company.totalAssets)}</div>
-          <div class="metric-label">松氏家族总资产</div>
+      <!-- ═══════ 核心指标区 ═══════ -->
+      <div class="dashboard-core-metrics">
+        <div class="core-metric-card primary">
+          <div class="metric-icon gold">${getIcon('briefcase', 20)}</div>
+          <div class="metric-content">
+            <div class="metric-value-large">${formatMoney(company.totalAssets)}</div>
+            <div class="metric-label">松氏家族总资产</div>
+          </div>
+          <div class="metric-sparkline">
+            ${generateMiniSparkline(getSubHistory(state.subsidiaries[0] || {}, 'revenue'), '#d4af37', 70, 28)}
+          </div>
         </div>
-        <div class="data-row">
-          <span class="data-label">现金流</span>
-          <span class="data-value gold">${formatMoney(company.cashFlow)}</span>
+
+        <div class="core-metric-card">
+          <div class="metric-icon ${company.dailyNet >= 0 ? 'positive' : 'negative'}">${getIcon('trending-up', 18)}</div>
+          <div class="metric-content">
+            <div class="metric-value ${company.dailyNet >= 0 ? 'positive' : 'negative'}">
+              ${company.dailyNet >= 0 ? '+' : ''}${formatMoney(company.dailyNet)}
+            </div>
+            <div class="metric-label">今日净收益</div>
+          </div>
         </div>
-        <div class="data-row">
-          <span class="data-label">今日净收益</span>
-          <span class="data-value ${company.dailyNet >= 0 ? 'positive' : 'negative'}">
-            ${company.dailyNet >= 0 ? '+' : ''}${formatMoney(company.dailyNet)}
-          </span>
+
+        <div class="core-metric-card">
+          <div class="metric-icon ${company.cashFlow < 500000000 ? 'warning' : 'gold'}">${getIcon('dollar', 18)}</div>
+          <div class="metric-content">
+            <div class="metric-value gold">${formatMoney(company.cashFlow)}</div>
+            <div class="metric-label">可用现金流</div>
+          </div>
+        </div>
+
+        <div class="core-metric-card">
+          <div class="metric-icon ${company.marketIndex >= 1000 ? 'positive' : 'negative'}">${getIcon('activity', 18)}</div>
+          <div class="metric-content">
+            <div class="metric-value ${company.marketIndex >= 1000 ? 'positive' : 'negative'}">
+              ${company.marketIndex.toFixed(1)}
+            </div>
+            <div class="metric-label">松氏综合指数</div>
+          </div>
         </div>
       </div>
 
-      <!-- 待办事务提醒 -->
-      <div class="card" onclick="SongApp.navigateTo('tasks')">
+      <!-- ═══════ 今日重点 ═══════ -->
+      <div class="card dashboard-section">
+        <div class="card-header">
+          <span class="card-title">今日重点</span>
+          <span class="tag tag-gold">${todayFocus.length} 项建议</span>
+        </div>
+        <div class="today-focus-list">
+          ${todayFocus.map((item, i) => `
+            <div class="focus-item" onclick="SongApp.navigateTo('${item.actionPage}')">
+              <div class="focus-priority">${i + 1}</div>
+              <div class="focus-content">
+                <div class="focus-title">${item.title}</div>
+                <div class="focus-desc">${item.description}</div>
+              </div>
+              <div class="focus-action">
+                <span class="focus-action-text">${item.action}</span>
+                ${getIcon('arrow-right', 14)}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- ═══════ 风险预警（有预警才显示）═══════ -->
+      ${alerts.length > 0 ? `
+      <div class="card dashboard-section risk-alerts-section">
+        <div class="card-header">
+          <span class="card-title">风险预警</span>
+          <span class="tag tag-danger">${alerts.length} 项预警</span>
+        </div>
+        <div class="risk-alerts-list">
+          ${alerts.map(alert => `
+            <div class="risk-alert-item alert-${alert.level}" onclick="SongApp.navigateTo('${alert.actionPage}')">
+              <div class="alert-icon">${getIcon(alert.icon, 18)}</div>
+              <div class="alert-content">
+                <div class="alert-title">${alert.title}</div>
+                <div class="alert-desc">${alert.description}</div>
+              </div>
+              <div class="alert-action">
+                ${getIcon('arrow-right', 14)}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      ` : ''}
+
+      <!-- ═══════ 子公司经营概览 ═══════ -->
+      <div class="card dashboard-section" onclick="SongApp.navigateTo('company')">
+        <div class="card-header">
+          <span class="card-title">子公司经营概览</span>
+          <span class="card-link">查看全部 ${getIcon('arrow-right', 12)}</span>
+        </div>
+        <div class="subsidiary-grid">
+          ${subsidiaryOverview.map(sub => `
+            <div class="sub-mini-card ${sub.isRisk ? 'risk' : ''} ${sub.profitPositive ? '' : 'negative'}">
+              <div class="sub-mini-name">${sub.name.replace('松氏', '')}</div>
+              <div class="sub-mini-profit ${sub.profitPositive ? 'positive' : 'negative'}">
+                ${sub.profitPositive ? '+' : ''}${formatMoney(sub.profit)}
+              </div>
+              <div class="sub-mini-meta">
+                <span class="sub-meta-item" title="员工满意度">
+                  ${getIcon('users', 10)} ${sub.satisfaction}%
+                </span>
+                <span class="sub-meta-item ${sub.growthRate >= 0 ? 'positive' : 'negative'}" title="增长率">
+                  ${sub.growthRate >= 0 ? '+' : ''}${sub.growthRate}%
+                </span>
+              </div>
+              ${sub.isRisk ? '<div class="sub-risk-dot"></div>' : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- ═══════ 投资组合概览 ═══════ -->
+      <div class="card dashboard-section" onclick="SongApp.navigateTo('investment')">
+        <div class="card-header">
+          <span class="card-title">投资组合</span>
+          <span class="card-link">查看详情 ${getIcon('arrow-right', 12)}</span>
+        </div>
+        <div class="investment-overview-row">
+          <div class="inv-main">
+            <div class="inv-value ${investmentOverview.totalProfit >= 0 ? 'positive' : 'negative'}">
+              ${formatMoney(investmentOverview.totalValue)}
+            </div>
+            <div class="inv-label">投资总市值</div>
+            <div class="inv-profit ${investmentOverview.totalProfit >= 0 ? 'positive' : 'negative'}">
+              ${investmentOverview.totalProfit >= 0 ? '+' : ''}${formatMoney(investmentOverview.totalProfit)}
+              (${investmentOverview.profitPercent >= 0 ? '+' : ''}${investmentOverview.profitPercent.toFixed(2)}%)
+            </div>
+          </div>
+          <div class="inv-allocation">
+            <div class="allocation-bar">
+              <div class="alloc-segment stock" style="width: ${investmentOverview.allocation.stock}%"></div>
+              <div class="alloc-segment fund" style="width: ${investmentOverview.allocation.fund}%"></div>
+              <div class="alloc-segment cash" style="width: ${investmentOverview.allocation.cash}%"></div>
+              <div class="alloc-segment other" style="width: ${investmentOverview.allocation.other}%"></div>
+            </div>
+            <div class="allocation-legend">
+              <span class="legend-item"><span class="legend-dot stock"></span>股票 ${investmentOverview.allocation.stock.toFixed(1)}%</span>
+              <span class="legend-item"><span class="legend-dot fund"></span>基金 ${investmentOverview.allocation.fund.toFixed(1)}%</span>
+              <span class="legend-item"><span class="legend-dot cash"></span>现金 ${investmentOverview.allocation.cash.toFixed(1)}%</span>
+            </div>
+          </div>
+        </div>
+        <div class="inv-stats-row">
+          <div class="inv-stat">
+            <span class="inv-stat-label">股票持仓</span>
+            <span class="inv-stat-value">${investmentOverview.stockCount} 只</span>
+          </div>
+          <div class="inv-stat">
+            <span class="inv-stat-label">基金持仓</span>
+            <span class="inv-stat-value">${investmentOverview.fundCount} 只</span>
+          </div>
+          <div class="inv-stat">
+            <span class="inv-stat-label">股票市值</span>
+            <span class="inv-stat-value">${formatMoney(investmentOverview.stockValue)}</span>
+          </div>
+          <div class="inv-stat">
+            <span class="inv-stat-label">基金市值</span>
+            <span class="inv-stat-value">${formatMoney(investmentOverview.fundValue)}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ 待办事务预览 ═══════ -->
+      <div class="card dashboard-section" onclick="SongApp.navigateTo('tasks')">
         <div class="card-header">
           <span class="card-title">待处理事务</span>
           <span class="tag ${pendingCount > 0 ? 'tag-warning' : 'tag-success'}">
@@ -9651,17 +10651,13 @@ const PageDashboard = (function () {
         `}
       </div>
 
-      <!-- 市场概览 -->
-      <div class="card" onclick="SongApp.navigateTo('market')">
+      <!-- ═══════ 市场概览 ═══════ -->
+      <div class="card dashboard-section" onclick="SongApp.navigateTo('market')">
         <div class="card-header">
           <span class="card-title">市场概览</span>
           <span class="data-value ${company.marketIndex >= 1000 ? 'positive' : 'negative'}">
             ${company.marketIndex >= 1000 ? '+' : ''}${(company.marketIndex - 1000).toFixed(1)}
           </span>
-        </div>
-        <div class="market-index-display">
-          <div class="index-value">${company.marketIndex.toFixed(2)}</div>
-          <div class="index-label">松氏综合指数</div>
         </div>
         <div class="market-news-preview">
           ${state.stockMarket.news && state.stockMarket.news.length > 0 ? `
@@ -9669,6 +10665,12 @@ const PageDashboard = (function () {
               <span class="news-dot"></span>
               <span class="news-text">${state.stockMarket.news[0].title || '暂无市场新闻'}</span>
             </div>
+            ${state.stockMarket.news[1] ? `
+            <div class="news-item">
+              <span class="news-dot"></span>
+              <span class="news-text">${state.stockMarket.news[1].title}</span>
+            </div>
+            ` : ''}
           ` : `
             <div class="news-item">
               <span class="news-dot"></span>
@@ -9678,8 +10680,8 @@ const PageDashboard = (function () {
         </div>
       </div>
 
-      <!-- 继承人状态 -->
-      <div class="card" onclick="SongApp.navigateTo('heir')">
+      <!-- ═══════ 继承人状态 ═══════ -->
+      <div class="card dashboard-section" onclick="SongApp.navigateTo('heir')">
         <div class="card-header">
           <span class="card-title">继承人状态</span>
           <span class="tag tag-gold">松庭</span>
@@ -9700,14 +10702,20 @@ const PageDashboard = (function () {
             <div class="ability-bar"><div class="ability-fill" style="width: ${state.heir.abilities.reputation}%"></div></div>
             <span class="ability-value">${state.heir.abilities.reputation}</span>
           </div>
+          <div class="ability-mini">
+            <span class="ability-label">风险判断</span>
+            <div class="ability-bar"><div class="ability-fill" style="width: ${state.heir.abilities.riskJudgment}%"></div></div>
+            <span class="ability-value">${state.heir.abilities.riskJudgment}</span>
+          </div>
         </div>
       </div>
     `;
   }
 
-  /**
-   * 格式化金额
-   */
+  // ═══════════════════════════════════════════════
+  // 工具函数
+  // ═══════════════════════════════════════════════
+
   function formatMoney(amount) {
     if (amount >= 100000000) {
       return (amount / 100000000).toFixed(2) + ' 亿';
@@ -9719,7 +10727,11 @@ const PageDashboard = (function () {
 
   // 公开 API
   return {
-    render
+    render,
+    calculateRiskAlerts,
+    calculateTodayFocus,
+    calculateSubsidiaryOverview,
+    calculateInvestmentOverview
   };
 })();
 
