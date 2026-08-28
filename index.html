@@ -18280,9 +18280,8 @@ const PageMarket = (function () {
       // 检查当前是否在资产页中
       const currentPage = typeof SongApp !== 'undefined' ? SongApp.getCurrentPage() : '';
       if (currentPage === 'assets' && typeof PageAssets !== 'undefined') {
-        // 在资产页中，重新渲染资产页并激活市场行情Tab
-        PageAssets.render(container);
-        // 激活市场行情Tab
+        // 在资产页中，重新导航到资产页并激活市场行情Tab
+        SongApp.navigateTo('assets');
         setTimeout(() => {
           const tabs = document.querySelectorAll('.assets-tab');
           for (let tab of tabs) {
@@ -18292,7 +18291,7 @@ const PageMarket = (function () {
               break;
             }
           }
-        }, 50);
+        }, 100);
       } else {
         // 独立页面，直接渲染市场页面
         render(container);
