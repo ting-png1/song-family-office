@@ -18277,11 +18277,22 @@ const PageMarket = (function () {
     showFundMarketView = false;
     const container = document.getElementById('app-content');
     if (container) {
-      // 检查是否在资产页的子容器中渲染
-      const assetsSubContent = container.querySelector('.assets-sub-content');
-      if (assetsSubContent && typeof PageAssets !== 'undefined' && typeof PageAssets.switchTab === 'function') {
+      // 检查当前是否在资产页中
+      const currentPage = typeof SongApp !== 'undefined' ? SongApp.getCurrentPage() : '';
+      if (currentPage === 'assets' && typeof PageAssets !== 'undefined') {
         // 在资产页中，重新渲染资产页并激活市场行情Tab
-        PageAssets.switchTab('market');
+        PageAssets.render(container);
+        // 激活市场行情Tab
+        setTimeout(() => {
+          const tabs = document.querySelectorAll('.assets-tab');
+          for (let tab of tabs) {
+            const label = tab.querySelector('.tab-label')?.textContent;
+            if (label === '市场行情') {
+              tab.click();
+              break;
+            }
+          }
+        }, 50);
       } else {
         // 独立页面，直接渲染市场页面
         render(container);
