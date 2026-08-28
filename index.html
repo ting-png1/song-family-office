@@ -6910,21 +6910,35 @@ const SongDate = (function () {
   /**
    * 初始化日期系统
    * 检查上次打开时间，自动推进游戏日期
+   * 新游戏起始日期 = 现实当前日期（北京时间）
+   * 旧存档日期过旧时自动同步为现实日期
    */
   async function init() {
     const gameDate = SongState.get('gameDate');
     const now = new Date();
     const nowStr = formatDate(now);
 
-    // 如果是新游戏，设置起始日期
+    // 如果是新游戏，设置起始日期为现实当前日期
     if (!gameDate.current) {
-      const startDate = new Date(DEFAULT_START_DATE);
+      const startDate = new Date(); // 现实当前日期
       await SongState.batchUpdate({
         'gameDate.current': formatDate(startDate),
         'gameDate.dayOfWeek': WEEKDAYS[startDate.getDay()],
-        'gameDate.realLastOpenAt': now.toISOString()
+        'gameDate.realLastOpenAt': now.toISOString(),
+        'gameDate.startDate': formatDate(startDate), // 记录游戏开始的现实日期
+        'gameDate.syncedToReality': true
       });
-      console.log('[SongDate] 新游戏，起始日期:', formatDate(startDate));
+      console.log('[SongDate] 新游戏，起始日期（同步现实）:', formatDate(startDate));
+      return;
+    }
+
+    // 检查游戏日期是否过旧（与现实日期差距超过7天），自动同步
+    const currentGameDate = new Date(gameDate.current);
+    const daysBehind = Math.floor((now - currentGameDate) / (1000 * 60 * 60 * 24));
+
+    if (daysBehind > 7) {
+      console.log(`[SongDate] 检测到游戏日期落后现实 ${daysBehind} 天，自动同步至现实日期`);
+      await syncToReality(false); // 自动同步，不显示提示
       return;
     }
 
@@ -6963,6 +6977,42 @@ const SongDate = (function () {
       // 没有记录，设置当前时间
       await SongState.update('gameDate.realLastOpenAt', now.toISOString());
     }
+  }
+
+  /**
+   * 同步游戏日期至现实北京时间
+   * 同步后会重新生成所有历史数据（子公司历史、股票历史、基金历史等）
+   * @param {boolean} showNotification - 是否显示同步成功提示
+   */
+  async function syncToReality(showNotification = true) {
+    const now = new Date();
+    const nowStr = formatDate(now);
+    const oldDate = SongState.get('gameDate.current');
+
+    console.log(`[SongDate] 同步现实时间: ${oldDate} → ${nowStr}`);
+
+    // 更新游戏日期为现实日期
+    await SongState.batchUpdate({
+      'gameDate.current': nowStr,
+      'gameDate.dayOfWeek': WEEKDAYS[now.getDay()],
+      'gameDate.realLastOpenAt': now.toISOString(),
+      'gameDate.syncedToReality': true,
+      'gameDate.lastSyncedAt': now.toISOString()
+    });
+
+    // 触发日期变更事件，让其他模块重新生成历史数据
+    triggerDateChange(1);
+
+    if (showNotification && typeof window !== 'undefined') {
+      // 延迟显示提示，等待历史数据重新生成
+      setTimeout(() => {
+        if (window.showToast) {
+          window.showToast(`✅ 日期已同步至现实时间：${formatDateChinese(nowStr, true)}`);
+        }
+      }, 500);
+    }
+
+    return nowStr;
   }
 
   /**
@@ -7079,6 +7129,38 @@ const SongDate = (function () {
   }
 
   /**
+   * 生成历史日期（以当前游戏日期为基准往前推 N 天）
+   * 用于生成子公司历史、股票历史、基金历史等数据
+   * 确保所有历史日期都以现实时间为基准
+   * @param {number} daysAgo - 往前推的天数
+   * @returns {string} YYYY-MM-DD 格式的日期
+   */
+  function getHistoryDate(daysAgo) {
+    const currentStr = getCurrentDate();
+    if (!currentStr) {
+      // 如果没有当前日期，使用现实日期
+      return formatDate(new Date());
+    }
+    const date = new Date(currentStr);
+    date.setDate(date.getDate() - daysAgo);
+    return formatDate(date);
+  }
+
+  /**
+   * 生成历史日期数组（从 daysAgo 天前到今天，共 daysAgo+1 天）
+   * 按时间正序排列（最早的在前，今天的在后）
+   * @param {number} daysAgo - 往前推的天数
+   * @returns {Array<string>} 日期数组
+   */
+  function getHistoryDateRange(daysAgo) {
+    const dates = [];
+    for (let i = daysAgo; i >= 0; i--) {
+      dates.push(getHistoryDate(i));
+    }
+    return dates;
+  }
+
+  /**
    * 获取月份名称
    */
   function getMonthName(month) {
@@ -7089,6 +7171,7 @@ const SongDate = (function () {
   return {
     init,
     advanceDays,
+    syncToReality,
     formatDate,
     formatDateChinese,
     formatDateShort,
@@ -7097,6 +7180,8 @@ const SongDate = (function () {
     isWorkday,
     daysBetween,
     getMonthName,
+    getHistoryDate,
+    getHistoryDateRange,
     WEEKDAYS,
     WEEKDAYS_SHORT
   };
@@ -17486,6 +17571,14 @@ const PageSettings = (function () {
             <label class="form-label">当前存档信息</label>
             <div class="data-info">
               <div class="data-info-item">
+                <span class="data-info-label">游戏日期</span>
+                <span class="data-info-value">${SongDate.formatDateChinese(state.gameDate?.current, true)}</span>
+              </div>
+              <div class="data-info-item">
+                <span class="data-info-label">现实日期</span>
+                <span class="data-info-value">${SongDate.formatDateChinese(new Date().toISOString().split('T')[0], true)}</span>
+              </div>
+              <div class="data-info-item">
                 <span class="data-info-label">经营天数</span>
                 <span class="data-info-value">${state.meta?.totalPlayDays || 0} 天</span>
               </div>
@@ -17513,6 +17606,7 @@ const PageSettings = (function () {
           </div>
 
           <div class="form-actions">
+            <button class="btn btn-gold" id="sync-date-btn">同步现实时间</button>
             <button class="btn btn-secondary" id="export-data">导出存档</button>
             <button class="btn btn-danger" id="reset-data">重置游戏</button>
           </div>
@@ -17607,6 +17701,34 @@ const PageSettings = (function () {
       a.click();
       URL.revokeObjectURL(url);
       showToast('✅ 存档已导出');
+    });
+
+    // 同步现实时间
+    document.getElementById('sync-date-btn')?.addEventListener('click', async () => {
+      const btn = document.getElementById('sync-date-btn');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '正在同步...';
+
+      try {
+        await SongDate.syncToReality(false);
+        // 同步日期后，重新生成所有历史数据（子公司、股票、基金）
+        if (SongApp.migrateOldHistoryData) {
+          await SongApp.migrateOldHistoryData();
+        }
+        if (window.showToast) {
+          window.showToast(`✅ 日期已同步至现实时间，历史数据已重新生成`);
+        }
+        // 重新渲染页面
+        setTimeout(() => {
+          SongApp.renderCurrentPage();
+        }, 500);
+      } catch (e) {
+        console.error('[Settings] 同步时间失败:', e);
+        if (window.showToast) window.showToast('❌ 同步失败，请重试');
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
     });
 
     // 重置游戏（两次点击确认，避免原生confirm在webview中不工作）
@@ -18299,7 +18421,14 @@ const SongApp = (function () {
           break;
         }
         const firstDate = sub.history[0]?.date;
+        const lastDate = sub.history[sub.history.length - 1]?.date;
+        // 检测：历史数据日期与游戏当前日期不匹配（日期同步后需要重新生成）
         if (firstDate && firstDate > gameDate) {
+          needsMigration = true;
+          break;
+        }
+        // 检测：最后一条历史数据不是当前游戏日期（日期变更后需要重新生成）
+        if (lastDate && lastDate !== gameDate) {
           needsMigration = true;
           break;
         }
@@ -18331,7 +18460,13 @@ const SongApp = (function () {
           break;
         }
         const firstDate = stock.priceHistory[0]?.date;
+        const lastDate = stock.priceHistory[stock.priceHistory.length - 1]?.date;
         if (firstDate && firstDate > gameDate) {
+          needsMigration = true;
+          break;
+        }
+        // 检测：最后一条历史数据不是当前游戏日期
+        if (lastDate && lastDate !== gameDate) {
           needsMigration = true;
           break;
         }
@@ -18357,7 +18492,13 @@ const SongApp = (function () {
           break;
         }
         const firstDate = fund.navHistory[0]?.date;
+        const lastDate = fund.navHistory[fund.navHistory.length - 1]?.date;
         if (firstDate && firstDate > gameDate) {
+          needsMigration = true;
+          break;
+        }
+        // 检测：最后一条历史数据不是当前游戏日期
+        if (lastDate && lastDate !== gameDate) {
           needsMigration = true;
           break;
         }
@@ -18644,7 +18785,8 @@ const SongApp = (function () {
     isInitialized,
     showToast,
     renderCurrentPage,
-    checkAndGenerateRealtimeEvents
+    checkAndGenerateRealtimeEvents,
+    migrateOldHistoryData
   };
 })();
 
