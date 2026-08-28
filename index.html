@@ -1178,6 +1178,34 @@ body::before {
   color: var(--color-bg-primary);
   flex-shrink: 0;
   box-shadow: 0 0 20px rgba(184, 150, 90, 0.2);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(184, 150, 90, 0.4);
+}
+
+.avatar-edit-hint {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--color-accent-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  font-size: 10px;
+}
+
+.profile-avatar:hover .avatar-edit-hint {
+  opacity: 1;
 }
 
 .profile-info {
@@ -16590,10 +16618,21 @@ const PageHeir = (function () {
 
       <!-- 个人信息卡片 -->
       <div class="card heir-profile">
-        <div class="profile-avatar">
-          <div class="avatar-placeholder">松</div>
+        <div class="profile-avatar" id="profile-avatar" style="cursor: pointer;" title="点击更换头像">
+          ${heir.avatar ? `
+            <img src="${heir.avatar}" alt="头像" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+          ` : `
+            <div class="avatar-placeholder">${heir.name?.charAt(0) || '松'}</div>
+          `}
           <div class="profile-level-badge">Lv.${levelInfo.level}</div>
+          <div class="avatar-edit-hint">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </div>
         </div>
+        <input type="file" id="avatar-input" accept="image/*" style="display: none;" />
         <div class="profile-info">
           <h2 class="profile-name">${heir.name}</h2>
           <p class="profile-title">${heir.title}</p>
@@ -16826,6 +16865,94 @@ const PageHeir = (function () {
         `}
       </div>
     `;
+
+    // 头像上传事件绑定
+    const avatarEl = document.getElementById('profile-avatar');
+    const avatarInput = document.getElementById('avatar-input');
+    if (avatarEl && avatarInput) {
+      avatarEl.addEventListener('click', () => {
+        avatarInput.click();
+      });
+
+      avatarInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // 验证文件类型
+        if (!file.type.startsWith('image/')) {
+          if (window.showToast) window.showToast('❌ 请选择图片文件');
+          return;
+        }
+
+        // 验证文件大小（最大2MB）
+        if (file.size > 2 * 1024 * 1024) {
+          if (window.showToast) window.showToast('❌ 图片大小不能超过2MB');
+          return;
+        }
+
+        // 显示加载提示
+        if (window.showToast) window.showToast('📷 正在上传头像...');
+
+        try {
+          // 读取图片为 base64
+          const reader = new FileReader();
+          reader.onload = async (event) => {
+            const base64 = event.target.result;
+
+            // 压缩图片（使用 canvas）
+            const img = new Image();
+            img.onload = async () => {
+              const canvas = document.createElement('canvas');
+              const maxSize = 256; // 最大尺寸256x256
+              let width = img.width;
+              let height = img.height;
+
+              if (width > height) {
+                if (width > maxSize) {
+                  height = height * (maxSize / width);
+                  width = maxSize;
+                }
+              } else {
+                if (height > maxSize) {
+                  width = width * (maxSize / height);
+                  height = maxSize;
+                }
+              }
+
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+
+              // 转换为 JPEG base64（质量0.8）
+              const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+
+              // 保存到 state
+              await SongState.update('heir.avatar', compressedBase64);
+
+              if (window.showToast) window.showToast('✅ 头像更新成功');
+
+              // 重新渲染页面
+              SongApp.renderCurrentPage();
+            };
+            img.onerror = () => {
+              if (window.showToast) window.showToast('❌ 图片处理失败，请重试');
+            };
+            img.src = base64;
+          };
+          reader.onerror = () => {
+            if (window.showToast) window.showToast('❌ 图片读取失败');
+          };
+          reader.readAsDataURL(file);
+        } catch (error) {
+          console.error('[Heir] 头像上传失败:', error);
+          if (window.showToast) window.showToast('❌ 头像上传失败，请重试');
+        }
+
+        // 清空 input，允许重复选择同一文件
+        avatarInput.value = '';
+      });
+    }
   }
 
   function renderAbility(name, value, description) {
@@ -17482,13 +17609,93 @@ const PageSettings = (function () {
       showToast('✅ 存档已导出');
     });
 
-    // 重置游戏
-    document.getElementById('reset-data')?.addEventListener('click', () => {
-      if (confirm('确定要重置游戏吗？所有进度将丢失，此操作不可撤销！')) {
-        SongState.reset();
-        showToast('✅ 游戏已重置');
-        setTimeout(() => location.reload(), 1000);
+    // 重置游戏（两次点击确认，避免原生confirm在webview中不工作）
+    let resetConfirmTimer = null;
+    const resetBtn = document.getElementById('reset-data');
+    resetBtn?.addEventListener('click', async () => {
+      // 如果已经在确认状态，执行重置
+      if (resetBtn.dataset.confirming === 'true') {
+        // 清除确认定时器
+        if (resetConfirmTimer) {
+          clearTimeout(resetConfirmTimer);
+          resetConfirmTimer = null;
+        }
+
+        // 显示全屏加载提示
+        const overlay = document.createElement('div');
+        overlay.id = 'reset-loading-overlay';
+        overlay.style.cssText = `
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0, 0, 0, 0.75);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 99999; backdrop-filter: blur(4px);
+        `;
+        overlay.innerHTML = `
+          <div style="
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            border-radius: 16px; padding: 32px 48px; text-align: center;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+          ">
+            <div style="
+              width: 40px; height: 40px;
+              border: 3px solid rgba(212, 175, 55, 0.2);
+              border-top-color: #d4af37; border-radius: 50%;
+              margin: 0 auto 16px; animation: spin 0.8s linear infinite;
+            "></div>
+            <div style="font-size: 16px; color: #d4af37; font-weight: 500; margin-bottom: 8px; font-family: 'Noto Serif SC', serif;">正在重置游戏...</div>
+            <div style="font-size: 12px; color: #888; font-family: 'Noto Serif SC', serif;">正在清除所有数据并恢复初始状态，请勿关闭页面</div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        // 延迟一帧让加载提示显示出来
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        try {
+          // 执行重置（await确保完成）
+          await SongState.reset();
+
+          // 显示成功提示
+          overlay.innerHTML = `
+            <div style="
+              background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+              border: 1px solid rgba(212, 175, 55, 0.5);
+              border-radius: 16px; padding: 32px 48px; text-align: center;
+              box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+            ">
+              <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
+              <div style="font-size: 16px; color: #d4af37; font-weight: 500; margin-bottom: 8px; font-family: 'Noto Serif SC', serif;">游戏已重置</div>
+              <div style="font-size: 12px; color: #888; font-family: 'Noto Serif SC', serif;">页面即将刷新...</div>
+            </div>
+          `;
+
+          // 1秒后刷新页面
+          setTimeout(() => location.reload(), 1000);
+        } catch (e) {
+          console.error('[Settings] 重置失败:', e);
+          overlay.remove();
+          if (window.showToast) window.showToast('❌ 重置失败，请重试');
+          // 恢复按钮状态
+          resetBtn.dataset.confirming = 'false';
+          resetBtn.textContent = '重置游戏';
+          resetBtn.classList.remove('btn-danger');
+        }
+        return;
       }
+
+      // 第一次点击：进入确认状态
+      resetBtn.dataset.confirming = 'true';
+      resetBtn.textContent = '⚠️ 再次点击确认重置（不可撤销）';
+      resetBtn.classList.add('btn-danger');
+
+      // 3秒后自动恢复
+      resetConfirmTimer = setTimeout(() => {
+        resetBtn.dataset.confirming = 'false';
+        resetBtn.textContent = '重置游戏';
+        resetBtn.classList.remove('btn-danger');
+        resetConfirmTimer = null;
+      }, 3000);
     });
 
     // 启用开关联动
