@@ -4712,11 +4712,18 @@ const SongSupabase = (function () {
     if (initialized) return available;
 
     try {
+      // 添加 3 秒超时，避免在 float 壳子或网络不好时卡住
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
       // 测试连接：尝试读取一条不存在的数据，不报错就说明可用
       const response = await fetch(`${API_BASE}/app_data?app_id=eq.${APP_ID}&limit=1`, {
         method: 'GET',
-        headers: getHeaders()
+        headers: getHeaders(),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         available = true;
@@ -4727,7 +4734,11 @@ const SongSupabase = (function () {
       }
     } catch (e) {
       available = false;
-      console.warn('[SongSupabase] 连接失败:', e.message);
+      if (e.name === 'AbortError') {
+        console.warn('[SongSupabase] 连接超时（3秒），降级到本地模式');
+      } else {
+        console.warn('[SongSupabase] 连接失败:', e.message);
+      }
     }
 
     initialized = true;
@@ -4871,13 +4882,20 @@ const SongSupabase = (function () {
     }
 
     try {
+      // 添加 5 秒超时
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
       const response = await fetch(
         `${API_BASE}/app_data?app_id=eq.${APP_ID}&select=data_key,data_value`,
         {
           method: 'GET',
-          headers: getHeaders()
+          headers: getHeaders(),
+          signal: controller.signal
         }
       );
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();
@@ -4891,7 +4909,11 @@ const SongSupabase = (function () {
         return result;
       }
     } catch (e) {
-      console.error('[SongSupabase] 批量读取失败:', e.message);
+      if (e.name === 'AbortError') {
+        console.warn('[SongSupabase] 批量读取超时，使用空数据启动');
+      } else {
+        console.error('[SongSupabase] 批量读取失败:', e.message);
+      }
     }
 
     return {};
@@ -7088,7 +7110,10 @@ const SongStockMarket = (function () {
       // 每日波动（beta 越大波动越大）
       const dailyChange = randomFloat(-3 * beta, 3 * beta) / 100;
       price = price * (1 + dailyChange);
-      price = clamp(price, 1, 500); // 价格范围限制
+      // 价格范围限制：根据当前价格动态设置，避免高价股被错误限制
+      const priceFloor = Math.max(0.1, currentPrice * 0.3);
+      const priceCeiling = currentPrice * 5;
+      price = clamp(price, priceFloor, priceCeiling);
 
       history.push({
         date: formatDate(date),
@@ -12635,6 +12660,18 @@ const SongApp = (function () {
     if (initialized) return;
 
     console.log('[SongApp] 松氏家族办公室启动中...');
+
+    // 显示加载状态
+    const appContent = document.getElementById('app-content');
+    if (appContent) {
+      appContent.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:16px;">
+          <div style="width:40px;height:40px;border:3px solid rgba(212,175,55,0.2);border-top-color:#d4af37;border-radius:50%;animation:spin 1s linear infinite;"></div>
+          <div style="color:var(--color-text-muted);font-size:14px;font-family:var(--font-serif);">正在启动松氏家族办公室...</div>
+        </div>
+        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+      `;
+    }
 
     try {
       // 0. 先绑定导航事件（确保即使后续初始化出错，导航也能工作）
