@@ -5735,6 +5735,7 @@ const SongFinance = (function () {
   function updateSubsidiariesDaily(subsidiaries, gameState) {
     const today = gameState.gameDate?.current || new Date().toISOString().split('T')[0];
     const heirAbilities = gameState.heir?.abilities || {};
+    const activeEffects = gameState.events?.activeEffects || [];
 
     return subsidiaries.map(sub => {
       // 慈善基金不参与经营波动
@@ -5768,6 +5769,18 @@ const SongFinance = (function () {
       if (sub.risk === 'high') {
         revenueChange += randomFloat(-5, 5);
         profitChange += randomFloat(-8, 8);
+      }
+
+      // ═══════════════════════════════════════════
+      // 决策效果影响（核心闭环：决策→效果→子公司数据）
+      // ═══════════════════════════════════════════
+      if (activeEffects.length > 0 && typeof SongEffects !== 'undefined') {
+        const modifiers = SongEffects.getSubsidiaryModifiers(activeEffects, sub.id);
+        revenueChange += modifiers.revenue || 0;
+        profitChange += modifiers.profit || 0;
+        satisfactionChange += modifiers.satisfaction || 0;
+        reputationChange += modifiers.reputation || 0;
+        revenueChange += modifiers.growth || 0;
       }
 
       // 计算新值
@@ -5960,6 +5973,477 @@ if (typeof window !== 'undefined') {
 }
 
 
+/* ===== js/modules/effects.js ===== */
+/**
+ * 松氏家族办公室 - 效果队列系统
+ * 管理决策的延迟效果、持续影响、连锁反应
+ * 建立"决策→效果→数据变化→后续事件"的完整闭环
+ */
+
+const SongEffects = (function () {
+  'use strict';
+
+  // ═══════════════════════════════════════════════
+  // 效果类型定义
+  // ═══════════════════════════════════════════════
+
+  const EFFECT_TYPES = {
+    // 即时效果
+    CASH_FLOW_IMMEDIATE: 'cash_flow_immediate',     // 即时现金流变化
+    HEIR_ABILITY: 'heir_ability',                     // 继承人能力变化
+
+    // 持续效果（影响子公司）
+    SUBSIDIARY_REVENUE: 'subsidiary_revenue',         // 子公司营收变化（%）
+    SUBSIDIARY_PROFIT: 'subsidiary_profit',           // 子公司利润变化（%）
+    SUBSIDIARY_SATISFACTION: 'subsidiary_satisfaction', // 子公司员工满意度变化
+    SUBSIDIARY_REPUTATION: 'subsidiary_reputation',   // 子公司声誉变化
+    SUBSIDIARY_GROWTH: 'subsidiary_growth',           // 子公司增长率变化
+
+    // 持续效果（全局）
+    MARKET_SENTIMENT: 'market_sentiment',             // 市场情绪（影响所有股票）
+    GROUP_EFFICIENCY: 'group_efficiency',             // 集团整体效率
+
+    // 延迟触发（一次性）
+    DELAYED_CASH_FLOW: 'delayed_cash_flow',           // 延迟现金流变化
+    DELAYED_EVENT: 'delayed_event',                    // 延迟触发新事件
+  };
+
+  // 效果目标
+  const EFFECT_TARGETS = {
+    GLOBAL: 'global',           // 全局
+    ALL_SUBSIDIARIES: 'all',    // 所有子公司
+    SPECIFIC: 'specific',       // 指定子公司
+  };
+
+  // ═══════════════════════════════════════════════
+  // 工具函数
+  // ═══════════════════════════════════════════════
+
+  function generateId() {
+    return 'effect_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  }
+
+  function formatDate(date) {
+    const d = new Date(date);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function addDays(dateStr, days) {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() + days);
+    return formatDate(d);
+  }
+
+  function daysBetween(date1, date2) {
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    return Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
+  }
+
+  // ═══════════════════════════════════════════════
+  // 效果创建
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 创建一个效果
+   * @param {Object} config - 效果配置
+   * @param {string} config.sourceEventId - 关联的决策事件ID
+   * @param {string} config.sourceOption - 选择的选项标签
+   * @param {string} config.type - 效果类型
+   * @param {string} config.target - 影响目标（子公司ID或'global'/'all'）
+   * @param {number} config.value - 影响数值
+   * @param {number} config.duration - 持续天数（0=即时）
+   * @param {number} config.delay - 延迟生效天数（0=立即）
+   * @param {string} config.description - 效果描述
+   * @param {string} config.currentDate - 当前游戏日期
+   * @returns {Object} 效果对象
+   */
+  function createEffect(config) {
+    const currentDate = config.currentDate || formatDate(new Date());
+    const startDate = addDays(currentDate, config.delay || 0);
+
+    return {
+      id: generateId(),
+      sourceEventId: config.sourceEventId || null,
+      sourceOption: config.sourceOption || '',
+      type: config.type,
+      target: config.target || EFFECT_TARGETS.GLOBAL,
+      value: config.value || 0,
+      duration: config.duration || 0,
+      remainingDays: config.duration || 0,
+      delay: config.delay || 0,
+      startDate,
+      endDate: config.duration > 0 ? addDays(startDate, config.duration) : startDate,
+      status: config.delay > 0 ? 'pending' : 'active',
+      description: config.description || '',
+      createdAt: currentDate,
+      applied: false,
+      history: []  // 效果应用历史
+    };
+  }
+
+  /**
+   * 从事件选项的 effects 配置批量创建效果
+   * @param {Object} optionEffects - 选项的 effects 配置
+   * @param {string} sourceEventId - 事件ID
+   * @param {string} sourceOption - 选项标签
+   * @param {string} currentDate - 当前日期
+   * @param {Object} gameState - 当前游戏状态（用于推断目标子公司）
+   * @returns {Array} 效果对象数组
+   */
+  function createEffectsFromOption(optionEffects, sourceEventId, sourceOption, currentDate, gameState) {
+    const effects = [];
+    if (!optionEffects) return effects;
+
+    // 推断事件关联的子公司
+    let targetSubsidiary = optionEffects.targetSubsidiary || null;
+    if (!targetSubsidiary && gameState.subsidiaries && gameState.subsidiaries.length > 0) {
+      // 如果事件有子公司信息，用事件的；否则随机选一个
+      targetSubsidiary = EFFECT_TARGETS.ALL;
+    }
+
+    // 即时现金流
+    if (optionEffects.cashFlow) {
+      effects.push(createEffect({
+        sourceEventId,
+        sourceOption,
+        type: EFFECT_TYPES.CASH_FLOW_IMMEDIATE,
+        target: EFFECT_TARGETS.GLOBAL,
+        value: optionEffects.cashFlow * 10000000, // 每单位=1000万
+        duration: 0,
+        delay: 0,
+        description: `${sourceOption}：现金流${optionEffects.cashFlow > 0 ? '增加' : '减少'}${Math.abs(optionEffects.cashFlow)}千万`,
+        currentDate
+      }));
+    }
+
+    // 继承人能力
+    const abilityMap = {
+      business: 'business',
+      decision: 'decision',
+      influence: 'influence',
+      reputation: 'reputation',
+      familyTrust: 'familyTrust',
+      employeeTrust: 'employeeTrust',
+      riskJudgment: 'riskJudgment'
+    };
+
+    for (const [key, abilityKey] of Object.entries(abilityMap)) {
+      if (optionEffects[key]) {
+        effects.push(createEffect({
+          sourceEventId,
+          sourceOption,
+          type: EFFECT_TYPES.HEIR_ABILITY,
+          target: abilityKey,
+          value: optionEffects[key],
+          duration: 0,
+          delay: 0,
+          description: `${sourceOption}：${getAbilityName(abilityKey)}${optionEffects[key] > 0 ? '+' : ''}${optionEffects[key]}`,
+          currentDate
+        }));
+      }
+    }
+
+    // 子公司持续效果（新格式）
+    if (optionEffects.subsidiaryEffects) {
+      for (const subEffect of optionEffects.subsidiaryEffects) {
+        effects.push(createEffect({
+          sourceEventId,
+          sourceOption,
+          type: subEffect.type,
+          target: subEffect.target || targetSubsidiary || EFFECT_TARGETS.ALL,
+          value: subEffect.value,
+          duration: subEffect.duration || 30,
+          delay: subEffect.delay || 0,
+          description: subEffect.description || `${sourceOption}：${getEffectTypeName(subEffect.type)}${subEffect.value > 0 ? '+' : ''}${subEffect.value}%`,
+          currentDate
+        }));
+      }
+    }
+
+    // 延迟现金流
+    if (optionEffects.delayedCashFlow) {
+      for (const delayed of optionEffects.delayedCashFlow) {
+        effects.push(createEffect({
+          sourceEventId,
+          sourceOption,
+          type: EFFECT_TYPES.DELAYED_CASH_FLOW,
+          target: EFFECT_TARGETS.GLOBAL,
+          value: delayed.value * 10000000,
+          duration: 0,
+          delay: delayed.delay || 7,
+          description: delayed.description || `${sourceOption}：${delayed.delay || 7}天后现金流${delayed.value > 0 ? '增加' : '减少'}${Math.abs(delayed.value)}千万`,
+          currentDate
+        }));
+      }
+    }
+
+    return effects;
+  }
+
+  // ═══════════════════════════════════════════════
+  // 效果名称映射
+  // ═══════════════════════════════════════════════
+
+  function getAbilityName(key) {
+    const names = {
+      business: '商业能力',
+      decision: '决策能力',
+      influence: '资本影响力',
+      reputation: '市场声誉',
+      familyTrust: '家族信任度',
+      employeeTrust: '员工信任度',
+      riskJudgment: '风险判断能力'
+    };
+    return names[key] || key;
+  }
+
+  function getEffectTypeName(type) {
+    const names = {
+      [EFFECT_TYPES.SUBSIDIARY_REVENUE]: '营收',
+      [EFFECT_TYPES.SUBSIDIARY_PROFIT]: '利润',
+      [EFFECT_TYPES.SUBSIDIARY_SATISFACTION]: '员工满意度',
+      [EFFECT_TYPES.SUBSIDIARY_REPUTATION]: '声誉',
+      [EFFECT_TYPES.SUBSIDIARY_GROWTH]: '增长率',
+      [EFFECT_TYPES.MARKET_SENTIMENT]: '市场情绪',
+      [EFFECT_TYPES.GROUP_EFFICIENCY]: '集团效率'
+    };
+    return names[type] || type;
+  }
+
+  // ═══════════════════════════════════════════════
+  // 每日效果结算
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 每日效果结算：处理效果队列，应用生效中的效果
+   * @param {Object} gameState - 当前游戏状态
+   * @returns {Object} 包含更新后的状态和今日应用的效果
+   */
+  function processDailyEffects(gameState) {
+    const currentDate = gameState.gameDate?.current || formatDate(new Date());
+    const activeEffects = gameState.events?.activeEffects || [];
+    const appliedToday = [];
+    let stateChanges = {};
+
+    const updatedEffects = activeEffects.map(effect => {
+      const e = { ...effect };
+
+      // 检查是否到了生效时间
+      if (e.status === 'pending' && e.startDate <= currentDate) {
+        e.status = 'active';
+        e.applied = false;
+      }
+
+      // 处理活跃效果
+      if (e.status === 'active') {
+        // 即时效果（只应用一次）
+        if (e.duration === 0 && !e.applied) {
+          const result = applyImmediateEffect(e, gameState);
+          stateChanges = { ...stateChanges, ...result };
+          e.applied = true;
+          e.status = 'expired';
+          appliedToday.push({ ...e, appliedDate: currentDate });
+        }
+        // 持续效果（每天应用）
+        else if (e.duration > 0) {
+          const result = applyOngoingEffect(e, gameState);
+          stateChanges = { ...stateChanges, ...result };
+          e.remainingDays = Math.max(0, e.remainingDays - 1);
+          e.history.push({ date: currentDate, applied: true });
+          appliedToday.push({ ...e, appliedDate: currentDate });
+
+          if (e.remainingDays <= 0) {
+            e.status = 'expired';
+          }
+        }
+      }
+
+      return e;
+    }).filter(e => e.status !== 'expired' || e.history.length > 0);
+    // 保留已过期但有历史的效果（用于追踪），但限制数量
+    const expiredWithHistory = updatedEffects.filter(e => e.status === 'expired');
+    const activeOrPending = updatedEffects.filter(e => e.status !== 'expired');
+    const finalEffects = [...activeOrPending, ...expiredWithHistory.slice(-50)];
+
+    return {
+      effects: finalEffects,
+      stateChanges,
+      appliedToday
+    };
+  }
+
+  /**
+   * 应用即时效果
+   */
+  function applyImmediateEffect(effect, gameState) {
+    const changes = {};
+
+    switch (effect.type) {
+      case EFFECT_TYPES.CASH_FLOW_IMMEDIATE:
+      case EFFECT_TYPES.DELAYED_CASH_FLOW: {
+        const currentCash = gameState.company?.cashFlow || 0;
+        changes['company.cashFlow'] = Math.max(0, currentCash + effect.value);
+        break;
+      }
+      case EFFECT_TYPES.HEIR_ABILITY: {
+        const abilityKey = effect.target;
+        const current = gameState.heir?.abilities?.[abilityKey] || 50;
+        changes[`heir.abilities.${abilityKey}`] = Math.min(100, Math.max(0, current + effect.value));
+        break;
+      }
+    }
+
+    return changes;
+  }
+
+  /**
+   * 应用持续效果（返回对子公司的修正值，由 finance 模块应用）
+   */
+  function applyOngoingEffect(effect, gameState) {
+    // 持续效果不直接修改状态，而是返回修正因子
+    // 由 finance 模块在更新子公司时读取并应用
+    return {
+      _effectModifiers: [{
+        type: effect.type,
+        target: effect.target,
+        value: effect.value,
+        effectId: effect.id
+      }]
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  // 效果查询
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 获取某个事件产生的所有效果
+   * @param {Array} effects - 所有效果
+   * @param {string} eventId - 事件ID
+   * @returns {Array} 该事件的效果列表
+   */
+  function getEffectsByEvent(effects, eventId) {
+    return (effects || []).filter(e => e.sourceEventId === eventId);
+  }
+
+  /**
+   * 获取当前活跃的效果
+   */
+  function getActiveEffects(effects) {
+    return (effects || []).filter(e => e.status === 'active');
+  }
+
+  /**
+   * 获取待生效的效果
+   */
+  function getPendingEffects(effects) {
+    return (effects || []).filter(e => e.status === 'pending');
+  }
+
+  /**
+   * 获取影响某个子公司的所有活跃效果
+   */
+  function getEffectsForSubsidiary(effects, subsidiaryId) {
+    return (effects || []).filter(e =>
+      e.status === 'active' &&
+      (e.target === subsidiaryId || e.target === EFFECT_TARGETS.ALL)
+    );
+  }
+
+  /**
+   * 计算子公司的效果修正值
+   * @param {Array} effects - 所有效果
+   * @param {string} subsidiaryId - 子公司ID
+   * @returns {Object} 各类型的修正值
+   */
+  function getSubsidiaryModifiers(effects, subsidiaryId) {
+    const modifiers = {
+      revenue: 0,
+      profit: 0,
+      satisfaction: 0,
+      reputation: 0,
+      growth: 0
+    };
+
+    const relevant = getEffectsForSubsidiary(effects, subsidiaryId);
+
+    for (const effect of relevant) {
+      switch (effect.type) {
+        case EFFECT_TYPES.SUBSIDIARY_REVENUE:
+          modifiers.revenue += effect.value;
+          break;
+        case EFFECT_TYPES.SUBSIDIARY_PROFIT:
+          modifiers.profit += effect.value;
+          break;
+        case EFFECT_TYPES.SUBSIDIARY_SATISFACTION:
+          modifiers.satisfaction += effect.value;
+          break;
+        case EFFECT_TYPES.SUBSIDIARY_REPUTATION:
+          modifiers.reputation += effect.value;
+          break;
+        case EFFECT_TYPES.SUBSIDIARY_GROWTH:
+          modifiers.growth += effect.value;
+          break;
+      }
+    }
+
+    return modifiers;
+  }
+
+  /**
+   * 格式化效果用于展示
+   */
+  function formatEffectForDisplay(effect) {
+    const statusText = {
+      pending: '待生效',
+      active: '生效中',
+      expired: '已结束'
+    };
+
+    return {
+      id: effect.id,
+      description: effect.description,
+      type: effect.type,
+      typeName: getEffectTypeName(effect.type),
+      target: effect.target,
+      value: effect.value,
+      status: effect.status,
+      statusText: statusText[effect.status] || effect.status,
+      startDate: effect.startDate,
+      endDate: effect.endDate,
+      remainingDays: effect.remainingDays,
+      sourceOption: effect.sourceOption
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  // 公开 API
+  // ═══════════════════════════════════════════════
+
+  return {
+    EFFECT_TYPES,
+    EFFECT_TARGETS,
+    createEffect,
+    createEffectsFromOption,
+    processDailyEffects,
+    getEffectsByEvent,
+    getActiveEffects,
+    getPendingEffects,
+    getEffectsForSubsidiary,
+    getSubsidiaryModifiers,
+    formatEffectForDisplay,
+    getAbilityName,
+    getEffectTypeName
+  };
+})();
+
+// 挂载到全局
+if (typeof window !== 'undefined') {
+  window.SongEffects = SongEffects;
+}
+
+
 /* ===== js/modules/events.js ===== */
 /**
  * 松氏家族办公室 - 事件生成系统
@@ -6041,12 +6525,27 @@ const SongEvents = (function () {
         {
           label: '批准预算',
           description: '全额批准部门预算申请',
-          effects: { cashFlow: -1, employeeTrust: 2, department: 'positive' }
+          effects: {
+            cashFlow: -1,
+            employeeTrust: 2,
+            department: 'positive',
+            subsidiaryEffects: [
+              { type: 'subsidiary_revenue', target: 'all', value: 1.5, duration: 60, delay: 7, description: '预算充足，部门运营效率提升，营收增长1.5%（持续60天）' },
+              { type: 'subsidiary_satisfaction', target: 'all', value: 2, duration: 30, delay: 0, description: '预算获批，员工满意度提升2点（持续30天）' }
+            ]
+          }
         },
         {
           label: '削减10%',
           description: '在申请基础上削减10%',
-          effects: { cashFlow: 0.5, employeeTrust: -3, department: 'neutral' }
+          effects: {
+            cashFlow: 0.5,
+            employeeTrust: -3,
+            department: 'neutral',
+            subsidiaryEffects: [
+              { type: 'subsidiary_satisfaction', target: 'all', value: -3, duration: 45, delay: 0, description: '预算削减，员工满意度下降3点（持续45天）' }
+            ]
+          }
         },
         {
           label: '要求重新提交',
@@ -6072,7 +6571,19 @@ const SongEvents = (function () {
         {
           label: '批准拨付',
           description: '批准资金申请，全额拨付',
-          effects: { cashFlow: -2, potentialReturn: 'positive', risk: 'increase' }
+          effects: {
+            cashFlow: -2,
+            potentialReturn: 'positive',
+            risk: 'increase',
+            subsidiaryEffects: [
+              { type: 'subsidiary_revenue', target: 'all', value: 2, duration: 90, delay: 14, description: '资金到位，项目推进，营收增长2%（持续90天，14天后生效）' },
+              { type: 'subsidiary_profit', target: 'all', value: 1.5, duration: 90, delay: 30, description: '项目见效，利润提升1.5%（持续90天，30天后生效）' },
+              { type: 'subsidiary_growth', target: 'all', value: 1, duration: 60, delay: 7, description: '新业务拓展，增长率提升1%（持续60天）' }
+            ],
+            delayedCashFlow: [
+              { value: 3, delay: 60, description: '项目投资回报，60天后现金流增加3千万' }
+            ]
+          }
         },
         {
           label: '暂缓决策',
@@ -6082,7 +6593,13 @@ const SongEvents = (function () {
         {
           label: '削减50%',
           description: '只批准一半资金，分阶段拨付',
-          effects: { cashFlow: -1, risk: 'neutral' }
+          effects: {
+            cashFlow: -1,
+            risk: 'neutral',
+            subsidiaryEffects: [
+              { type: 'subsidiary_revenue', target: 'all', value: 1, duration: 90, delay: 21, description: '资金减半，效果打折，营收增长1%（持续90天）' }
+            ]
+          }
         },
         {
           label: '召开投资会议',
@@ -6102,17 +6619,41 @@ const SongEvents = (function () {
         {
           label: '全额发放',
           description: '全额批准奖金申请',
-          effects: { cashFlow: -1, employeeTrust: 5, reputation: 1 }
+          effects: {
+            cashFlow: -1,
+            employeeTrust: 5,
+            reputation: 1,
+            subsidiaryEffects: [
+              { type: 'subsidiary_satisfaction', target: 'all', value: 5, duration: 60, delay: 0, description: '奖金全额发放，员工士气大振，满意度提升5点（持续60天）' },
+              { type: 'subsidiary_revenue', target: 'all', value: 1, duration: 45, delay: 14, description: '员工积极性提升，营收增长1%（持续45天）' },
+              { type: 'subsidiary_reputation', target: 'all', value: 2, duration: 30, delay: 7, description: '善待员工的口碑传播，声誉提升2点（持续30天）' }
+            ]
+          }
         },
         {
           label: '发放80%',
           description: '发放申请金额的80%，剩余与年终绩效挂钩',
-          effects: { cashFlow: -0.5, employeeTrust: 2 }
+          effects: {
+            cashFlow: -0.5,
+            employeeTrust: 2,
+            subsidiaryEffects: [
+              { type: 'subsidiary_satisfaction', target: 'all', value: 2, duration: 45, delay: 0, description: '奖金发放80%，满意度提升2点（持续45天）' }
+            ]
+          }
         },
         {
           label: '暂缓发放',
           description: '考虑到当前现金流状况，暂缓发放',
-          effects: { cashFlow: 1, employeeTrust: -8, reputation: -2 }
+          effects: {
+            cashFlow: 1,
+            employeeTrust: -8,
+            reputation: -2,
+            subsidiaryEffects: [
+              { type: 'subsidiary_satisfaction', target: 'all', value: -8, duration: 90, delay: 0, description: '奖金暂缓发放，员工严重不满，满意度下降8点（持续90天）' },
+              { type: 'subsidiary_revenue', target: 'all', value: -1.5, duration: 60, delay: 14, description: '员工消极怠工，营收下降1.5%（持续60天）' },
+              { type: 'subsidiary_reputation', target: 'all', value: -3, duration: 60, delay: 7, description: '负面口碑扩散，声誉下降3点（持续60天）' }
+            ]
+          }
         }
       ]
     },
@@ -6613,17 +7154,32 @@ const SongEvents = (function () {
       return { success: false, error: '无效的选项' };
     }
 
+    const currentDate = gameState.gameDate?.current || formatDate(new Date());
+
     // 更新事件状态
     event.status = 'processed';
     event.selectedOption = optionIndex;
-    event.processedDate = gameState.gameDate?.current || formatDate(new Date());
+    event.processedDate = currentDate;
     event.effects = option.effects;
 
     // 从待办移到历史
     const newPending = events.filter(e => e.id !== eventId);
     const newHistory = [event, ...(gameState.events?.history || [])];
 
-    // 应用即时影响
+    // 使用新的效果系统创建效果（支持延迟效果、子公司影响、连锁反应）
+    const newEffects = SongEffects.createEffectsFromOption(
+      option.effects,
+      event.id,
+      option.label,
+      currentDate,
+      gameState
+    );
+
+    // 合并到现有效果队列
+    const existingEffects = gameState.events?.activeEffects || [];
+    const updatedEffects = [...existingEffects, ...newEffects];
+
+    // 应用即时效果（保持向后兼容，即时效果立即生效）
     const stateChanges = applyImmediateEffects(option.effects, gameState);
 
     return {
@@ -6632,7 +7188,9 @@ const SongEvents = (function () {
       option,
       stateChanges,
       newPending,
-      newHistory
+      newHistory,
+      newEffects: updatedEffects,
+      createdEffects: newEffects
     };
   }
 
@@ -9509,18 +10067,24 @@ const PageTasks = (function () {
     );
 
     if (result.success) {
-      // 更新状态
+      // 更新状态（包含效果队列）
       const updates = {
         'events.pending': result.newPending,
         'events.history': result.newHistory,
+        'events.activeEffects': result.newEffects,
         ...result.stateChanges
       };
 
       await SongState.batchUpdate(updates);
 
-      // 显示结果提示
+      // 显示结果提示（包含创建的效果数量）
       const option = result.option;
-      SongApp.showToast(`决策已执行：${option.label}`);
+      const effectCount = result.createdEffects ? result.createdEffects.length : 0;
+      if (effectCount > 0) {
+        SongApp.showToast(`决策已执行：${option.label}（产生 ${effectCount} 项影响）`);
+      } else {
+        SongApp.showToast(`决策已执行：${option.label}`);
+      }
 
       // 返回列表
       currentDetailEvent = null;
@@ -10804,14 +11368,27 @@ const PageMarket = (function () {
       return;
     }
 
-    // 更新状态
-    await SongState.batchUpdate({
+    // 更新状态（投资收益计入总资产）
+    const updates = {
       'portfolio': result.portfolio,
       'company.cashFlow': result.cashFlow
-    });
+    };
+
+    // 卖出时，已实现盈亏计入总资产
+    if (tradeModal.type === 'sell' && result.profit !== undefined) {
+      const currentTotalAssets = company.totalAssets || 0;
+      updates['company.totalAssets'] = currentTotalAssets + result.profit;
+    }
+
+    await SongState.batchUpdate(updates);
 
     const action = tradeModal.type === 'buy' ? '买入' : '卖出';
-    SongApp.showToast(`${action}成功！${tradeModal.shares} 股 ${stock.name}`);
+    let toastMsg = `${action}成功！${tradeModal.shares} 股 ${stock.name}`;
+    if (tradeModal.type === 'sell' && result.profit !== undefined) {
+      const profitText = result.profit >= 0 ? `盈利 ${formatMoney(result.profit)}` : `亏损 ${formatMoney(Math.abs(result.profit))}`;
+      toastMsg += `（${profitText}）`;
+    }
+    SongApp.showToast(toastMsg);
 
     // 关闭弹窗
     tradeModal = null;
@@ -11626,14 +12203,27 @@ const PageInvestment = (function () {
       return;
     }
 
-    // 更新状态
-    await SongState.batchUpdate({
+    // 更新状态（投资收益计入总资产）
+    const updates = {
       'fundPortfolio': result.portfolio,
       'company.cashFlow': result.cashFlow
-    });
+    };
+
+    // 卖出时，已实现盈亏计入总资产
+    if (fundTradeModal.type === 'sell' && result.profit !== undefined) {
+      const currentTotalAssets = company.totalAssets || 0;
+      updates['company.totalAssets'] = currentTotalAssets + result.profit;
+    }
+
+    await SongState.batchUpdate(updates);
 
     const action = fundTradeModal.type === 'buy' ? '买入' : '卖出';
-    SongApp.showToast(`${action}成功！${fund.name}`);
+    let toastMsg = `${action}成功！${fund.name}`;
+    if (fundTradeModal.type === 'sell' && result.profit !== undefined) {
+      const profitText = result.profit >= 0 ? `盈利 ${formatMoney(result.profit)}` : `亏损 ${formatMoney(Math.abs(result.profit))}`;
+      toastMsg += `（${profitText}）`;
+    }
+    SongApp.showToast(toastMsg);
 
     fundTradeModal = null;
     render(document.getElementById('app-content'));
@@ -13155,7 +13745,34 @@ const SongApp = (function () {
     const state = SongState.getState();
     const currentDate = SongDate.getCurrentDate();
 
-    // 1. 更新子公司数据 + 计算集团财务
+    // 0. 处理效果队列（决策的延迟效果、持续效果在此生效）
+    let effectResult = { effects: state.events?.activeEffects || [], stateChanges: {}, appliedToday: [] };
+    try {
+      if (typeof SongEffects !== 'undefined') {
+        effectResult = SongEffects.processDailyEffects(state);
+        console.log(`[SongApp] 效果队列处理：今日生效 ${effectResult.appliedToday.length} 个效果`);
+      }
+    } catch (e) {
+      console.warn('[SongApp] 效果队列处理失败:', e);
+    }
+
+    // 应用效果产生的即时状态变化（现金流、能力值等）
+    if (effectResult.stateChanges) {
+      for (const [key, value] of Object.entries(effectResult.stateChanges)) {
+        if (key.startsWith('company.')) {
+          const companyKey = key.replace('company.', '');
+          state.company = state.company || {};
+          state.company[companyKey] = value;
+        } else if (key.startsWith('heir.abilities.')) {
+          const abilityKey = key.replace('heir.abilities.', '');
+          state.heir = state.heir || {};
+          state.heir.abilities = state.heir.abilities || {};
+          state.heir.abilities[abilityKey] = value;
+        }
+      }
+    }
+
+    // 1. 更新子公司数据 + 计算集团财务（子公司更新会读取效果队列）
     const settlementResult = SongFinance.dailySettlement(state);
 
     // 2. 更新股票市场
@@ -13197,7 +13814,7 @@ const SongApp = (function () {
       }
     }
 
-    // 6. 更新状态
+    // 6. 更新状态（包含效果队列）
     await SongState.batchUpdate({
       'subsidiaries': settlementResult.subsidiaries,
       'company': settlementResult.company,
@@ -13205,6 +13822,7 @@ const SongApp = (function () {
       'funds': updatedFunds,
       'heir.milestones': milestoneResult.allMilestones,
       'heir.abilities': updatedAbilities,
+      'events.activeEffects': effectResult.effects,
       'lastSettlementDate': currentDate
     });
 
@@ -13212,12 +13830,12 @@ const SongApp = (function () {
     if (milestoneResult.newMilestones.length > 0) {
       milestoneResult.newMilestones.forEach((m, i) => {
         setTimeout(() => {
-          showToast(`🎉 解锁里程碑：${m.title}`);
+          showToast(`解锁里程碑：${m.title}`);
         }, i * 1500);
       });
     }
 
-    console.log(`[SongApp] 每日结算完成：子公司数据已更新，股票市场已更新，基金净值已更新，里程碑检查完成（新解锁 ${milestoneResult.newMilestones.length} 个）`);
+    console.log(`[SongApp] 每日结算完成：子公司数据已更新，股票市场已更新，基金净值已更新，效果队列已处理（今日生效 ${effectResult.appliedToday.length} 个），里程碑检查完成（新解锁 ${milestoneResult.newMilestones.length} 个）`);
   }
 
   /**
