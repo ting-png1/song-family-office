@@ -4233,6 +4233,816 @@ body::before {
   border-left: 3px solid #f1c40f;
 }
 
+/* ═══════════ 第三阶段：股票市场真实化样式 ═══════════ */
+
+/* 通用涨跌颜色（A股红涨绿跌，港股美股绿涨红跌） */
+.stock-up-cn { color: #e74c3c !important; }
+.stock-down-cn { color: #27ae60 !important; }
+.stock-up-global { color: #27ae60 !important; }
+.stock-down-global { color: #e74c3c !important; }
+
+/* 交易警告 */
+.trade-warning {
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin: 8px 0;
+  font-size: 12px;
+  color: #e74c3c;
+  text-align: center;
+}
+
+/* T+1 标签 */
+.t1-tag {
+  font-size: 10px;
+  padding: 1px 5px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* 已实现盈亏 */
+.portfolio-realized {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* 交易记录列表 */
+.trade-records-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trade-record-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+}
+
+.trade-record-item:hover {
+  border-color: var(--color-accent-gold);
+}
+
+.record-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.record-type {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  min-width: 40px;
+  text-align: center;
+}
+
+.record-type.buy {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+.record-type.sell {
+  background: rgba(39, 174, 96, 0.15);
+  color: #27ae60;
+}
+
+.record-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.record-meta {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════════
+   第四阶段：财务三表与资产配置样式
+   ═══════════════════════════════════════════════ */
+
+/* 财务总览卡片 */
+.financial-overview-card {
+  margin-bottom: var(--spacing-lg);
+}
+
+.financial-ratios-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ratio-item {
+  text-align: center;
+  padding: var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.ratio-value {
+  font-size: 22px;
+  font-weight: 600;
+  font-family: 'Cormorant Garamond', serif;
+  color: var(--color-accent-gold);
+  margin-bottom: 4px;
+}
+
+.ratio-value.positive { color: #27ae60; }
+.ratio-value.negative { color: #e74c3c; }
+.ratio-value.warning { color: #f39c12; }
+
+.ratio-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+/* 三表摘要网格 */
+.financial-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.summary-section {
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+}
+
+.summary-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent-gold);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.summary-row span:first-child {
+  color: var(--color-text-secondary);
+}
+
+.summary-row .gold { color: var(--color-accent-gold); font-weight: 600; }
+.summary-row .positive { color: #27ae60; }
+.summary-row .negative { color: #e74c3c; }
+
+/* 资产配置建议 */
+.financial-suggestions {
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+}
+
+.suggestions-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent-gold);
+  margin-bottom: var(--spacing-sm);
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.suggestion-icon {
+  flex-shrink: 0;
+}
+
+.suggestion-text {
+  flex: 1;
+}
+
+/* 财务三表弹窗 */
+.financial-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+.financial-modal {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-accent-gold);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 900px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.financial-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.financial-modal-header h2 {
+  font-size: 18px;
+  color: var(--color-accent-gold);
+  margin: 0;
+  font-family: 'Noto Serif SC', serif;
+}
+
+.financial-modal-close {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 8px;
+  line-height: 1;
+}
+
+.financial-modal-close:hover {
+  color: var(--color-text-primary);
+}
+
+.financial-modal-tabs {
+  display: flex;
+  gap: 4px;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+}
+
+.fin-tab {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  padding: 6px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+
+.fin-tab:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-hover);
+}
+
+.fin-tab.active {
+  color: var(--color-accent-gold);
+  background: rgba(184, 150, 90, 0.1);
+  font-weight: 600;
+}
+
+.financial-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+.fin-panel {
+  display: none;
+}
+
+.fin-panel.active {
+  display: block;
+}
+
+/* 财务表格 */
+.financial-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.financial-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--color-bg-secondary);
+  color: var(--color-accent-gold);
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-accent-gold);
+}
+
+.financial-table th.num {
+  text-align: right;
+}
+
+.financial-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.financial-table td.num {
+  text-align: right;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.financial-table .fin-section td {
+  background: var(--color-bg-secondary);
+  color: var(--color-accent-gold);
+  font-weight: 600;
+  padding-top: 12px;
+}
+
+.financial-table .fin-subtotal td {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  border-top: 1px solid var(--color-border);
+}
+
+.financial-table .fin-total td {
+  font-weight: 700;
+  font-size: 14px;
+  background: rgba(184, 150, 90, 0.08);
+  border-top: 2px solid var(--color-accent-gold);
+}
+
+.financial-table .fin-check td {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  padding-top: 12px;
+}
+
+.financial-table .gold { color: var(--color-accent-gold); }
+.financial-table .positive { color: #27ae60; }
+.financial-table .negative { color: #e74c3c; }
+
+/* 财务比率卡片网格 */
+.ratios-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+}
+
+.ratio-card {
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+}
+
+.ratio-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-accent-gold);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ratio-card-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 12px;
+}
+
+.ratio-card-item span:first-child {
+  color: var(--color-text-secondary);
+}
+
+.ratio-card-item .gold { color: var(--color-accent-gold); font-weight: 600; }
+.ratio-card-item .positive { color: #27ae60; }
+.ratio-card-item .negative { color: #e74c3c; }
+.ratio-card-item .warning { color: #f39c12; }
+
+.ratio-rating {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--color-bg-hover);
+  color: var(--color-text-muted);
+}
+
+/* 子公司三表简化版 */
+.sub-financials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+}
+
+.sub-fin-section {
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+}
+
+.sub-fin-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent-gold);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sub-fin-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.sub-fin-row span:first-child {
+  color: var(--color-text-secondary);
+}
+
+.sub-fin-row .gold { color: var(--color-accent-gold); font-weight: 600; }
+.sub-fin-row .positive { color: #27ae60; }
+.sub-fin-row .negative { color: #e74c3c; }
+.sub-fin-row .warning { color: #f39c12; }
+
+.sub-fin-total {
+  border-top: 1px solid var(--color-border);
+  margin-top: 4px;
+  padding-top: 6px;
+  font-weight: 600;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .financial-ratios-grid,
+  .financial-summary-grid,
+  .ratios-grid,
+  .sub-financials-grid {
+    grid-template-columns: 1fr;
+  }
+  .financial-modal {
+    width: 95%;
+    max-height: 90vh;
+  }
+  .financial-table {
+    font-size: 11px;
+  }
+  .financial-table th,
+  .financial-table td {
+    padding: 6px 8px;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   第五阶段：继承人成长系统样式
+   ═══════════════════════════════════════════════ */
+
+/* 等级徽章 */
+.profile-level-badge {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background: linear-gradient(135deg, #b8965a, #d4af37);
+  color: #0a0a0a;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 2px solid var(--color-bg-card);
+  font-family: 'Cormorant Garamond', serif;
+}
+
+/* 经验条 */
+.exp-bar-container {
+  margin-top: 12px;
+}
+
+.exp-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+.exp-bar {
+  height: 8px;
+  background: var(--color-bg-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.exp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #b8965a, #d4af37);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* 技能系统 */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.skill-card {
+  display: flex;
+  gap: 12px;
+  padding: var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  transition: all 0.2s;
+}
+
+.skill-card.unlocked {
+  border-color: rgba(184, 150, 90, 0.4);
+  background: rgba(184, 150, 90, 0.05);
+}
+
+.skill-card.available {
+  border-style: dashed;
+}
+
+.skill-card.available.locked {
+  opacity: 0.6;
+}
+
+.skill-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-sm);
+}
+
+.skill-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.skill-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skill-cost {
+  font-size: 11px;
+  color: var(--color-accent-gold);
+  background: rgba(184, 150, 90, 0.15);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.skill-desc {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.skill-unlock-btn {
+  font-size: 11px;
+  padding: 4px 12px;
+}
+
+.skills-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: var(--spacing-md) 0 var(--spacing-sm);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.empty-state-small {
+  text-align: center;
+  padding: var(--spacing-lg);
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+/* 长期目标 */
+.goals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.goal-card {
+  display: flex;
+  gap: 12px;
+  padding: var(--spacing-md);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  position: relative;
+  transition: all 0.2s;
+}
+
+.goal-card.completed {
+  border-color: rgba(39, 174, 96, 0.4);
+  background: rgba(39, 174, 96, 0.05);
+}
+
+.goal-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.goal-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.goal-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.goal-desc {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.goal-progress-bar {
+  height: 6px;
+  background: var(--color-bg-secondary);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.goal-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #b8965a, #d4af37);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.goal-card.completed .goal-progress-fill {
+  background: linear-gradient(90deg, #27ae60, #2ecc71);
+}
+
+.goal-progress-text {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.goal-difficulty {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 10px;
+}
+
+@media (max-width: 768px) {
+  .skills-grid,
+  .goals-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   SVG线性图标样式（方案A）
+   ═══════════════════════════════════════════════ */
+
+.goal-icon-svg {
+  background: rgba(184, 150, 90, 0.08);
+  border: 1px solid rgba(184, 150, 90, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.goal-icon-svg svg {
+  width: 20px;
+  height: 20px;
+  stroke: #b8965a;
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.goal-card.completed .goal-icon-svg {
+  background: rgba(39, 174, 96, 0.1);
+  border-color: rgba(39, 174, 96, 0.3);
+}
+
+.goal-card.completed .goal-icon-svg svg {
+  stroke: #27ae60;
+}
+
+.milestone-icon-svg {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 10px;
+  background: rgba(184, 150, 90, 0.08);
+  border: 1px solid rgba(184, 150, 90, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.milestone-icon-svg svg {
+  width: 24px;
+  height: 24px;
+  stroke: #b8965a;
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.milestone-card.unlocked .milestone-icon-svg {
+  background: rgba(184, 150, 90, 0.15);
+  border-color: rgba(184, 150, 90, 0.4);
+}
+
+.milestone-card.locked .milestone-icon-svg {
+  opacity: 0.4;
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.milestone-card.locked .milestone-icon-svg svg {
+  stroke: #666;
+}
+
+.record-right {
+  text-align: right;
+}
+
+.record-amount {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.record-profit {
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.record-fees {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* 交易弹窗中的 warning 文字 */
+.trade-value.warning {
+  color: #f39c12;
+}
+
+.trade-value.warning small {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
 .crisis-action-item.dangerous {
   border-left: 3px solid #e74c3c;
 }
@@ -4944,7 +5754,7 @@ body::before {
   <!-- 顶部状态栏 -->
   <header class="app-header">
     <div class="header-left">
-      <span class="app-title">松氏家族办公室</span>
+      <span class="app-title">家族办公室</span>
     </div>
     <div class="header-right">
       <span id="game-date" class="game-date">--</span>
@@ -5739,15 +6549,19 @@ const SongState = (function () {
       dailyRevenue: 0,             // 今日收入
       dailyExpense: 0,             // 今日支出
       dailyNet: 0,                 // 今日净收益
-      marketIndex: 1000            // 松氏市场指数
+      marketIndex: 1000,           // 松氏市场指数
+      financialStatements: null,   // 财务三表数据（第四阶段）
+      assetAllocation: null        // 资产配置分析（第四阶段）
     },
     // 子公司列表
     subsidiaries: [],
     // 股票市场
     stockMarket: {
       stocks: [],
-      marketIndex: 1000,
-      news: []
+      industries: [],
+      marketIndex: { value: 1000, previousClose: 1000, change: 0, changePercent: 0, history: [] },
+      news: [],
+      tradeRecords: []
     },
     // 投资组合
     investments: {
@@ -5767,6 +6581,12 @@ const SongState = (function () {
     heir: {
       name: '松庭',
       title: '松家长女 / 继承人',
+      level: 1,              // 第五阶段：继承人等级
+      exp: 0,                // 第五阶段：经验值
+      skillPoints: 0,        // 第五阶段：可用技能点
+      unlockedSkills: [],    // 第五阶段：已解锁技能ID列表
+      completedGoals: [],    // 第五阶段：已完成的长期目标
+      crisesSurvived: 0,     // 第五阶段：成功度过的危机次数
       abilities: {
         business: 50,      // 商业能力
         decision: 50,      // 决策能力
@@ -5824,6 +6644,17 @@ const SongState = (function () {
       state.company = { ...state.company, ...company };
       state.subsidiaries = subsidiaries || [];
       state.stockMarket = { ...state.stockMarket, ...stockMarket };
+      // 股票市场数据迁移（旧存档 → 新结构）
+      if (state.stockMarket && state.stockMarket.stocks && state.stockMarket.stocks.length > 0) {
+        if (!state.stockMarket.industries || !state.stockMarket.marketIndex || typeof state.stockMarket.marketIndex === 'number') {
+          try {
+            state.stockMarket = SongStockMarket.migrateStockMarket(state.stockMarket);
+            console.log('[SongState] 股票市场数据已迁移到新结构');
+          } catch (e) {
+            console.warn('[SongState] 股票市场数据迁移失败:', e);
+          }
+        }
+      }
       state.investments = { ...state.investments, ...investments };
       state.events = { ...state.events, ...events };
       state.heir = { ...state.heir, ...heir };
@@ -6649,11 +7480,26 @@ const SongFinance = (function () {
     // 计算集团财务
     const groupFinancials = calculateGroupFinancials(subsidiaries, gameState.company || {});
 
+    // 第四阶段：生成财务三表
+    const financialStatements = generateGroupFinancials(subsidiaries, { ...gameState.company, ...groupFinancials });
+
+    // 第四阶段：资产配置分析
+    const assetAllocation = analyzeAssetAllocation(
+      subsidiaries,
+      { ...gameState.company, ...groupFinancials },
+      gameState.investments?.portfolio || [],
+      gameState.investments?.fundPortfolio || [],
+      gameState.stockMarket?.stocks || [],
+      gameState.funds || []
+    );
+
     return {
       subsidiaries,
       company: {
         ...gameState.company,
-        ...groupFinancials
+        ...groupFinancials,
+        financialStatements,
+        assetAllocation
       }
     };
   }
@@ -6691,6 +7537,390 @@ const SongFinance = (function () {
   }
 
   // ═══════════════════════════════════════════════
+  // 第四阶段：财务三表与资产配置
+  // ═══════════════════════════════════════════════
+
+  // 行业成本率/费用率参考
+  const INDUSTRY_RATES = {
+    '金融':   { costRate: 0.30, salesRate: 0.05, adminRate: 0.08, rdRate: 0.00, financialRate: 0.10 },
+    '科技':   { costRate: 0.40, salesRate: 0.10, adminRate: 0.06, rdRate: 0.12, financialRate: 0.02 },
+    '地产':   { costRate: 0.55, salesRate: 0.04, adminRate: 0.05, rdRate: 0.00, financialRate: 0.08 },
+    '奢侈品': { costRate: 0.25, salesRate: 0.20, adminRate: 0.06, rdRate: 0.02, financialRate: 0.01 },
+    '公益':   { costRate: 0.00, salesRate: 0.00, adminRate: 0.10, rdRate: 0.00, financialRate: 0.00 },
+    '投资':   { costRate: 0.50, salesRate: 0.05, adminRate: 0.08, rdRate: 0.00, financialRate: 0.05 }
+  };
+
+  function getIndustryRates(type) {
+    return INDUSTRY_RATES[type] || INDUSTRY_RATES['投资'];
+  }
+
+  /**
+   * 生成利润表（Income Statement）
+   */
+  function generateIncomeStatement(subsidiaries) {
+    const validSubs = (subsidiaries || []).filter(s => s.type !== '公益');
+    const totalRevenue = validSubs.reduce((sum, s) => sum + (s.revenue || 0), 0);
+    const totalProfit = validSubs.reduce((sum, s) => sum + (s.profit || 0), 0);
+
+    let totalCost = 0, totalSales = 0, totalAdmin = 0, totalRD = 0, totalFinancial = 0;
+    validSubs.forEach(sub => {
+      const rates = getIndustryRates(sub.type);
+      totalCost += sub.revenue * rates.costRate;
+      totalSales += sub.revenue * rates.salesRate;
+      totalAdmin += sub.revenue * rates.adminRate;
+      totalRD += sub.revenue * rates.rdRate;
+      totalFinancial += sub.revenue * rates.financialRate;
+    });
+
+    const grossProfit = totalRevenue - totalCost;
+    const operatingProfit = grossProfit - totalSales - totalAdmin - totalRD - totalFinancial;
+    const nonOperatingIncome = totalProfit - operatingProfit;
+    const tax = totalProfit > 0 ? totalProfit * 0.25 : 0;
+    const netProfit = totalProfit - tax;
+
+    return {
+      revenue: Math.round(totalRevenue),
+      cost: Math.round(totalCost),
+      grossProfit: Math.round(grossProfit),
+      grossMargin: totalRevenue > 0 ? parseFloat(((grossProfit / totalRevenue) * 100).toFixed(1)) : 0,
+      salesExpense: Math.round(totalSales),
+      adminExpense: Math.round(totalAdmin),
+      rdExpense: Math.round(totalRD),
+      financialExpense: Math.round(totalFinancial),
+      operatingProfit: Math.round(operatingProfit),
+      nonOperatingIncome: Math.round(nonOperatingIncome),
+      totalProfit: Math.round(totalProfit),
+      tax: Math.round(tax),
+      netProfit: Math.round(netProfit),
+      netMargin: totalRevenue > 0 ? parseFloat(((netProfit / totalRevenue) * 100).toFixed(1)) : 0,
+      eps: netProfit / 100000000 // 简化：每股收益（亿股）
+    };
+  }
+
+  /**
+   * 生成资产负债表（Balance Sheet）
+   */
+  function generateBalanceSheet(subsidiaries, company) {
+    const totalAssets = company?.totalAssets || 5000000000;
+    const cashFlow = company?.cashFlow || 800000000;
+    const validSubs = (subsidiaries || []).filter(s => s.type !== '公益');
+    const totalRevenue = validSubs.reduce((sum, s) => sum + (s.revenue || 0), 0);
+
+    // 资产端
+    const cash = cashFlow;
+    const accountsReceivable = Math.round(totalRevenue * 0.15);
+    const inventory = Math.round(totalRevenue * 0.10);
+    const currentAssets = cash + accountsReceivable + inventory;
+
+    const fixedAssets = Math.round(totalAssets * 0.35);
+    const intangibleAssets = Math.round(totalAssets * 0.10);
+    const longTermInvestment = Math.round(totalAssets * 0.25);
+    const nonCurrentAssets = fixedAssets + intangibleAssets + longTermInvestment;
+
+    const totalAssetsCalc = currentAssets + nonCurrentAssets;
+
+    // 负债端
+    const accountsPayable = Math.round(totalRevenue * 0.12);
+    const shortTermLoan = Math.round(totalAssets * 0.08);
+    const currentLiabilities = accountsPayable + shortTermLoan;
+
+    const longTermLoan = Math.round(totalAssets * 0.15);
+    const bondsPayable = Math.round(totalAssets * 0.05);
+    const nonCurrentLiabilities = longTermLoan + bondsPayable;
+
+    const totalLiabilities = currentLiabilities + nonCurrentLiabilities;
+
+    // 所有者权益
+    const paidInCapital = Math.round(totalAssets * 0.30);
+    const capitalReserve = Math.round(totalAssets * 0.05);
+    const surplusReserve = Math.round(totalAssets * 0.03);
+    const undistributedProfit = totalAssetsCalc - totalLiabilities - paidInCapital - capitalReserve - surplusReserve;
+    const totalEquity = paidInCapital + capitalReserve + surplusReserve + undistributedProfit;
+
+    // 会计恒等式验证
+    const balanceCheck = Math.abs(totalAssetsCalc - totalLiabilities - totalEquity) < 10000;
+
+    return {
+      // 资产
+      cash: Math.round(cash),
+      accountsReceivable,
+      inventory,
+      currentAssets: Math.round(currentAssets),
+      fixedAssets,
+      intangibleAssets,
+      longTermInvestment,
+      nonCurrentAssets: Math.round(nonCurrentAssets),
+      totalAssets: Math.round(totalAssetsCalc),
+      // 负债
+      accountsPayable,
+      shortTermLoan,
+      currentLiabilities: Math.round(currentLiabilities),
+      longTermLoan,
+      bondsPayable,
+      nonCurrentLiabilities: Math.round(nonCurrentLiabilities),
+      totalLiabilities: Math.round(totalLiabilities),
+      // 权益
+      paidInCapital,
+      capitalReserve,
+      surplusReserve,
+      undistributedProfit: Math.round(undistributedProfit),
+      totalEquity: Math.round(totalEquity),
+      // 验证
+      balanceCheck,
+      // 关键比率
+      debtRatio: totalAssetsCalc > 0 ? parseFloat(((totalLiabilities / totalAssetsCalc) * 100).toFixed(1)) : 0,
+      currentRatio: currentLiabilities > 0 ? parseFloat((currentAssets / currentLiabilities).toFixed(2)) : 0,
+      equityRatio: totalAssetsCalc > 0 ? parseFloat(((totalEquity / totalAssetsCalc) * 100).toFixed(1)) : 0
+    };
+  }
+
+  /**
+   * 生成现金流量表（Cash Flow Statement）
+   */
+  function generateCashFlowStatement(subsidiaries, company, incomeStatement) {
+    const validSubs = (subsidiaries || []).filter(s => s.type !== '公益');
+    const totalRevenue = validSubs.reduce((sum, s) => sum + (s.revenue || 0), 0);
+    const netProfit = incomeStatement?.netProfit || 0;
+    const totalAssets = company?.totalAssets || 5000000000;
+
+    // 经营活动现金流
+    const depreciation = Math.round(totalAssets * 0.03);
+    const amortization = Math.round(totalAssets * 0.01);
+    const workingCapitalChange = Math.round(totalRevenue * 0.03 * (Math.random() > 0.5 ? 1 : -1));
+    const operatingCashFlow = netProfit + depreciation + amortization - workingCapitalChange;
+
+    // 投资活动现金流
+    const capitalExpenditure = Math.round(totalAssets * 0.04);
+    const investmentIncome = Math.round(totalRevenue * 0.02);
+    const investingCashFlow = investmentIncome - capitalExpenditure;
+
+    // 筹资活动现金流
+    const newBorrowing = Math.round(totalAssets * 0.02 * (Math.random() > 0.5 ? 1 : -1));
+    const dividendPaid = Math.round(netProfit * 0.3);
+    const financingCashFlow = newBorrowing - dividendPaid;
+
+    const netCashChange = operatingCashFlow + investingCashFlow + financingCashFlow;
+
+    return {
+      // 经营活动
+      netProfit: Math.round(netProfit),
+      depreciation,
+      amortization,
+      workingCapitalChange,
+      operatingCashFlow: Math.round(operatingCashFlow),
+      // 投资活动
+      capitalExpenditure,
+      investmentIncome,
+      investingCashFlow: Math.round(investingCashFlow),
+      // 筹资活动
+      newBorrowing,
+      dividendPaid,
+      financingCashFlow: Math.round(financingCashFlow),
+      // 汇总
+      netCashChange: Math.round(netCashChange),
+      // 盈利质量
+      cashToProfitRatio: netProfit > 0 ? parseFloat((operatingCashFlow / netProfit).toFixed(2)) : 0
+    };
+  }
+
+  /**
+   * 计算关键财务比率
+   */
+  function calculateFinancialRatios(incomeStatement, balanceSheet, cashFlowStatement) {
+    const revenue = incomeStatement?.revenue || 1;
+    const netProfit = incomeStatement?.netProfit || 0;
+    const totalAssets = balanceSheet?.totalAssets || 1;
+    const totalEquity = balanceSheet?.totalEquity || 1;
+    const currentAssets = balanceSheet?.currentAssets || 0;
+    const currentLiabilities = balanceSheet?.currentLiabilities || 1;
+    const totalLiabilities = balanceSheet?.totalLiabilities || 0;
+    const operatingCashFlow = cashFlowStatement?.operatingCashFlow || 0;
+
+    return {
+      // 盈利能力
+      roe: totalEquity > 0 ? parseFloat(((netProfit / totalEquity) * 100).toFixed(2)) : 0,
+      roa: totalAssets > 0 ? parseFloat(((netProfit / totalAssets) * 100).toFixed(2)) : 0,
+      grossMargin: incomeStatement?.grossMargin || 0,
+      netMargin: incomeStatement?.netMargin || 0,
+      // 偿债能力
+      debtRatio: balanceSheet?.debtRatio || 0,
+      currentRatio: balanceSheet?.currentRatio || 0,
+      equityRatio: balanceSheet?.equityRatio || 0,
+      // 营运能力
+      assetTurnover: totalAssets > 0 ? parseFloat((revenue / totalAssets).toFixed(2)) : 0,
+      // 现金流
+      cashToProfitRatio: cashFlowStatement?.cashToProfitRatio || 0,
+      operatingCashFlow
+    };
+  }
+
+  /**
+   * 生成集团完整三表数据
+   */
+  function generateGroupFinancials(subsidiaries, company) {
+    const incomeStatement = generateIncomeStatement(subsidiaries);
+    const balanceSheet = generateBalanceSheet(subsidiaries, company);
+    const cashFlowStatement = generateCashFlowStatement(subsidiaries, company, incomeStatement);
+    const ratios = calculateFinancialRatios(incomeStatement, balanceSheet, cashFlowStatement);
+
+    return {
+      incomeStatement,
+      balanceSheet,
+      cashFlowStatement,
+      ratios,
+      generatedAt: new Date().toISOString()
+    };
+  }
+
+  /**
+   * 生成子公司简化三表
+   */
+  function generateSubsidiaryFinancials(subsidiary) {
+    if (!subsidiary || subsidiary.type === '公益') {
+      return { incomeStatement: null, balanceSheet: null, ratios: null };
+    }
+
+    const rates = getIndustryRates(subsidiary.type);
+    const revenue = subsidiary.revenue || 0;
+    const profit = subsidiary.profit || 0;
+
+    const cost = revenue * rates.costRate;
+    const grossProfit = revenue - cost;
+    const salesExpense = revenue * rates.salesRate;
+    const adminExpense = revenue * rates.adminRate;
+    const rdExpense = revenue * rates.rdRate;
+    const financialExpense = revenue * rates.financialRate;
+    const operatingProfit = grossProfit - salesExpense - adminExpense - rdExpense - financialExpense;
+    const tax = profit > 0 ? profit * 0.25 : 0;
+    const netProfit = profit - tax;
+
+    // 简化资产负债
+    const subAssets = revenue * 2;
+    const currentAssets = subAssets * 0.4;
+    const fixedAssets = subAssets * 0.4;
+    const totalLiabilities = subAssets * 0.4;
+    const totalEquity = subAssets - totalLiabilities;
+
+    return {
+      incomeStatement: {
+        revenue: Math.round(revenue),
+        cost: Math.round(cost),
+        grossProfit: Math.round(grossProfit),
+        grossMargin: revenue > 0 ? parseFloat(((grossProfit / revenue) * 100).toFixed(1)) : 0,
+        salesExpense: Math.round(salesExpense),
+        adminExpense: Math.round(adminExpense),
+        rdExpense: Math.round(rdExpense),
+        operatingProfit: Math.round(operatingProfit),
+        totalProfit: Math.round(profit),
+        tax: Math.round(tax),
+        netProfit: Math.round(netProfit),
+        netMargin: revenue > 0 ? parseFloat(((netProfit / revenue) * 100).toFixed(1)) : 0
+      },
+      balanceSheet: {
+        currentAssets: Math.round(currentAssets),
+        fixedAssets: Math.round(fixedAssets),
+        totalAssets: Math.round(subAssets),
+        totalLiabilities: Math.round(totalLiabilities),
+        totalEquity: Math.round(totalEquity),
+        debtRatio: subAssets > 0 ? parseFloat(((totalLiabilities / subAssets) * 100).toFixed(1)) : 0
+      },
+      ratios: {
+        roe: totalEquity > 0 ? parseFloat(((netProfit / totalEquity) * 100).toFixed(2)) : 0,
+        roa: subAssets > 0 ? parseFloat(((netProfit / subAssets) * 100).toFixed(2)) : 0,
+        grossMargin: revenue > 0 ? parseFloat(((grossProfit / revenue) * 100).toFixed(1)) : 0,
+        netMargin: revenue > 0 ? parseFloat(((netProfit / revenue) * 100).toFixed(1)) : 0,
+        profitMargin: subsidiary.profitMargin || 0
+      }
+    };
+  }
+
+  /**
+   * 资产配置分析
+   */
+  function analyzeAssetAllocation(subsidiaries, company, portfolio, fundPortfolio, stocks, funds) {
+    const totalAssets = company?.totalAssets || 5000000000;
+    const cashFlow = company?.cashFlow || 0;
+    const validSubs = (subsidiaries || []).filter(s => s.type !== '公益');
+
+    // 按板块分布（子公司资产估算）
+    const sectorAllocation = validSubs.map(sub => {
+      const estimatedAssets = (sub.revenue || 0) * 2;
+      return {
+        id: sub.id,
+        name: sub.name,
+        type: sub.type,
+        assets: Math.round(estimatedAssets),
+        percentage: totalAssets > 0 ? parseFloat(((estimatedAssets / totalAssets) * 100).toFixed(1)) : 0,
+        profit: sub.profit || 0,
+        profitMargin: sub.profitMargin || 0,
+        roa: estimatedAssets > 0 ? parseFloat(((sub.profit / estimatedAssets) * 100).toFixed(2)) : 0
+      };
+    });
+
+    // 金融资产（股票+基金）
+    const stockValue = (portfolio || []).reduce((sum, p) => {
+      const stock = (stocks || []).find(s => s.id === p.stockId);
+      return sum + (stock ? stock.price * p.shares : 0);
+    }, 0);
+    const fundValue = (fundPortfolio || []).reduce((sum, p) => {
+      const fund = (funds || []).find(f => f.id === p.fundId);
+      return sum + (fund ? fund.nav * p.shares : 0);
+    }, 0);
+    const financialAssets = stockValue + fundValue;
+
+    // 按资产类型分布
+    const typeAllocation = {
+      operatingAssets: Math.round(totalAssets * 0.60), // 经营性资产（子公司）
+      financialAssets: Math.round(financialAssets),
+      cash: Math.round(cashFlow),
+      other: Math.round(totalAssets * 0.60 > totalAssets - financialAssets - cashFlow ? 0 : totalAssets - totalAssets * 0.60 - financialAssets - cashFlow)
+    };
+    typeAllocation.operatingAssets = Math.round(totalAssets - typeAllocation.financialAssets - typeAllocation.cash - typeAllocation.other);
+    typeAllocation.operatingPercent = totalAssets > 0 ? parseFloat(((typeAllocation.operatingAssets / totalAssets) * 100).toFixed(1)) : 0;
+    typeAllocation.financialPercent = totalAssets > 0 ? parseFloat(((typeAllocation.financialAssets / totalAssets) * 100).toFixed(1)) : 0;
+    typeAllocation.cashPercent = totalAssets > 0 ? parseFloat(((typeAllocation.cash / totalAssets) * 100).toFixed(1)) : 0;
+
+    // 效率分析：识别低效资产
+    const inefficientAssets = sectorAllocation
+      .filter(s => s.roa < 5 && s.profitMargin < 10)
+      .sort((a, b) => a.roa - b.roa);
+
+    const highPerformingAssets = sectorAllocation
+      .filter(s => s.roa > 15)
+      .sort((a, b) => b.roa - a.roa);
+
+    // 配置建议
+    const suggestions = [];
+    if (typeAllocation.cashPercent > 30) {
+      suggestions.push({ type: 'warning', text: `现金占比过高（${typeAllocation.cashPercent}%），建议增加投资或分红，提高资金使用效率` });
+    }
+    if (typeAllocation.financialPercent < 5 && financialAssets > 0) {
+      suggestions.push({ type: 'info', text: `金融资产配置比例较低（${typeAllocation.financialPercent}%），可适当增加证券投资分散风险` });
+    }
+    if (inefficientAssets.length > 0) {
+      suggestions.push({ type: 'danger', text: `发现${inefficientAssets.length}项低效资产（${inefficientAssets.map(a => a.name.replace('松氏', '')).join('、')}），ROA低于5%，建议优化或剥离` });
+    }
+    if (highPerformingAssets.length > 0) {
+      suggestions.push({ type: 'success', text: `${highPerformingAssets.map(a => a.name.replace('松氏', '')).join('、')}表现优异（ROA>${highPerformingAssets[0].roa}%），可考虑加大投入` });
+    }
+    if (suggestions.length === 0) {
+      suggestions.push({ type: 'info', text: '资产配置整体健康，各板块表现均衡，建议维持当前配置并持续监控' });
+    }
+
+    return {
+      totalAssets,
+      sectorAllocation,
+      typeAllocation,
+      stockValue: Math.round(stockValue),
+      fundValue: Math.round(fundValue),
+      financialAssets: Math.round(financialAssets),
+      inefficientAssets,
+      highPerformingAssets,
+      suggestions
+    };
+  }
+
+  // ═══════════════════════════════════════════════
   // 公开 API
   // ═══════════════════════════════════════════════
 
@@ -6705,7 +7935,16 @@ const SongFinance = (function () {
     getSubsidiaryTrend,
     formatFinancialData,
     formatMoney,
-    clamp
+    clamp,
+    // 第四阶段新API
+    generateIncomeStatement,
+    generateBalanceSheet,
+    generateCashFlowStatement,
+    calculateFinancialRatios,
+    generateGroupFinancials,
+    generateSubsidiaryFinancials,
+    analyzeAssetAllocation,
+    getIndustryRates
   };
 })();
 
@@ -8008,365 +9247,267 @@ if (typeof window !== 'undefined') {
 
 /* ===== js/modules/stockMarket.js ===== */
 /**
- * 松氏家族办公室 - 股票市场模块
- * 负责股票数据初始化、每日价格更新、市场新闻生成、买卖交易
+ * 松氏家族办公室 - 股票市场模块（第三阶段：真实化升级）
+ * 负责股票数据初始化、行业周期、大盘指数、每日价格更新、
+ * 完整交易规则（T+1/涨跌停/费用/滑点）、浮盈实盈、交易记录、市场新闻事件
  */
 
 const SongStockMarket = (function () {
   'use strict';
 
   // ═══════════════════════════════════════════════
+  // 行业与周期定义
+  // ═══════════════════════════════════════════════
+
+  // 标准行业分类
+  const INDUSTRIES = [
+    { id: 'tech', name: '科技', baseVolatility: 0.025 },
+    { id: 'finance', name: '金融', baseVolatility: 0.012 },
+    { id: 'consumer', name: '消费', baseVolatility: 0.010 },
+    { id: 'newenergy', name: '新能源', baseVolatility: 0.022 },
+    { id: 'healthcare', name: '医药', baseVolatility: 0.015 },
+    { id: 'energy', name: '能源', baseVolatility: 0.018 }
+  ];
+
+  // 现有industry字段 → 标准行业id 映射
+  const INDUSTRY_MAP = {
+    '互联网科技': 'tech', '电商云计算': 'tech', '软件云计算': 'tech', '半导体AI': 'tech',
+    '金融保险': 'finance', '银行': 'finance', '银行金融': 'finance', '保险': 'finance',
+    '白酒消费': 'consumer', '本地生活': 'consumer', '消费电子': 'consumer',
+    '新能源': 'newenergy', '新能源汽车': 'newenergy'
+  };
+
+  // 行业周期4种状态
+  const CYCLE_STATES = {
+    boom:       { name: '繁荣', trend: 0.12, volatility: 1.25, minDays: 15, maxDays: 40 },
+    recovery:   { name: '复苏', trend: 0.06, volatility: 0.90, minDays: 20, maxDays: 50 },
+    recession:  { name: '衰退', trend: -0.08, volatility: 1.10, minDays: 15, maxDays: 45 },
+    depression: { name: '萧条', trend: -0.15, volatility: 1.30, minDays: 20, maxDays: 60 }
+  };
+
+  // 周期转换概率矩阵 [当前状态][下一状态]
+  const CYCLE_TRANSITION = {
+    boom:       { boom: 0.70, recovery: 0.05, recession: 0.20, depression: 0.05 },
+    recovery:   { boom: 0.15, recovery: 0.65, recession: 0.15, depression: 0.05 },
+    recession:  { boom: 0.05, recovery: 0.20, recession: 0.60, depression: 0.15 },
+    depression: { boom: 0.05, recovery: 0.25, recession: 0.10, depression: 0.60 }
+  };
+
+  // ═══════════════════════════════════════════════
   // 默认股票数据
   // ═══════════════════════════════════════════════
 
   const DEFAULT_STOCKS = [
-    // ═══════════ A股（红涨绿跌）═══════════
+    // ═══════════ A股（红涨绿跌，T+1，±10%涨跌停）═══════════
     {
-      id: 'a_maotai',
-      code: '600519',
-      name: '贵州茅台',
-      market: 'A股',
-      industry: '白酒消费',
-      price: 1688.50,
-      previousClose: 1675.20,
-      open: 1680.00,
-      high: 1695.80,
-      low: 1672.30,
-      volume: 3250000,
-      marketCap: 2120000000000,
-      peRatio: 28.5,
-      dividend: 1.8,
-      risk: 'low',
-      beta: 0.7,
+      id: 'a_maotai', code: '600519', name: '贵州茅台', market: 'A股',
+      industry: '白酒消费', industryId: 'consumer',
+      price: 1688.50, previousClose: 1675.20, open: 1680.00, high: 1695.80, low: 1672.30,
+      volume: 3250000, marketCap: 2120000000000,
+      peRatio: 28.5, pbRatio: 9.8, eps: 59.25, dividend: 1.8, dividendYield: 0.11,
+      risk: 'low', beta: 0.7, liquidity: 'high',
       description: '中国白酒行业龙头，高端白酒绝对霸主，品牌护城河极深，现金流充沛，分红稳定。',
       priceHistory: []
     },
     {
-      id: 'a_catl',
-      code: '300750',
-      name: '宁德时代',
-      market: 'A股',
-      industry: '新能源',
-      price: 218.60,
-      previousClose: 225.40,
-      open: 223.00,
-      high: 226.80,
-      low: 215.20,
-      volume: 28500000,
-      marketCap: 960000000000,
-      peRatio: 22.3,
-      dividend: 0.5,
-      risk: 'medium',
-      beta: 1.4,
+      id: 'a_catl', code: '300750', name: '宁德时代', market: 'A股',
+      industry: '新能源', industryId: 'newenergy',
+      price: 218.60, previousClose: 225.40, open: 223.00, high: 226.80, low: 215.20,
+      volume: 28500000, marketCap: 960000000000,
+      peRatio: 22.3, pbRatio: 4.5, eps: 9.80, dividend: 0.5, dividendYield: 0.23,
+      risk: 'medium', beta: 1.4, liquidity: 'high',
       description: '全球动力电池龙头，市占率全球第一，深度绑定特斯拉、宝马等车企，新能源赛道核心标的。',
       priceHistory: []
     },
     {
-      id: 'a_byd',
-      code: '002594',
-      name: '比亚迪',
-      market: 'A股',
-      industry: '新能源汽车',
-      price: 256.80,
-      previousClose: 251.30,
-      open: 253.00,
-      high: 259.50,
-      low: 250.80,
-      volume: 18600000,
-      marketCap: 748000000000,
-      peRatio: 25.8,
-      dividend: 0.3,
-      risk: 'medium',
-      beta: 1.3,
+      id: 'a_byd', code: '002594', name: '比亚迪', market: 'A股',
+      industry: '新能源汽车', industryId: 'newenergy',
+      price: 256.80, previousClose: 251.30, open: 253.00, high: 259.50, low: 250.80,
+      volume: 18600000, marketCap: 748000000000,
+      peRatio: 25.8, pbRatio: 5.2, eps: 9.95, dividend: 0.3, dividendYield: 0.12,
+      risk: 'medium', beta: 1.3, liquidity: 'high',
       description: '全球新能源汽车销量冠军，垂直整合能力强，电池+电机+电控全自研，出海加速。',
       priceHistory: []
     },
     {
-      id: 'a_pingan',
-      code: '601318',
-      name: '中国平安',
-      market: 'A股',
-      industry: '金融保险',
-      price: 48.20,
-      previousClose: 47.80,
-      open: 48.00,
-      high: 48.60,
-      low: 47.50,
-      volume: 45200000,
-      marketCap: 875000000000,
-      peRatio: 8.5,
-      dividend: 4.2,
-      risk: 'low',
-      beta: 0.9,
+      id: 'a_pingan', code: '601318', name: '中国平安', market: 'A股',
+      industry: '金融保险', industryId: 'finance',
+      price: 48.20, previousClose: 47.80, open: 48.00, high: 48.60, low: 47.50,
+      volume: 45200000, marketCap: 875000000000,
+      peRatio: 8.5, pbRatio: 0.9, eps: 5.67, dividend: 4.2, dividendYield: 8.71,
+      risk: 'low', beta: 0.9, liquidity: 'high',
       description: '中国综合金融龙头，保险+银行+投资全牌照，股息率高，估值处于历史低位。',
       priceHistory: []
     },
     {
-      id: 'a_cmb',
-      code: '600036',
-      name: '招商银行',
-      market: 'A股',
-      industry: '银行',
-      price: 35.60,
-      previousClose: 35.40,
-      open: 35.50,
-      high: 35.90,
-      low: 35.20,
-      volume: 32800000,
-      marketCap: 898000000000,
-      peRatio: 6.2,
-      dividend: 5.8,
-      risk: 'low',
-      beta: 0.6,
+      id: 'a_cmb', code: '600036', name: '招商银行', market: 'A股',
+      industry: '银行', industryId: 'finance',
+      price: 35.60, previousClose: 35.40, open: 35.50, high: 35.90, low: 35.20,
+      volume: 32800000, marketCap: 898000000000,
+      peRatio: 6.2, pbRatio: 0.95, eps: 5.74, dividend: 5.8, dividendYield: 16.29,
+      risk: 'low', beta: 0.6, liquidity: 'high',
       description: '中国零售银行之王，财富管理能力突出，资产质量优良，高股息防御性品种。',
       priceHistory: []
     },
 
-    // ═══════════ 港股（红跌绿涨）═══════════
+    // ═══════════ 港股（红跌绿涨，T+0，无涨跌停）═══════════
     {
-      id: 'hk_tencent',
-      code: '00700',
-      name: '腾讯控股',
-      market: '港股',
-      industry: '互联网科技',
-      price: 385.40,
-      previousClose: 378.60,
-      open: 380.00,
-      high: 388.20,
-      low: 376.50,
-      volume: 18500000,
-      marketCap: 3680000000000,
-      peRatio: 18.5,
-      dividend: 0.8,
-      risk: 'medium',
-      beta: 1.2,
+      id: 'hk_tencent', code: '00700', name: '腾讯控股', market: '港股',
+      industry: '互联网科技', industryId: 'tech',
+      price: 385.40, previousClose: 378.60, open: 380.00, high: 388.20, low: 376.50,
+      volume: 18500000, marketCap: 3680000000000,
+      peRatio: 18.5, pbRatio: 3.8, eps: 20.83, dividend: 0.8, dividendYield: 0.21,
+      risk: 'medium', beta: 1.2, liquidity: 'high',
       description: '中国互联网绝对龙头，社交+游戏+广告+金融科技全生态，微信月活超13亿，回购力度大。',
       priceHistory: []
     },
     {
-      id: 'hk_alibaba',
-      code: '09988',
-      name: '阿里巴巴',
-      market: '港股',
-      industry: '电商云计算',
-      price: 82.50,
-      previousClose: 85.20,
-      open: 84.00,
-      high: 84.80,
-      low: 81.20,
-      volume: 28600000,
-      marketCap: 1680000000000,
-      peRatio: 12.8,
-      dividend: 1.2,
-      risk: 'medium',
-      beta: 1.3,
+      id: 'hk_alibaba', code: '09988', name: '阿里巴巴', market: '港股',
+      industry: '电商云计算', industryId: 'tech',
+      price: 82.50, previousClose: 85.20, open: 84.00, high: 84.80, low: 81.20,
+      volume: 28600000, marketCap: 1680000000000,
+      peRatio: 12.8, pbRatio: 1.8, eps: 6.45, dividend: 1.2, dividendYield: 1.45,
+      risk: 'medium', beta: 1.3, liquidity: 'high',
       description: '中国电商龙头，淘宝+天猫+阿里云+菜鸟全链路，AI大模型投入加大，云业务增长加速。',
       priceHistory: []
     },
     {
-      id: 'hk_meituan',
-      code: '03690',
-      name: '美团',
-      market: '港股',
-      industry: '本地生活',
-      price: 128.60,
-      previousClose: 132.40,
-      open: 131.00,
-      high: 132.80,
-      low: 126.50,
-      volume: 15800000,
-      marketCap: 828000000000,
-      peRatio: 28.5,
-      dividend: 0,
-      risk: 'high',
-      beta: 1.6,
+      id: 'hk_meituan', code: '03690', name: '美团', market: '港股',
+      industry: '本地生活', industryId: 'consumer',
+      price: 128.60, previousClose: 132.40, open: 131.00, high: 132.80, low: 126.50,
+      volume: 15800000, marketCap: 828000000000,
+      peRatio: 28.5, pbRatio: 4.2, eps: 4.51, dividend: 0, dividendYield: 0,
+      risk: 'high', beta: 1.6, liquidity: 'medium',
       description: '中国本地生活服务龙头，外卖+到店+酒旅+即时零售，社区团购减亏，新业务逐步盈利。',
       priceHistory: []
     },
     {
-      id: 'hk_hsbc',
-      code: '00005',
-      name: '汇丰控股',
-      market: '港股',
-      industry: '银行金融',
-      price: 62.80,
-      previousClose: 62.50,
-      open: 62.60,
-      high: 63.20,
-      low: 62.10,
-      volume: 15000000,
-      marketCap: 1256000000000,
-      peRatio: 9.8,
-      dividend: 5.2,
-      risk: 'low',
-      beta: 0.6,
+      id: 'hk_hsbc', code: '00005', name: '汇丰控股', market: '港股',
+      industry: '银行金融', industryId: 'finance',
+      price: 62.80, previousClose: 62.50, open: 62.60, high: 63.20, low: 62.10,
+      volume: 15000000, marketCap: 1256000000000,
+      peRatio: 9.8, pbRatio: 0.85, eps: 6.41, dividend: 5.2, dividendYield: 8.28,
+      risk: 'low', beta: 0.6, liquidity: 'high',
       description: '全球知名金融集团，业务遍及欧洲、亚洲、北美，股息率高，防御性强，加息周期受益。',
       priceHistory: []
     },
     {
-      id: 'hk_aia',
-      code: '01299',
-      name: '友邦保险',
-      market: '港股',
-      industry: '保险',
-      price: 58.30,
-      previousClose: 57.80,
-      open: 58.00,
-      high: 58.90,
-      low: 57.50,
-      volume: 12500000,
-      marketCap: 725000000000,
-      peRatio: 15.2,
-      dividend: 2.8,
-      risk: 'low',
-      beta: 0.8,
+      id: 'hk_aia', code: '01299', name: '友邦保险', market: '港股',
+      industry: '保险', industryId: 'finance',
+      price: 58.30, previousClose: 57.80, open: 58.00, high: 58.90, low: 57.50,
+      volume: 12500000, marketCap: 725000000000,
+      peRatio: 15.2, pbRatio: 2.1, eps: 3.84, dividend: 2.8, dividendYield: 4.80,
+      risk: 'low', beta: 0.8, liquidity: 'high',
       description: '亚太地区最大人寿保险公司，深耕中国内地及东南亚市场，新业务价值增长稳健。',
       priceHistory: []
     },
 
-    // ═══════════ 美股（红跌绿涨）═══════════
+    // ═══════════ 美股（红跌绿涨，T+0，无涨跌停）═══════════
     {
-      id: 'us_aapl',
-      code: 'AAPL',
-      name: '苹果',
-      market: '美股',
-      industry: '消费电子',
-      price: 225.80,
-      previousClose: 222.40,
-      open: 223.00,
-      high: 227.50,
-      low: 221.80,
-      volume: 52500000,
-      marketCap: 3450000000000,
-      peRatio: 32.5,
-      dividend: 0.5,
-      risk: 'low',
-      beta: 1.1,
+      id: 'us_aapl', code: 'AAPL', name: '苹果', market: '美股',
+      industry: '消费电子', industryId: 'consumer',
+      price: 225.80, previousClose: 222.40, open: 223.00, high: 227.50, low: 221.80,
+      volume: 52500000, marketCap: 3450000000000,
+      peRatio: 32.5, pbRatio: 45.2, eps: 6.95, dividend: 0.5, dividendYield: 0.22,
+      risk: 'low', beta: 1.1, liquidity: 'high',
       description: '全球市值最高公司，iPhone+Mac+iPad+Watch+服务全生态，品牌忠诚度极高，现金流怪兽。',
       priceHistory: []
     },
     {
-      id: 'us_msft',
-      code: 'MSFT',
-      name: '微软',
-      market: '美股',
-      industry: '软件云计算',
-      price: 418.50,
-      previousClose: 412.80,
-      open: 415.00,
-      high: 421.20,
-      low: 413.50,
-      volume: 22800000,
-      marketCap: 3110000000000,
-      peRatio: 35.8,
-      dividend: 0.7,
-      risk: 'low',
-      beta: 0.9,
+      id: 'us_msft', code: 'MSFT', name: '微软', market: '美股',
+      industry: '软件云计算', industryId: 'tech',
+      price: 418.50, previousClose: 412.80, open: 415.00, high: 421.20, low: 413.50,
+      volume: 22800000, marketCap: 3110000000000,
+      peRatio: 35.8, pbRatio: 12.5, eps: 11.69, dividend: 0.7, dividendYield: 0.17,
+      risk: 'low', beta: 0.9, liquidity: 'high',
       description: '全球软件龙头，Windows+Office+Azure云+OpenAI合作，AI转型最成功的科技巨头之一。',
       priceHistory: []
     },
     {
-      id: 'us_nvda',
-      code: 'NVDA',
-      name: '英伟达',
-      market: '美股',
-      industry: '半导体AI',
-      price: 125.60,
-      previousClose: 118.40,
-      open: 120.00,
-      high: 128.50,
-      low: 119.20,
-      volume: 285000000,
-      marketCap: 3080000000000,
-      peRatio: 65.2,
-      dividend: 0.03,
-      risk: 'high',
-      beta: 1.7,
+      id: 'us_nvda', code: 'NVDA', name: '英伟达', market: '美股',
+      industry: '半导体AI', industryId: 'tech',
+      price: 125.60, previousClose: 118.40, open: 120.00, high: 128.50, low: 119.20,
+      volume: 285000000, marketCap: 3080000000000,
+      peRatio: 65.2, pbRatio: 38.5, eps: 1.93, dividend: 0.03, dividendYield: 0.02,
+      risk: 'high', beta: 1.7, liquidity: 'high',
       description: '全球AI算力绝对霸主，GPU市占率超80%，数据中心芯片供不应求，AI浪潮最大受益者。',
       priceHistory: []
     },
     {
-      id: 'us_tsla',
-      code: 'TSLA',
-      name: '特斯拉',
-      market: '美股',
-      industry: '新能源汽车',
-      price: 248.30,
-      previousClose: 255.60,
-      open: 253.00,
-      high: 256.80,
-      low: 245.20,
-      volume: 98500000,
-      marketCap: 792000000000,
-      peRatio: 68.5,
-      dividend: 0,
-      risk: 'high',
-      beta: 2.1,
+      id: 'us_tsla', code: 'TSLA', name: '特斯拉', market: '美股',
+      industry: '新能源汽车', industryId: 'newenergy',
+      price: 248.30, previousClose: 255.60, open: 253.00, high: 256.80, low: 245.20,
+      volume: 98500000, marketCap: 792000000000,
+      peRatio: 68.5, pbRatio: 12.8, eps: 3.62, dividend: 0, dividendYield: 0,
+      risk: 'high', beta: 2.1, liquidity: 'high',
       description: '全球新能源汽车先驱，电动车+自动驾驶+储能+机器人，马斯克个人IP加持，波动极大。',
       priceHistory: []
     },
     {
-      id: 'us_amzn',
-      code: 'AMZN',
-      name: '亚马逊',
-      market: '美股',
-      industry: '电商云计算',
-      price: 185.40,
-      previousClose: 182.80,
-      open: 184.00,
-      high: 187.20,
-      low: 183.50,
-      volume: 42500000,
-      marketCap: 1920000000000,
-      peRatio: 42.5,
-      dividend: 0,
-      risk: 'medium',
-      beta: 1.2,
+      id: 'us_amzn', code: 'AMZN', name: '亚马逊', market: '美股',
+      industry: '电商云计算', industryId: 'tech',
+      price: 185.40, previousClose: 182.80, open: 184.00, high: 187.20, low: 183.50,
+      volume: 42500000, marketCap: 1920000000000,
+      peRatio: 42.5, pbRatio: 7.8, eps: 4.36, dividend: 0, dividendYield: 0,
+      risk: 'medium', beta: 1.2, liquidity: 'high',
       description: '全球电商+云计算双龙头，AWS云业务利润奶牛，广告业务高增长，AI基础设施布局完善。',
       priceHistory: []
     }
   ];
 
-  // 市场新闻模板
+  // ═══════════════════════════════════════════════
+  // 市场新闻模板（事件驱动）
+  // ═══════════════════════════════════════════════
+
   const NEWS_TEMPLATES = [
-    { title: '美联储维持利率不变，暗示年内可能降息', impact: 'positive', industries: ['金融', '科技', '新能源汽车'] },
-    { title: '中国央行宣布降准0.5个百分点，释放长期流动性', impact: 'positive', industries: ['银行', '金融保险', '地产'] },
-    { title: '英伟达发布新一代AI芯片，性能提升3倍', impact: 'positive', industries: ['半导体AI', '软件云计算'] },
-    { title: '苹果iPhone新品销量超预期，供应链受益', impact: 'positive', industries: ['消费电子'] },
-    { title: '特斯拉FSD自动驾驶获批新地区，股价异动', impact: 'positive', industries: ['新能源汽车'] },
-    { title: '腾讯游戏版号获批，新品上线在即', impact: 'positive', industries: ['互联网科技'] },
-    { title: '阿里巴巴云业务增长超预期，AI投入见效', impact: 'positive', industries: ['电商云计算'] },
-    { title: '贵州茅台批价企稳，高端消费回暖', impact: 'positive', industries: ['白酒消费'] },
-    { title: '宁德时代获欧洲大客户订单，出海加速', impact: 'positive', industries: ['新能源'] },
-    { title: '比亚迪新能源汽车销量再创新高', impact: 'positive', industries: ['新能源汽车'] },
-    { title: '美团即时零售业务增长迅猛，亏损收窄', impact: 'positive', industries: ['本地生活'] },
-    { title: '汇丰控股上调全年业绩指引，股息有望增加', impact: 'positive', industries: ['银行金融'] },
-    { title: '友邦保险新业务价值超预期，内地市场强劲', impact: 'positive', industries: ['保险'] },
-    { title: '微软Azure云业务增长加速，AI贡献显著', impact: 'positive', industries: ['软件云计算'] },
-    { title: '亚马逊AWS营收创新高，广告业务高增长', impact: 'positive', industries: ['电商云计算'] },
-    { title: '美国通胀数据超预期，美联储降息预期降温', impact: 'negative', industries: ['科技', '新能源', '消费电子'] },
-    { title: '中国地产数据不及预期，市场情绪谨慎', impact: 'negative', industries: ['银行', '金融保险'] },
-    { title: '英伟达出口管制升级，中国业务承压', impact: 'negative', industries: ['半导体AI'] },
-    { title: '苹果在华销量下滑，竞争加剧', impact: 'negative', industries: ['消费电子'] },
-    { title: '特斯拉召回部分车型，质量问题引担忧', impact: 'negative', industries: ['新能源汽车'] },
-    { title: '腾讯游戏业务增长放缓，监管趋严', impact: 'negative', industries: ['互联网科技'] },
-    { title: '阿里巴巴电商竞争加剧，利润率承压', impact: 'negative', industries: ['电商云计算'] },
-    { title: '贵州茅台批价回落，高端消费疲软', impact: 'negative', industries: ['白酒消费'] },
-    { title: '宁德时代价格战加剧，毛利率承压', impact: 'negative', industries: ['新能源'] },
-    { title: '比亚迪价格战引发行业担忧，利润空间压缩', impact: 'negative', industries: ['新能源汽车'] },
-    { title: '美团外卖佣金争议持续，监管风险上升', impact: 'negative', industries: ['本地生活'] },
-    { title: '汇丰控股地缘政治风险升温，业务不确定性增加', impact: 'negative', industries: ['银行金融'] },
-    { title: '友邦保险内地业务增速放缓，新单保费承压', impact: 'negative', industries: ['保险'] },
-    { title: '微软AI投入巨大，短期利润率承压', impact: 'negative', industries: ['软件云计算'] },
-    { title: '亚马逊消费业务增长放缓，成本控制压力大', impact: 'negative', industries: ['电商云计算'] },
-    { title: '市场观望情绪浓厚，成交量萎缩', impact: 'neutral', industries: [] },
-    { title: '北向资金净流入，外资看好A股后市', impact: 'positive', industries: ['银行', '白酒消费', '新能源'] },
-    { title: '南向资金持续流入港股，科技股获青睐', impact: 'positive', industries: ['互联网科技', '电商云计算'] },
-    { title: '地缘政治紧张，市场避险情绪升温', impact: 'negative', industries: ['科技', '新能源汽车', '半导体AI'] },
-    { title: '全球经济增长放缓预期，周期股承压', impact: 'negative', industries: ['银行', '保险', '银行金融'] },
-    { title: 'AI产业趋势明确，资金持续流入科技板块', impact: 'positive', industries: ['半导体AI', '软件云计算', '互联网科技'] },
-    { title: '新能源汽车渗透率持续提升，行业空间广阔', impact: 'positive', industries: ['新能源汽车', '新能源'] },
-    { title: '消费复苏信号显现，可选消费受益', impact: 'positive', industries: ['白酒消费', '本地生活'] }
+    // 宏观政策
+    { type: 'macro', title: '美联储维持利率不变，暗示年内可能降息', impact: 'positive', industries: ['finance', 'tech', 'newenergy'], magnitude: 1.5 },
+    { type: 'macro', title: '中国央行宣布降准0.5个百分点，释放长期流动性', impact: 'positive', industries: ['finance', 'consumer'], magnitude: 1.8 },
+    { type: 'macro', title: '美国通胀数据超预期，美联储降息预期降温', impact: 'negative', industries: ['tech', 'newenergy', 'consumer'], magnitude: 1.5 },
+    { type: 'macro', title: '地缘政治紧张，市场避险情绪升温', impact: 'negative', industries: ['tech', 'newenergy'], magnitude: 1.2 },
+    { type: 'macro', title: '全球经济增长放缓预期，周期股承压', impact: 'negative', industries: ['finance', 'energy'], magnitude: 1.0 },
+    // 行业事件
+    { type: 'industry', title: 'AI产业趋势明确，资金持续流入科技板块', impact: 'positive', industries: ['tech'], magnitude: 2.0 },
+    { type: 'industry', title: '新能源汽车渗透率持续提升，行业空间广阔', impact: 'positive', industries: ['newenergy'], magnitude: 1.8 },
+    { type: 'industry', title: '消费复苏信号显现，可选消费受益', impact: 'positive', industries: ['consumer'], magnitude: 1.2 },
+    { type: 'industry', title: '科技板块估值过高，资金获利了结', impact: 'negative', industries: ['tech'], magnitude: 1.5 },
+    { type: 'industry', title: '新能源价格战加剧，行业利润率承压', impact: 'negative', industries: ['newenergy'], magnitude: 1.8 },
+    // 公司事件
+    { type: 'company', title: '英伟达发布新一代AI芯片，性能提升3倍', impact: 'positive', stockId: 'us_nvda', magnitude: 3.0 },
+    { type: 'company', title: '苹果iPhone新品销量超预期，供应链受益', impact: 'positive', stockId: 'us_aapl', magnitude: 2.0 },
+    { type: 'company', title: '特斯拉FSD自动驾驶获批新地区', impact: 'positive', stockId: 'us_tsla', magnitude: 2.5 },
+    { type: 'company', title: '腾讯游戏版号获批，新品上线在即', impact: 'positive', stockId: 'hk_tencent', magnitude: 1.8 },
+    { type: 'company', title: '阿里巴巴云业务增长超预期', impact: 'positive', stockId: 'hk_alibaba', magnitude: 1.8 },
+    { type: 'company', title: '贵州茅台批价企稳，高端消费回暖', impact: 'positive', stockId: 'a_maotai', magnitude: 1.5 },
+    { type: 'company', title: '宁德时代获欧洲大客户订单，出海加速', impact: 'positive', stockId: 'a_catl', magnitude: 2.0 },
+    { type: 'company', title: '比亚迪新能源汽车销量再创新高', impact: 'positive', stockId: 'a_byd', magnitude: 1.8 },
+    { type: 'company', title: '美团即时零售业务增长迅猛，亏损收窄', impact: 'positive', stockId: 'hk_meituan', magnitude: 1.8 },
+    { type: 'company', title: '汇丰控股上调全年业绩指引，股息有望增加', impact: 'positive', stockId: 'hk_hsbc', magnitude: 1.5 },
+    { type: 'company', title: '友邦保险新业务价值超预期，内地市场强劲', impact: 'positive', stockId: 'hk_aia', magnitude: 1.5 },
+    { type: 'company', title: '微软Azure云业务增长加速，AI贡献显著', impact: 'positive', stockId: 'us_msft', magnitude: 1.8 },
+    { type: 'company', title: '亚马逊AWS营收创新高，广告业务高增长', impact: 'positive', stockId: 'us_amzn', magnitude: 1.5 },
+    { type: 'company', title: '英伟达出口管制升级，中国业务承压', impact: 'negative', stockId: 'us_nvda', magnitude: 2.5 },
+    { type: 'company', title: '苹果在华销量下滑，竞争加剧', impact: 'negative', stockId: 'us_aapl', magnitude: 1.8 },
+    { type: 'company', title: '特斯拉召回部分车型，质量问题引担忧', impact: 'negative', stockId: 'us_tsla', magnitude: 2.0 },
+    { type: 'company', title: '腾讯游戏业务增长放缓，监管趋严', impact: 'negative', stockId: 'hk_tencent', magnitude: 1.5 },
+    { type: 'company', title: '阿里巴巴电商竞争加剧，利润率承压', impact: 'negative', stockId: 'hk_alibaba', magnitude: 1.5 },
+    { type: 'company', title: '贵州茅台批价回落，高端消费疲软', impact: 'negative', stockId: 'a_maotai', magnitude: 1.5 },
+    { type: 'company', title: '宁德时代价格战加剧，毛利率承压', impact: 'negative', stockId: 'a_catl', magnitude: 1.8 },
+    { type: 'company', title: '比亚迪价格战引发行业担忧，利润空间压缩', impact: 'negative', stockId: 'a_byd', magnitude: 1.5 },
+    { type: 'company', title: '美团外卖佣金争议持续，监管风险上升', impact: 'negative', stockId: 'hk_meituan', magnitude: 1.8 },
+    // 资金流向
+    { type: 'flow', title: '北向资金净流入，外资看好A股后市', impact: 'positive', industries: ['finance', 'consumer', 'newenergy'], magnitude: 1.0 },
+    { type: 'flow', title: '南向资金持续流入港股，科技股获青睐', impact: 'positive', industries: ['tech'], magnitude: 1.0 },
+    { type: 'neutral', title: '市场观望情绪浓厚，成交量萎缩', impact: 'neutral', industries: [], magnitude: 0 }
+  ];
+
+  // 黑天鹅事件模板（低概率，高影响）
+  const BLACK_SWAN_TEMPLATES = [
+    { title: '突发：全球芯片供应链中断，科技股暴跌', impact: 'negative', industries: ['tech'], magnitude: 5.0 },
+    { title: '突发：某新能源车企曝出重大安全事故，行业恐慌', impact: 'negative', industries: ['newenergy'], magnitude: 4.5 },
+    { title: '突发：国际金融危机爆发，全球股市暴跌', impact: 'negative', industries: ['tech', 'finance', 'consumer', 'newenergy'], magnitude: 6.0 },
+    { title: '突发：某科技巨头财务造假被曝光，股价腰斩', impact: 'negative', stockId: 'us_nvda', magnitude: 8.0 },
+    { title: '突发：重大政策利好出台，A股全线涨停', impact: 'positive', industries: ['finance', 'consumer', 'newenergy'], magnitude: 4.0 }
   ];
 
   // ═══════════════════════════════════════════════
@@ -8396,58 +9537,266 @@ const SongStockMarket = (function () {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
+  function formatNewsTime(date) {
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    if (minutes <= 0) return '刚刚';
+    if (minutes < 60) return `${minutes} 分钟前`;
+    if (hours < 24) return `${hours} 小时前`;
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}月${day}日`;
+  }
+
+  // 获取股票的标准行业ID
+  function getIndustryId(stock) {
+    if (stock.industryId) return stock.industryId;
+    return INDUSTRY_MAP[stock.industry] || 'consumer';
+  }
+
+  // 获取货币符号
+  function getCurrencySymbol(market) {
+    if (market === 'A股') return '¥';
+    if (market === '港股') return 'HK$';
+    if (market === '美股') return '$';
+    return '¥';
+  }
+
+  // 判断是否A股（红涨绿跌）
+  function isAStock(market) {
+    return market === 'A股';
+  }
+
+  // ═══════════════════════════════════════════════
+  // 行业周期系统
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 初始化行业周期数据
+   */
+  function initIndustries() {
+    const states = ['boom', 'recovery', 'recession', 'depression'];
+    return INDUSTRIES.map(ind => {
+      const initialState = states[randomInt(0, 3)];
+      const cycle = CYCLE_STATES[initialState];
+      return {
+        id: ind.id,
+        name: ind.name,
+        cycle: initialState,
+        cycleName: cycle.name,
+        cycleDays: randomInt(1, cycle.maxDays),
+        trend: cycle.trend,
+        baseVolatility: ind.baseVolatility,
+        dailyChange: 0
+      };
+    });
+  }
+
+  /**
+   * 更新行业周期（每日调用）
+   */
+  function updateIndustries(industries) {
+    return industries.map(ind => {
+      const currentCycle = CYCLE_STATES[ind.cycle];
+      let newCycle = ind.cycle;
+      let newDays = ind.cycleDays + 1;
+
+      // 检查是否需要转换周期
+      if (newDays >= currentCycle.minDays) {
+        const transition = CYCLE_TRANSITION[ind.cycle];
+        const rand = Math.random();
+        let cumulative = 0;
+        for (const [state, prob] of Object.entries(transition)) {
+          cumulative += prob;
+          if (rand <= cumulative) {
+            newCycle = state;
+            break;
+          }
+        }
+        if (newCycle !== ind.cycle) {
+          newDays = 0;
+        }
+      }
+
+      const cycleConfig = CYCLE_STATES[newCycle];
+      // 行业日涨跌幅 = 周期趋势 + 随机波动
+      const dailyChange = cycleConfig.trend + randomFloat(-1.5, 1.5) * cycleConfig.volatility;
+
+      return {
+        ...ind,
+        cycle: newCycle,
+        cycleName: cycleConfig.name,
+        cycleDays: newDays,
+        trend: cycleConfig.trend,
+        dailyChange: parseFloat(dailyChange.toFixed(2))
+      };
+    });
+  }
+
+  /**
+   * 获取某行业的周期趋势影响
+   */
+  function getIndustryCycleImpact(industries, industryId) {
+    const ind = industries.find(i => i.id === industryId);
+    if (!ind) return 0;
+    return ind.dailyChange;
+  }
+
+  // ═══════════════════════════════════════════════
+  // 大盘指数
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 初始化大盘指数
+   */
+  function initMarketIndex(stocks) {
+    // 以所有股票总市值加权计算初始指数
+    const totalMarketCap = stocks.reduce((sum, s) => sum + s.marketCap, 0);
+    return {
+      value: 1000,
+      previousClose: 1000,
+      change: 0,
+      changePercent: 0,
+      high: 1000,
+      low: 1000,
+      volume: 0,
+      history: [],
+      baseMarketCap: totalMarketCap
+    };
+  }
+
+  /**
+   * 更新大盘指数
+   */
+  function updateMarketIndex(marketIndex, stocks, today) {
+    // 以市值加权计算涨跌幅
+    const totalMarketCap = stocks.reduce((sum, s) => sum + s.marketCap, 0);
+    const prevTotalMarketCap = stocks.reduce((sum, s) => sum + s.previousClose * (s.marketCap / s.price), 0);
+
+    const changePercent = prevTotalMarketCap > 0
+      ? ((totalMarketCap - prevTotalMarketCap) / prevTotalMarketCap) * 100
+      : 0;
+
+    const newValue = parseFloat((marketIndex.value * (1 + changePercent / 100)).toFixed(2));
+    const totalVolume = stocks.reduce((sum, s) => sum + s.volume, 0);
+
+    const historyEntry = {
+      date: today,
+      open: marketIndex.value,
+      high: Math.max(marketIndex.value, newValue),
+      low: Math.min(marketIndex.value, newValue),
+      close: newValue,
+      volume: totalVolume
+    };
+
+    return {
+      ...marketIndex,
+      value: newValue,
+      previousClose: marketIndex.value,
+      change: parseFloat((newValue - marketIndex.value).toFixed(2)),
+      changePercent: parseFloat(changePercent.toFixed(2)),
+      high: Math.max(marketIndex.high, newValue),
+      low: Math.min(marketIndex.low, newValue),
+      volume: totalVolume,
+      history: [...(marketIndex.history || []), historyEntry].slice(-60)
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  // 数据迁移
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 迁移旧版股票市场数据到新结构
+   */
+  function migrateStockMarket(oldData) {
+    if (!oldData) return null;
+
+    // 确保每只股票有新字段
+    const migratedStocks = (oldData.stocks || []).map(stock => {
+      const industryId = getIndustryId(stock);
+      return {
+        ...stock,
+        industryId: stock.industryId || industryId,
+        pbRatio: stock.pbRatio || stock.peRatio ? parseFloat((stock.price / (stock.peRatio * 2)).toFixed(2)) : 1.0,
+        eps: stock.eps || parseFloat((stock.price / (stock.peRatio || 20)).toFixed(2)),
+        dividendYield: stock.dividendYield || stock.dividend ? parseFloat(((stock.dividend / stock.price) * 100).toFixed(2)) : 0,
+        liquidity: stock.liquidity || 'high',
+        canSellToday: stock.canSellToday !== undefined ? stock.canSellToday : true
+      };
+    });
+
+    // 确保有行业周期数据
+    const industries = oldData.industries && oldData.industries.length > 0
+      ? oldData.industries
+      : initIndustries();
+
+    // 确保有大盘指数
+    const marketIndex = oldData.marketIndex || initMarketIndex(migratedStocks);
+
+    // 确保有交易记录
+    const tradeRecords = oldData.tradeRecords || [];
+
+    return {
+      ...oldData,
+      stocks: migratedStocks,
+      industries,
+      marketIndex,
+      tradeRecords
+    };
+  }
+
   // ═══════════════════════════════════════════════
   // 初始化
   // ═══════════════════════════════════════════════
 
   /**
    * 初始化股票市场数据
-   * @param {string} startDate - 游戏起始日期 (YYYY-MM-DD)
    */
   function initStockMarket(startDate) {
     const baseDate = startDate || new Date().toISOString().split('T')[0];
     const stocks = DEFAULT_STOCKS.map(stock => {
-      // 生成 30 天历史价格
       const priceHistory = generatePriceHistory(stock.price, 30, stock.beta, baseDate);
-
       return {
         ...stock,
         priceHistory,
         change: parseFloat((((stock.price - stock.previousClose) / stock.previousClose) * 100).toFixed(2)),
+        canSellToday: true,
         lastUpdated: new Date().toISOString()
       };
     });
 
-    // 生成初始新闻
+    const industries = initIndustries();
+    const marketIndex = initMarketIndex(stocks);
     const news = generateNews(5, baseDate);
+    const tradeRecords = [];
 
     return {
       stocks,
+      industries,
+      marketIndex,
       news,
+      tradeRecords,
       lastUpdate: new Date().toISOString()
     };
   }
 
   /**
    * 生成历史价格数据
-   * @param {number} currentPrice - 当前价格
-   * @param {number} days - 生成多少天历史
-   * @param {number} beta - 波动率
-   * @param {string} endDate - 结束日期（游戏当前日期）
    */
   function generatePriceHistory(currentPrice, days, beta = 1, endDate) {
     const history = [];
     const baseEndDate = endDate || new Date().toISOString().split('T')[0];
-    let price = currentPrice * randomFloat(0.85, 0.95); // 从较低价格开始
+    let price = currentPrice * randomFloat(0.85, 0.95);
 
     for (let i = days; i >= 0; i--) {
       const date = new Date(baseEndDate);
       date.setDate(date.getDate() - i);
 
-      // 每日波动（beta 越大波动越大）
       const dailyChange = randomFloat(-3 * beta, 3 * beta) / 100;
       price = price * (1 + dailyChange);
-      // 价格范围限制：根据当前价格动态设置，避免高价股被错误限制
       const priceFloor = Math.max(0.1, currentPrice * 0.3);
       const priceCeiling = currentPrice * 5;
       price = clamp(price, priceFloor, priceCeiling);
@@ -8462,76 +9811,124 @@ const SongStockMarket = (function () {
       });
     }
 
-    // 最后一天的收盘价设为当前价格
     if (history.length > 0) {
       history[history.length - 1].close = currentPrice;
     }
-
     return history;
   }
 
   // ═══════════════════════════════════════════════
-  // 每日更新
+  // 每日价格更新（重写：趋势+波动+事件）
   // ═══════════════════════════════════════════════
 
   /**
-   * 每日更新股票价格和新闻
+   * 每日更新股票市场
    */
   function dailyUpdate(stockMarket, gameState) {
     if (!stockMarket || !stockMarket.stocks) {
       return initStockMarket();
     }
 
+    // 数据迁移检查
+    if (!stockMarket.industries || !stockMarket.marketIndex) {
+      stockMarket = migrateStockMarket(stockMarket);
+    }
+
     const today = gameState.gameDate?.current || formatDate(new Date());
     const news = stockMarket.news || [];
 
-    // 更新每只股票价格
+    // 1. 更新行业周期
+    const updatedIndustries = updateIndustries(stockMarket.industries);
+
+    // 2. 更新每只股票价格
     const updatedStocks = stockMarket.stocks.map(stock => {
-      return updateStockPrice(stock, today, gameState);
+      return updateStockPrice(stock, today, gameState, updatedIndustries, news);
     });
 
-    // 生成新新闻（每天 1-3 条）
+    // 3. 更新大盘指数
+    const updatedMarketIndex = updateMarketIndex(stockMarket.marketIndex, updatedStocks, today);
+
+    // 4. 生成新新闻（每天 1-3 条，小概率黑天鹅）
     const newNewsCount = randomInt(1, 3);
     const newNews = generateNews(newNewsCount);
-    const allNews = [...newNews, ...news].slice(0, 20); // 保留最近 20 条
+    // 2% 概率触发黑天鹅
+    if (Math.random() < 0.02) {
+      const swan = BLACK_SWAN_TEMPLATES[randomInt(0, BLACK_SWAN_TEMPLATES.length - 1)];
+      newNews.push({
+        id: 'news_swan_' + Date.now(),
+        title: swan.title,
+        time: '刚刚',
+        impact: swan.impact,
+        industries: swan.industries || [],
+        stockId: swan.stockId || null,
+        magnitude: swan.magnitude,
+        type: 'blackswan',
+        isBlackSwan: true,
+        timestamp: new Date().toISOString()
+      });
+    }
+    const allNews = [...newNews, ...news].slice(0, 30);
+
+    // 5. 重置T+1标记（新的一天，昨日买入的可以卖出了）
+    updatedStocks.forEach(stock => {
+      stock.canSellToday = true;
+    });
 
     return {
+      ...stockMarket,
       stocks: updatedStocks,
+      industries: updatedIndustries,
+      marketIndex: updatedMarketIndex,
       news: allNews,
       lastUpdate: new Date().toISOString()
     };
   }
 
   /**
-   * 更新单只股票价格
+   * 更新单只股票价格（核心逻辑重写）
    */
-  function updateStockPrice(stock, today, gameState) {
+  function updateStockPrice(stock, today, gameState, industries, news) {
     const previousClose = stock.price;
+    const industryId = getIndustryId(stock);
 
-    // 基础波动（基于 beta）
-    let changePercent = randomFloat(-2.5 * stock.beta, 2.5 * stock.beta);
+    // 1. 大盘趋势影响（beta × 大盘涨跌幅）
+    const marketChange = gameState.stockMarket?.marketIndex?.changePercent || 0;
+    let changePercent = marketChange * stock.beta * 0.4;
 
-    // 行业趋势影响
-    const industryTrend = getIndustryTrend(stock.industry, gameState);
-    changePercent += industryTrend;
+    // 2. 行业周期影响
+    const industryImpact = getIndustryCycleImpact(industries, industryId);
+    changePercent += industryImpact * 0.5;
 
-    // 新闻影响（如果有相关新闻）
-    const newsImpact = getNewsImpactForStock(stock, gameState.stockMarket?.news || []);
-    changePercent += newsImpact;
-
-    // 松氏自身决策影响（如果是松氏系股票）
-    if (stock.id.startsWith('song_')) {
-      const heirAbilities = gameState.heir?.abilities || {};
-      if (heirAbilities.business) {
-        changePercent += (heirAbilities.business - 50) * 0.02;
-      }
-      if (heirAbilities.reputation) {
-        changePercent += (heirAbilities.reputation - 50) * 0.015;
-      }
+    // 3. 个股基本面回归（PE偏离行业均值时回归）
+    const industryPe = getIndustryAveragePe(industries, industryId, gameState.stockMarket?.stocks || []);
+    if (industryPe > 0 && stock.peRatio > 0) {
+      const peDeviation = (stock.peRatio - industryPe) / industryPe;
+      changePercent -= peDeviation * 0.3; // PE过高则有下跌压力
     }
 
-    // 限制单日涨跌幅
-    changePercent = clamp(changePercent, -10, 10);
+    // 4. 短期随机波动（基于beta和流动性）
+    const volMultiplier = stock.liquidity === 'low' ? 1.5 : stock.liquidity === 'medium' ? 1.2 : 1.0;
+    changePercent += randomFloat(-2.0 * stock.beta * volMultiplier, 2.0 * stock.beta * volMultiplier);
+
+    // 5. 新闻事件影响
+    const newsImpact = getNewsImpactForStock(stock, news);
+    changePercent += newsImpact;
+
+    // 6. 松氏自身决策影响（松氏系股票）
+    if (stock.id.startsWith('song_')) {
+      const heirAbilities = gameState.heir?.abilities || {};
+      if (heirAbilities.business) changePercent += (heirAbilities.business - 50) * 0.02;
+      if (heirAbilities.reputation) changePercent += (heirAbilities.reputation - 50) * 0.015;
+    }
+
+    // 7. 涨跌停限制（仅A股）
+    if (isAStock(stock.market)) {
+      const limitPercent = stock.code && (stock.code.startsWith('300') || stock.code.startsWith('688')) ? 20 : 10;
+      changePercent = clamp(changePercent, -limitPercent, limitPercent);
+    } else {
+      // 港股美股无涨跌停，但限制单日极端波动（防异常）
+      changePercent = clamp(changePercent, -30, 30);
+    }
 
     // 计算新价格
     const newPrice = parseFloat((previousClose * (1 + changePercent / 100)).toFixed(2));
@@ -8541,26 +9938,19 @@ const SongStockMarket = (function () {
     const volume = randomInt(5000000, 50000000);
 
     // 更新历史价格
-    const newHistoryEntry = {
-      date: today,
-      open,
-      high,
-      low,
-      close: newPrice,
-      volume
-    };
+    const newHistoryEntry = { date: today, open, high, low, close: newPrice, volume };
+    const priceHistory = [...(stock.priceHistory || []), newHistoryEntry].slice(-60);
 
-    const priceHistory = [...(stock.priceHistory || []), newHistoryEntry].slice(-60); // 保留最近 60 天
+    // 更新PE（价格变动后PE同步变动）
+    const newPe = stock.eps > 0 ? parseFloat((newPrice / stock.eps).toFixed(2)) : stock.peRatio;
 
     return {
       ...stock,
       price: newPrice,
       previousClose,
-      open,
-      high,
-      low,
-      volume,
+      open, high, low, volume,
       change: parseFloat(changePercent.toFixed(2)),
+      peRatio: newPe,
       marketCap: Math.round(newPrice * (stock.marketCap / previousClose)),
       priceHistory,
       lastUpdated: new Date().toISOString()
@@ -8568,18 +9958,12 @@ const SongStockMarket = (function () {
   }
 
   /**
-   * 获取行业趋势
+   * 获取行业平均PE
    */
-  function getIndustryTrend(industry, gameState) {
-    // 简化：随机行业趋势，后续可以根据游戏状态动态调整
-    const trends = {
-      '金融': randomFloat(-0.5, 0.8),
-      '科技': randomFloat(-1.0, 1.5),
-      '地产': randomFloat(-0.8, 0.6),
-      '奢侈品': randomFloat(-0.3, 0.7),
-      '能源': randomFloat(-1.2, 1.8)
-    };
-    return trends[industry] || 0;
+  function getIndustryAveragePe(industries, industryId, stocks) {
+    const industryStocks = stocks.filter(s => getIndustryId(s) === industryId && s.peRatio > 0);
+    if (industryStocks.length === 0) return 0;
+    return industryStocks.reduce((sum, s) => sum + s.peRatio, 0) / industryStocks.length;
   }
 
   /**
@@ -8587,19 +9971,419 @@ const SongStockMarket = (function () {
    */
   function getNewsImpactForStock(stock, news) {
     let impact = 0;
-    const recentNews = news.slice(0, 5); // 只看最近 5 条
+    const recentNews = (news || []).slice(0, 8);
 
     for (const item of recentNews) {
-      if (item.industries && item.industries.includes(stock.industry)) {
-        if (item.impact === 'positive') {
-          impact += randomFloat(0.5, 2.0);
-        } else if (item.impact === 'negative') {
-          impact -= randomFloat(0.5, 2.0);
-        }
+      const magnitude = item.magnitude || 1.0;
+      // 个股新闻
+      if (item.stockId && item.stockId === stock.id) {
+        if (item.impact === 'positive') impact += randomFloat(0.5, 1.5) * magnitude;
+        else if (item.impact === 'negative') impact -= randomFloat(0.5, 1.5) * magnitude;
+      }
+      // 行业新闻
+      if (item.industries && item.industries.includes(getIndustryId(stock))) {
+        if (item.impact === 'positive') impact += randomFloat(0.3, 1.0) * magnitude * 0.5;
+        else if (item.impact === 'negative') impact -= randomFloat(0.3, 1.0) * magnitude * 0.5;
       }
     }
-
     return impact;
+  }
+
+  // ═══════════════════════════════════════════════
+  // 交易规则：涨跌停价格
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 获取涨跌停价格
+   */
+  function getLimitPrices(stock) {
+    if (!isAStock(stock.market)) {
+      return { limitUp: Infinity, limitDown: 0, hasLimit: false };
+    }
+    // 创业板(300)/科创板(688) ±20%，主板 ±10%
+    const limitPercent = stock.code && (stock.code.startsWith('300') || stock.code.startsWith('688')) ? 0.20 : 0.10;
+    const basePrice = stock.previousClose || stock.price;
+    return {
+      limitUp: parseFloat((basePrice * (1 + limitPercent)).toFixed(2)),
+      limitDown: parseFloat((basePrice * (1 - limitPercent)).toFixed(2)),
+      hasLimit: true,
+      limitPercent: limitPercent * 100
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  // 交易规则：T+1
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 判断持仓是否可以今日卖出（T+1）
+   */
+  function canSellToday(position, today) {
+    if (!position) return false;
+    // A股T+1：买入日次日才能卖
+    // 港股美股T+0：随时可卖
+    // 通过position.market或stockId前缀判断
+    const stockId = position.stockId || '';
+    if (stockId.startsWith('a_')) {
+      const buyDate = position.buyDate;
+      if (!buyDate) return true;
+      return buyDate < today;
+    }
+    return true; // 港股美股T+0
+  }
+
+  /**
+   * 获取可卖出数量（考虑T+1）
+   */
+  function getSellableShares(position, today) {
+    if (!position) return 0;
+    if (canSellToday(position, today)) return position.shares;
+    // 当日买入的部分不可卖
+    return position.shares - (position.todayBoughtShares || 0);
+  }
+
+  // ═══════════════════════════════════════════════
+  // 交易规则：费用计算
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 计算交易费用
+   * @param {object} stock - 股票对象
+   * @param {number} amount - 交易金额（价格×数量）
+   * @param {string} side - 'buy' | 'sell'
+   * @returns {object} 费用明细
+   */
+  function calculateFees(stock, amount, side) {
+    const market = stock.market;
+    let commission = 0;
+    let stampTax = 0;
+    let transferFee = 0;
+
+    if (market === 'A股') {
+      // 佣金：0.025%，最低5元（双边）
+      commission = Math.max(amount * 0.00025, 5);
+      // 印花税：0.05%（仅卖出，2023年减半后）
+      if (side === 'sell') stampTax = amount * 0.0005;
+      // 过户费：0.001%（双边）
+      transferFee = amount * 0.00001;
+    } else if (market === '港股') {
+      // 佣金：0.03%，最低3港元（双边）
+      commission = Math.max(amount * 0.0003, 3);
+      // 印花税：0.1%（仅卖出）
+      if (side === 'sell') stampTax = amount * 0.001;
+      // 交易费：0.005%（双边）
+      transferFee = amount * 0.00005;
+    } else if (market === '美股') {
+      // 佣金：0.005美元/股，简化为0.03%（双边）
+      commission = Math.max(amount * 0.0003, 1);
+      // 美股无印花税
+      stampTax = 0;
+      // SEC费等：0.0008%（仅卖出）
+      if (side === 'sell') transferFee = amount * 0.000008;
+    }
+
+    const totalFee = commission + stampTax + transferFee;
+    return {
+      commission: parseFloat(commission.toFixed(2)),
+      stampTax: parseFloat(stampTax.toFixed(2)),
+      transferFee: parseFloat(transferFee.toFixed(2)),
+      totalFee: parseFloat(totalFee.toFixed(2))
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  // 滑点机制
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 计算滑点
+   * @param {object} stock - 股票对象
+   * @param {number} shares - 交易数量
+   * @param {string} side - 'buy' | 'sell'
+   * @returns {object} 滑点信息
+   */
+  function calculateSlippage(stock, shares, side) {
+    const amount = stock.price * shares;
+    const avgDailyVolume = stock.volume || 10000000;
+    const volumeRatio = shares / avgDailyVolume;
+
+    // 基础滑点率
+    let slippageRate = 0;
+    if (volumeRatio > 0.01) {
+      // 超过日均成交量1%开始有滑点
+      slippageRate = volumeRatio * 0.5;
+    }
+
+    // 流动性调整
+    if (stock.liquidity === 'low') slippageRate *= 2.5;
+    else if (stock.liquidity === 'medium') slippageRate *= 1.5;
+
+    // 涨跌停时滑点放大
+    const limits = getLimitPrices(stock);
+    if (limits.hasLimit) {
+      if (side === 'buy' && stock.price >= limits.limitUp * 0.99) slippageRate *= 3;
+      if (side === 'sell' && stock.price <= limits.limitDown * 1.01) slippageRate *= 3;
+    }
+
+    slippageRate = Math.min(slippageRate, 0.05); // 最大滑点5%
+
+    // 买入滑点：实际成交价更高；卖出滑点：实际成交价更低
+    const slippageAmount = amount * slippageRate;
+    const actualPrice = side === 'buy'
+      ? parseFloat((stock.price * (1 + slippageRate)).toFixed(2))
+      : parseFloat((stock.price * (1 - slippageRate)).toFixed(2));
+
+    return {
+      slippageRate: parseFloat((slippageRate * 100).toFixed(3)),
+      slippageAmount: parseFloat(slippageAmount.toFixed(2)),
+      actualPrice,
+      hasSlippage: slippageRate > 0.001
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  // 买卖交易（升级：T+1/涨跌停/费用/滑点/记录）
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 买入股票
+   */
+  function buyStock(stock, shares, portfolio, company, today) {
+    const currentDate = today || new Date().toISOString().split('T')[0];
+
+    // 涨跌停检查：涨停时可能买不进
+    const limits = getLimitPrices(stock);
+    if (limits.hasLimit && stock.price >= limits.limitUp) {
+      return { success: false, error: '股票已涨停，无法买入' };
+    }
+
+    // 计算滑点
+    const slippage = calculateSlippage(stock, shares, 'buy');
+    const actualPrice = slippage.actualPrice;
+
+    // 计算费用
+    const tradeAmount = actualPrice * shares;
+    const fees = calculateFees(stock, tradeAmount, 'buy');
+    const totalAmount = tradeAmount + fees.totalFee;
+
+    // 检查现金流
+    if ((company.cashFlow || 0) < totalAmount) {
+      return { success: false, error: '现金流不足' };
+    }
+
+    // 更新投资组合
+    const existingPosition = portfolio.find(p => p.stockId === stock.id);
+    let updatedPortfolio;
+
+    if (existingPosition) {
+      const totalShares = existingPosition.shares + shares;
+      const totalCostBasis = (existingPosition.avgCost * existingPosition.shares) + (actualPrice * shares);
+      const newAvgCost = totalCostBasis / totalShares;
+
+      updatedPortfolio = portfolio.map(p =>
+        p.stockId === stock.id
+          ? {
+              ...p,
+              shares: totalShares,
+              avgCost: parseFloat(newAvgCost.toFixed(2)),
+              todayBoughtShares: (p.todayBoughtShares || 0) + shares,
+              market: stock.market
+            }
+          : p
+      );
+    } else {
+      updatedPortfolio = [...portfolio, {
+        stockId: stock.id,
+        stockName: stock.name,
+        shares,
+        avgCost: actualPrice,
+        buyDate: currentDate,
+        todayBoughtShares: shares,
+        market: stock.market,
+        realizedProfit: 0
+      }];
+    }
+
+    // 生成交易记录
+    const tradeRecord = {
+      id: 'trade_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+      type: 'buy',
+      stockId: stock.id,
+      stockName: stock.name,
+      market: stock.market,
+      shares,
+      price: actualPrice,
+      amount: tradeAmount,
+      fees: fees.totalFee,
+      feeDetail: fees,
+      slippage: slippage.slippageRate,
+      totalAmount,
+      date: currentDate,
+      timestamp: new Date().toISOString()
+    };
+
+    return {
+      success: true,
+      portfolio: updatedPortfolio,
+      cashFlow: (company.cashFlow || 0) - totalAmount,
+      tradeAmount,
+      actualPrice,
+      fees,
+      slippage,
+      totalAmount,
+      tradeRecord
+    };
+  }
+
+  /**
+   * 卖出股票
+   */
+  function sellStock(stock, shares, portfolio, company, today) {
+    const currentDate = today || new Date().toISOString().split('T')[0];
+    const position = portfolio.find(p => p.stockId === stock.id);
+
+    if (!position) {
+      return { success: false, error: '未持有该股票' };
+    }
+
+    // T+1检查
+    const sellable = getSellableShares(position, currentDate);
+    if (sellable < shares) {
+      return {
+        success: false,
+        error: `可卖数量不足（T+1限制），当前可卖 ${sellable} 股`,
+        sellableShares: sellable
+      };
+    }
+
+    // 跌停检查
+    const limits = getLimitPrices(stock);
+    if (limits.hasLimit && stock.price <= limits.limitDown) {
+      return { success: false, error: '股票已跌停，无法卖出' };
+    }
+
+    // 计算滑点
+    const slippage = calculateSlippage(stock, shares, 'sell');
+    const actualPrice = slippage.actualPrice;
+
+    // 计算费用
+    const tradeAmount = actualPrice * shares;
+    const fees = calculateFees(stock, tradeAmount, 'sell');
+    const netRevenue = tradeAmount - fees.totalFee;
+
+    // 计算盈亏
+    const costBasis = position.avgCost * shares;
+    const grossProfit = tradeAmount - costBasis;
+    const profit = grossProfit - fees.totalFee;
+    const profitPercent = costBasis > 0 ? parseFloat(((profit / costBasis) * 100).toFixed(2)) : 0;
+
+    // 更新投资组合
+    let updatedPortfolio;
+    const remainingShares = position.shares - shares;
+
+    if (remainingShares <= 0) {
+      updatedPortfolio = portfolio.filter(p => p.stockId !== stock.id);
+    } else {
+      updatedPortfolio = portfolio.map(p =>
+        p.stockId === stock.id
+          ? {
+              ...p,
+              shares: remainingShares,
+              realizedProfit: (p.realizedProfit || 0) + profit
+            }
+          : p
+      );
+    }
+
+    // 生成交易记录
+    const tradeRecord = {
+      id: 'trade_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+      type: 'sell',
+      stockId: stock.id,
+      stockName: stock.name,
+      market: stock.market,
+      shares,
+      price: actualPrice,
+      amount: tradeAmount,
+      fees: fees.totalFee,
+      feeDetail: fees,
+      slippage: slippage.slippageRate,
+      netRevenue,
+      costBasis,
+      grossProfit,
+      profit,
+      profitPercent,
+      date: currentDate,
+      timestamp: new Date().toISOString()
+    };
+
+    return {
+      success: true,
+      portfolio: updatedPortfolio,
+      cashFlow: (company.cashFlow || 0) + netRevenue,
+      tradeAmount,
+      actualPrice,
+      fees,
+      slippage,
+      netRevenue,
+      costBasis,
+      profit,
+      profitPercent,
+      realizedProfit: profit,
+      tradeRecord
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  // 浮盈/实盈计算
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 计算持仓浮盈
+   */
+  function calculateUnrealizedProfit(position, stock) {
+    if (!position || !stock) return { profit: 0, profitPercent: 0, marketValue: 0 };
+    const marketValue = stock.price * position.shares;
+    const costValue = position.avgCost * position.shares;
+    const profit = marketValue - costValue;
+    const profitPercent = costValue > 0 ? parseFloat(((profit / costValue) * 100).toFixed(2)) : 0;
+    return {
+      profit: parseFloat(profit.toFixed(2)),
+      profitPercent,
+      marketValue: parseFloat(marketValue.toFixed(2)),
+      costValue: parseFloat(costValue.toFixed(2))
+    };
+  }
+
+  /**
+   * 计算投资组合总览（浮盈+已实现盈亏）
+   */
+  function calculatePortfolioSummary(portfolio, stocks) {
+    let totalMarketValue = 0;
+    let totalCostValue = 0;
+    let totalRealizedProfit = 0;
+
+    portfolio.forEach(position => {
+      const stock = stocks.find(s => s.id === position.stockId);
+      if (stock) {
+        totalMarketValue += stock.price * position.shares;
+        totalCostValue += position.avgCost * position.shares;
+      }
+      totalRealizedProfit += position.realizedProfit || 0;
+    });
+
+    const unrealizedProfit = totalMarketValue - totalCostValue;
+    const totalProfit = unrealizedProfit + totalRealizedProfit;
+
+    return {
+      totalMarketValue: parseFloat(totalMarketValue.toFixed(2)),
+      totalCostValue: parseFloat(totalCostValue.toFixed(2)),
+      unrealizedProfit: parseFloat(unrealizedProfit.toFixed(2)),
+      unrealizedProfitPercent: totalCostValue > 0 ? parseFloat(((unrealizedProfit / totalCostValue) * 100).toFixed(2)) : 0,
+      realizedProfit: parseFloat(totalRealizedProfit.toFixed(2)),
+      totalProfit: parseFloat(totalProfit.toFixed(2)),
+      totalProfitPercent: totalCostValue > 0 ? parseFloat(((totalProfit / totalCostValue) * 100).toFixed(2)) : 0
+    };
   }
 
   // ═══════════════════════════════════════════════
@@ -8625,61 +10409,35 @@ const SongStockMarket = (function () {
       usedTitles.add(template.title);
 
       const time = new Date(now.getTime() - i * randomInt(30, 180) * 60000);
-      const timeStr = formatNewsTime(time);
 
       news.push({
         id: 'news_' + Date.now() + '_' + i,
         title: template.title,
-        time: timeStr,
+        time: formatNewsTime(time),
         impact: template.impact,
+        type: template.type || 'market',
         industries: template.industries || [],
+        stockId: template.stockId || null,
+        magnitude: template.magnitude || 1.0,
         timestamp: time.toISOString()
       });
     }
-
     return news;
   }
 
-  /**
-   * 格式化新闻时间
-   */
-  function formatNewsTime(date) {
-    const now = new Date();
-    const diff = now - date;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-
-    if (minutes <= 0) return '刚刚';
-    if (minutes < 60) return `${minutes} 分钟前`;
-    if (hours < 24) return `${hours} 小时前`;
-
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    return `${month}月${day}日`;
-  }
-
   // ═══════════════════════════════════════════════
-  // 股票详情与走势图
+  // 股票详情与技术指标
   // ═══════════════════════════════════════════════
 
-  /**
-   * 获取股票详情
-   */
   function getStockDetail(stocks, id) {
     return stocks.find(s => s.id === id);
   }
 
-  /**
-   * 获取股票趋势数据
-   */
   function getStockTrend(stock, days = 7) {
     const history = stock.priceHistory || [];
     return history.slice(-days);
   }
 
-  /**
-   * 计算技术指标
-   */
   function calculateIndicators(stock) {
     const history = stock.priceHistory || [];
     if (history.length < 5) return null;
@@ -8693,12 +10451,10 @@ const SongStockMarket = (function () {
       ? recent20.reduce((a, b) => a + b, 0) / recent20.length
       : closes.reduce((a, b) => a + b, 0) / closes.length;
 
-    // 波动率（标准差）
     const mean = closes.reduce((a, b) => a + b, 0) / closes.length;
     const variance = closes.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / closes.length;
     const volatility = Math.sqrt(variance);
 
-    // 5日涨跌幅
     const change5d = ((closes[closes.length - 1] - closes[Math.max(0, closes.length - 6)]) / closes[Math.max(0, closes.length - 6)]) * 100;
 
     return {
@@ -8712,125 +10468,49 @@ const SongStockMarket = (function () {
   }
 
   // ═══════════════════════════════════════════════
-  // 买卖交易
-  // ═══════════════════════════════════════════════
-
-  /**
-   * 买入股票
-   */
-  function buyStock(stock, shares, portfolio, company) {
-    const totalCost = stock.price * shares;
-    const commission = Math.max(totalCost * 0.001, 5); // 佣金 0.1%，最低 5 元
-    const totalAmount = totalCost + commission;
-
-    // 检查现金流
-    if ((company.cashFlow || 0) < totalAmount) {
-      return { success: false, error: '现金流不足' };
-    }
-
-    // 更新投资组合
-    const existingPosition = portfolio.find(p => p.stockId === stock.id);
-    let updatedPortfolio;
-
-    if (existingPosition) {
-      // 加仓：计算平均成本
-      const totalShares = existingPosition.shares + shares;
-      const totalCostBasis = (existingPosition.avgCost * existingPosition.shares) + (stock.price * shares);
-      const newAvgCost = totalCostBasis / totalShares;
-
-      updatedPortfolio = portfolio.map(p =>
-        p.stockId === stock.id
-          ? { ...p, shares: totalShares, avgCost: parseFloat(newAvgCost.toFixed(2)) }
-          : p
-      );
-    } else {
-      // 新建仓位
-      updatedPortfolio = [...portfolio, {
-        stockId: stock.id,
-        stockName: stock.name,
-        shares,
-        avgCost: stock.price,
-        buyDate: new Date().toISOString().split('T')[0]
-      }];
-    }
-
-    return {
-      success: true,
-      portfolio: updatedPortfolio,
-      cashFlow: (company.cashFlow || 0) - totalAmount,
-      totalCost,
-      commission,
-      totalAmount
-    };
-  }
-
-  /**
-   * 卖出股票
-   */
-  function sellStock(stock, shares, portfolio, company) {
-    const position = portfolio.find(p => p.stockId === stock.id);
-
-    if (!position) {
-      return { success: false, error: '未持有该股票' };
-    }
-
-    if (position.shares < shares) {
-      return { success: false, error: `持仓不足，当前持有 ${position.shares} 股` };
-    }
-
-    const totalRevenue = stock.price * shares;
-    const commission = Math.max(totalRevenue * 0.001, 5); // 佣金 0.1%，最低 5 元
-    const stampTax = totalRevenue * 0.001; // 印花税 0.1%（卖出时收取）
-    const netRevenue = totalRevenue - commission - stampTax;
-
-    // 计算盈亏
-    const costBasis = position.avgCost * shares;
-    const profit = totalRevenue - costBasis - commission - stampTax;
-
-    // 更新投资组合
-    let updatedPortfolio;
-    const remainingShares = position.shares - shares;
-
-    if (remainingShares <= 0) {
-      // 清仓
-      updatedPortfolio = portfolio.filter(p => p.stockId !== stock.id);
-    } else {
-      // 减仓
-      updatedPortfolio = portfolio.map(p =>
-        p.stockId === stock.id
-          ? { ...p, shares: remainingShares }
-          : p
-      );
-    }
-
-    return {
-      success: true,
-      portfolio: updatedPortfolio,
-      cashFlow: (company.cashFlow || 0) + netRevenue,
-      totalRevenue,
-      commission,
-      stampTax,
-      netRevenue,
-      profit,
-      profitPercent: parseFloat(((profit / costBasis) * 100).toFixed(2))
-    };
-  }
-
-  // ═══════════════════════════════════════════════
   // 公开 API
   // ═══════════════════════════════════════════════
 
   return {
+    // 常量
     DEFAULT_STOCKS,
+    INDUSTRIES,
+    CYCLE_STATES,
+    // 初始化与更新
     initStockMarket,
     dailyUpdate,
+    migrateStockMarket,
+    initIndustries,
+    initMarketIndex,
+    // 行业周期
+    updateIndustries,
+    getIndustryCycleImpact,
+    getIndustryId,
+    // 大盘指数
+    updateMarketIndex,
+    // 交易规则
+    getLimitPrices,
+    canSellToday,
+    getSellableShares,
+    calculateFees,
+    calculateSlippage,
+    // 买卖
+    buyStock,
+    sellStock,
+    // 盈亏
+    calculateUnrealizedProfit,
+    calculatePortfolioSummary,
+    // 新闻
+    generateNews,
+    getNewsImpactForStock,
+    // 详情与指标
     getStockDetail,
     getStockTrend,
     calculateIndicators,
-    buyStock,
-    sellStock,
-    generateNews,
-    formatMoney
+    // 工具
+    formatMoney,
+    getCurrencySymbol,
+    isAStock
   };
 })();
 
@@ -9534,6 +11214,7 @@ const SongGrowth = (function () {
       id: 'first_decision',
       title: '初掌大权',
       description: '完成第一次重要商业决策',
+      iconId: 'first_decision',
       icon: '🎯',
       condition: (state) => (state.events?.history?.length || 0) >= 1,
       reward: { business: 2, decision: 2 }
@@ -9542,6 +11223,7 @@ const SongGrowth = (function () {
       id: 'ten_decisions',
       title: '崭露头角',
       description: '完成 10 次重要商业决策',
+      iconId: 'ten_decisions',
       icon: '📈',
       condition: (state) => (state.events?.history?.length || 0) >= 10,
       reward: { business: 5, influence: 3 }
@@ -9550,6 +11232,7 @@ const SongGrowth = (function () {
       id: 'thirty_decisions',
       title: '商界新锐',
       description: '完成 30 次重要商业决策',
+      iconId: 'thirty_decisions',
       icon: '🏆',
       condition: (state) => (state.events?.history?.length || 0) >= 30,
       reward: { business: 8, influence: 5, reputation: 3 }
@@ -9558,6 +11241,7 @@ const SongGrowth = (function () {
       id: 'first_stock',
       title: '初入股海',
       description: '第一次买入股票',
+      iconId: 'first_stock',
       icon: '📊',
       condition: (state) => (state.portfolio?.length || 0) >= 1,
       reward: { business: 2, riskJudgment: 2 }
@@ -9566,6 +11250,7 @@ const SongGrowth = (function () {
       id: 'first_fund',
       title: '理财新手',
       description: '第一次买入基金',
+      iconId: 'first_fund',
       icon: '💰',
       condition: (state) => (state.fundPortfolio?.length || 0) >= 1,
       reward: { business: 2, riskJudgment: 1 }
@@ -9574,6 +11259,7 @@ const SongGrowth = (function () {
       id: 'portfolio_1m',
       title: '百万身家',
       description: '投资组合市值达到 100 万',
+      iconId: 'portfolio_1m',
       icon: '💎',
       condition: (state) => {
         const summary = calculatePortfolioValue(state);
@@ -9585,6 +11271,7 @@ const SongGrowth = (function () {
       id: 'portfolio_10m',
       title: '千万富翁',
       description: '投资组合市值达到 1000 万',
+      iconId: 'portfolio_10m',
       icon: '👑',
       condition: (state) => {
         const summary = calculatePortfolioValue(state);
@@ -9596,6 +11283,7 @@ const SongGrowth = (function () {
       id: 'assets_10b',
       title: '十亿帝国',
       description: '松氏集团总资产达到 10 亿',
+      iconId: 'assets_10b',
       icon: '🏛️',
       condition: (state) => (state.company?.totalAssets || 0) >= 10000000000,
       reward: { influence: 15, reputation: 10, familyTrust: 10 }
@@ -9604,6 +11292,7 @@ const SongGrowth = (function () {
       id: 'play_7days',
       title: '一周经营',
       description: '连续经营 7 天',
+      iconId: 'play_7days',
       icon: '📅',
       condition: (state) => (state.meta?.totalPlayDays || 0) >= 7,
       reward: { business: 3, decision: 3 }
@@ -9612,6 +11301,7 @@ const SongGrowth = (function () {
       id: 'play_30days',
       title: '月度掌门',
       description: '连续经营 30 天',
+      iconId: 'play_30days',
       icon: '🗓️',
       condition: (state) => (state.meta?.totalPlayDays || 0) >= 30,
       reward: { business: 8, decision: 5, influence: 5 }
@@ -9620,6 +11310,7 @@ const SongGrowth = (function () {
       id: 'family_trust_80',
       title: '家族认可',
       description: '家族信任度达到 80',
+      iconId: 'family_trust_80',
       icon: '🤝',
       condition: (state) => (state.heir?.abilities?.familyTrust || 0) >= 80,
       reward: { influence: 5, reputation: 3 }
@@ -9628,6 +11319,7 @@ const SongGrowth = (function () {
       id: 'employee_trust_80',
       title: '员工爱戴',
       description: '员工信任度达到 80',
+      iconId: 'employee_trust_80',
       icon: '👥',
       condition: (state) => (state.heir?.abilities?.employeeTrust || 0) >= 80,
       reward: { business: 5, reputation: 3 }
@@ -9636,6 +11328,7 @@ const SongGrowth = (function () {
       id: 'reputation_80',
       title: '声名远扬',
       description: '市场声誉达到 80',
+      iconId: 'reputation_80',
       icon: '🌟',
       condition: (state) => (state.heir?.abilities?.reputation || 0) >= 80,
       reward: { influence: 5, business: 3 }
@@ -9644,6 +11337,7 @@ const SongGrowth = (function () {
       id: 'all_abilities_70',
       title: '全能继承人',
       description: '所有能力值达到 70 以上',
+      iconId: 'all_abilities_70',
       icon: '🎖️',
       condition: (state) => {
         const abilities = state.heir?.abilities || {};
@@ -9655,6 +11349,7 @@ const SongGrowth = (function () {
       id: 'crisis_survived',
       title: '力挽狂澜',
       description: '成功度过一次重大危机事件',
+      iconId: 'crisis_survived',
       icon: '⚡',
       condition: (state) => (state.heir?.crisesSurvived || 0) >= 1,
       reward: { decision: 10, riskJudgment: 8, reputation: 5 }
@@ -9741,6 +11436,372 @@ const SongGrowth = (function () {
       }
     }
   ];
+
+  // ═══════════════════════════════════════════════
+  // 第五阶段：SVG图标库（方案A：线性古铜金）
+  // ═══════════════════════════════════════════════
+
+  const ICON_SVGS = {
+    // 长期目标图标
+    assets_double: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>',
+    profit_1b: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v4a6 6 0 01-12 0V2z"/><path d="M6 10v12h12V10"/><circle cx="12" cy="16" r="2"/></svg>',
+    all_profitable: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>',
+    portfolio_100m: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="6" cy="15" r="1.5"/></svg>',
+    family_trust_100: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>',
+    play_365days: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+    all_milestones: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></svg>',
+    crisis_5survived: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+    // 里程碑图标
+    first_decision: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+    ten_decisions: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>',
+    thirty_decisions: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>',
+    first_stock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="6" width="4" height="15"/><rect x="17" y="9" width="4" height="12"/></svg>',
+    first_fund: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v4a6 6 0 01-12 0V2z"/><path d="M6 10v12h12V10"/><circle cx="12" cy="16" r="2"/></svg>',
+    portfolio_1m: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9l4-6z"/><path d="M2 9h20"/><path d="M12 22V9"/></svg>',
+    portfolio_10m: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l10 10L22 4"/><path d="M2 20h20"/><path d="M6 4v16M18 4v16"/></svg>',
+    assets_10b: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="1"/><path d="M3 10h18"/><path d="M5 7V4a1 1 0 011-1h12a1 1 0 011 1v3"/><path d="M9 14h6"/></svg>',
+    play_7days: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+    play_30days: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="16" r="2"/></svg>',
+    family_trust_80: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+    employee_trust_80: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+    reputation_80: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    all_abilities_70: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></svg>',
+    crisis_survived: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>'
+  };
+
+  function getIconSvg(iconId) {
+    return ICON_SVGS[iconId] || ICON_SVGS.first_decision;
+  }
+
+  // ═══════════════════════════════════════════════
+  // 第五阶段：技能系统
+  // ═══════════════════════════════════════════════
+
+  const SKILLS = [
+    {
+      id: 'business_intuition',
+      name: '商业直觉',
+      description: '对商业机会有敏锐直觉，子公司营收增长率+5%',
+      icon: '🎯',
+      category: 'business',
+      unlockLevel: 2,
+      cost: 1,
+      effect: { revenueBonus: 0.05 }
+    },
+    {
+      id: 'risk_sense',
+      name: '风险嗅觉',
+      description: '能提前感知风险，危机事件发生率降低30%',
+      icon: '👃',
+      category: 'risk',
+      unlockLevel: 3,
+      cost: 1,
+      effect: { crisisReduction: 0.3 }
+    },
+    {
+      id: 'network_master',
+      name: '人脉大师',
+      description: '广泛的人脉网络，资本影响力+10，市场声誉+5',
+      icon: '🤝',
+      category: 'social',
+      unlockLevel: 3,
+      cost: 2,
+      effect: { influenceBonus: 10, reputationBonus: 5 }
+    },
+    {
+      id: 'investment_eye',
+      name: '投资慧眼',
+      description: '精准的投资眼光，股票投资收益率+3%',
+      icon: '👁️',
+      category: 'investment',
+      unlockLevel: 4,
+      cost: 2,
+      effect: { stockReturnBonus: 0.03 }
+    },
+    {
+      id: 'calm_decision',
+      name: '冷静决策',
+      description: '在压力下保持冷静，决策能力+10，风险判断+5',
+      icon: '🧊',
+      category: 'decision',
+      unlockLevel: 5,
+      cost: 2,
+      effect: { decisionBonus: 10, riskJudgmentBonus: 5 }
+    },
+    {
+      id: 'charisma',
+      name: '领袖魅力',
+      description: '天生的领袖气质，员工信任+10，家族信任+5',
+      icon: '⭐',
+      category: 'social',
+      unlockLevel: 5,
+      cost: 3,
+      effect: { employeeTrustBonus: 10, familyTrustBonus: 5 }
+    },
+    {
+      id: 'financial_mastery',
+      name: '财务精通',
+      description: '精通财务运作，集团利润率+2%，成本降低3%',
+      icon: '💰',
+      category: 'business',
+      unlockLevel: 6,
+      cost: 3,
+      effect: { profitMarginBonus: 0.02, costReduction: 0.03 }
+    },
+    {
+      id: 'crisis_handler',
+      name: '危机处理专家',
+      description: '擅长处理危机，危机事件负面影响降低50%',
+      icon: '🛡️',
+      category: 'risk',
+      unlockLevel: 7,
+      cost: 3,
+      effect: { crisisDamageReduction: 0.5 }
+    },
+    {
+      id: 'visionary',
+      name: '远见卓识',
+      description: '超凡的战略眼光，所有子公司增长率+8%',
+      icon: '🔮',
+      category: 'business',
+      unlockLevel: 10,
+      cost: 5,
+      effect: { allGrowthBonus: 0.08 }
+    },
+    {
+      id: 'legendary_aura',
+      name: '传奇气场',
+      description: '传奇继承人的气场，所有属性+5，市场声誉+15',
+      icon: '👑',
+      category: 'social',
+      unlockLevel: 15,
+      cost: 8,
+      effect: { allAbilityBonus: 5, reputationBonus: 15 }
+    }
+  ];
+
+  // ═══════════════════════════════════════════════
+  // 第五阶段：长期目标系统
+  // ═══════════════════════════════════════════════
+
+  const LONG_TERM_GOALS = [
+    {
+      id: 'assets_double',
+      name: '资产翻倍',
+      description: '将集团总资产从初始值翻倍',
+      iconId: 'assets_double',
+      icon: '📈',
+      difficulty: 'medium',
+      target: () => 10000000000, // 100亿
+      current: (state) => state.company?.totalAssets || 0,
+      reward: { influence: 10, reputation: 8, skillPoints: 2 }
+    },
+    {
+      id: 'profit_1b',
+      name: '十亿利润',
+      description: '集团年利润达到10亿',
+      iconId: 'profit_1b',
+      icon: '💎',
+      difficulty: 'hard',
+      target: () => 1000000000,
+      current: (state) => state.company?.totalProfit || 0,
+      reward: { business: 10, influence: 5, skillPoints: 3 }
+    },
+    {
+      id: 'all_subsidiaries_profitable',
+      name: '全面盈利',
+      description: '所有子公司均实现盈利',
+      iconId: 'all_profitable',
+      icon: '✅',
+      difficulty: 'medium',
+      target: () => 1,
+      current: (state) => {
+        const subs = state.subsidiaries || [];
+        const profitable = subs.filter(s => (s.profit || 0) > 0).length;
+        return subs.length > 0 ? profitable / subs.length : 0;
+      },
+      isRatio: true,
+      reward: { business: 8, employeeTrust: 5, skillPoints: 2 }
+    },
+    {
+      id: 'portfolio_100m',
+      name: '百亿投资',
+      description: '投资组合市值达到100亿',
+      iconId: 'portfolio_100m',
+      icon: '🏦',
+      difficulty: 'hard',
+      target: () => 10000000000,
+      current: (state) => calculatePortfolioValue(state),
+      reward: { influence: 15, riskJudgment: 10, skillPoints: 3 }
+    },
+    {
+      id: 'family_trust_100',
+      name: '家族之傲',
+      description: '家族信任度达到100',
+      iconId: 'family_trust_100',
+      icon: '🏆',
+      difficulty: 'medium',
+      target: () => 100,
+      current: (state) => state.heir?.abilities?.familyTrust || 0,
+      reward: { influence: 8, reputation: 8, skillPoints: 2 }
+    },
+    {
+      id: 'play_365days',
+      name: '一年掌门',
+      description: '连续经营365天',
+      iconId: 'play_365days',
+      icon: '🗓️',
+      difficulty: 'legendary',
+      target: () => 365,
+      current: (state) => state.meta?.totalPlayDays || 0,
+      reward: { allAbilities: 5, skillPoints: 5 }
+    },
+    {
+      id: 'all_milestones',
+      name: '里程碑大师',
+      description: '解锁所有成长里程碑',
+      iconId: 'all_milestones',
+      icon: '🎖️',
+      difficulty: 'legendary',
+      target: () => MILESTONES.length,
+      current: (state) => (state.heir?.milestones || []).length,
+      reward: { influence: 20, reputation: 15, skillPoints: 5 }
+    },
+    {
+      id: 'crisis_5survived',
+      name: '百战不殆',
+      description: '成功度过5次重大危机',
+      iconId: 'crisis_5survived',
+      icon: '⚡',
+      difficulty: 'hard',
+      target: () => 5,
+      current: (state) => state.heir?.crisesSurvived || 0,
+      reward: { decision: 15, riskJudgment: 15, skillPoints: 3 }
+    }
+  ];
+
+  // ═══════════════════════════════════════════════
+  // 第五阶段：经验与等级系统
+  // ═══════════════════════════════════════════════
+
+  function getExpForLevel(level) {
+    return Math.floor(100 * Math.pow(1.5, level - 1));
+  }
+
+  function calculateLevel(exp) {
+    let level = 1;
+    let accumulated = 0;
+    while (accumulated + getExpForLevel(level) <= exp) {
+      accumulated += getExpForLevel(level);
+      level++;
+    }
+    return {
+      level,
+      currentExp: exp - accumulated,
+      expToNext: getExpForLevel(level),
+      progress: (exp - accumulated) / getExpForLevel(level)
+    };
+  }
+
+  function getSkillEffects(unlockedSkills) {
+    const effects = {};
+    for (const skillId of unlockedSkills) {
+      const skill = SKILLS.find(s => s.id === skillId);
+      if (skill && skill.effect) {
+        for (const [key, value] of Object.entries(skill.effect)) {
+          effects[key] = (effects[key] || 0) + value;
+        }
+      }
+    }
+    return effects;
+  }
+
+  function getAvailableSkills(level, unlockedSkills) {
+    return SKILLS.filter(s =>
+      s.unlockLevel <= level && !unlockedSkills.includes(s.id)
+    );
+  }
+
+  // ═══════════════════════════════════════════════
+  // 第五阶段：家族信任度权限系统
+  // ═══════════════════════════════════════════════
+
+  const TRUST_THRESHOLDS = {
+    majorDecision: 70,    // 重大决策需要的信任度
+    emergencyPower: 85,    // 紧急处置权
+    fullAuthority: 95,     // 完全自主权
+    vetoProof: 100         // 否决权免疫
+  };
+
+  function checkDecisionAuthority(familyTrust, decisionType) {
+    const threshold = TRUST_THRESHOLDS[decisionType] || 50;
+    if (familyTrust >= threshold) {
+      return { allowed: true, needApproval: false, message: '信任度充足，可自主决策' };
+    } else if (familyTrust >= threshold - 20) {
+      return { allowed: true, needApproval: true, message: '信任度不足，需要家族会议审批' };
+    } else {
+      return { allowed: false, needApproval: true, message: '信任度过低，家族会议可能否决该决策' };
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  // 第五阶段：长期目标进度检查
+  // ═══════════════════════════════════════════════
+
+  function checkLongTermGoals(state) {
+    const completed = state.heir?.completedGoals || [];
+    const completedIds = new Set(completed);
+    const newCompleted = [];
+    const rewards = { abilities: {}, skillPoints: 0 };
+
+    for (const goal of LONG_TERM_GOALS) {
+      if (!completedIds.has(goal.id)) {
+        const current = goal.current(state);
+        const target = goal.target();
+        if (current >= target) {
+          newCompleted.push({
+            ...goal,
+            completedDate: state.gameDate?.current || new Date().toISOString().split('T')[0]
+          });
+          if (goal.reward) {
+            if (goal.reward.skillPoints) rewards.skillPoints += goal.reward.skillPoints;
+            for (const [key, value] of Object.entries(goal.reward)) {
+              if (key !== 'skillPoints' && key !== 'allAbilities') {
+                rewards.abilities[key] = (rewards.abilities[key] || 0) + value;
+              }
+            }
+            if (goal.reward.allAbilities) {
+              const abilityKeys = ['business', 'decision', 'influence', 'reputation', 'familyTrust', 'employeeTrust', 'riskJudgment'];
+              for (const key of abilityKeys) {
+                rewards.abilities[key] = (rewards.abilities[key] || 0) + goal.reward.allAbilities;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      newCompleted,
+      rewards,
+      allCompleted: [...completed, ...newCompleted.map(g => ({ id: g.id, completedDate: g.completedDate }))]
+    };
+  }
+
+  function getGoalProgress(state) {
+    return LONG_TERM_GOALS.map(goal => {
+      const current = goal.current(state);
+      const target = goal.target();
+      const completed = (state.heir?.completedGoals || []).some(g => g.id === goal.id);
+      return {
+        ...goal,
+        current,
+        target,
+        progress: target > 0 ? Math.min(100, (current / target) * 100) : 0,
+        completed
+      };
+    });
+  }
 
   // ═══════════════════════════════════════════════
   // 工具函数
@@ -9964,6 +12025,9 @@ const SongGrowth = (function () {
   return {
     MILESTONES,
     ENDINGS,
+    SKILLS,
+    LONG_TERM_GOALS,
+    TRUST_THRESHOLDS,
     checkMilestones,
     getAllMilestones,
     predictEnding,
@@ -9971,7 +12035,16 @@ const SongGrowth = (function () {
     generateAnnualReport,
     analyzeStyle,
     calculatePortfolioValue,
-    formatMoney
+    formatMoney,
+    // 第五阶段新API
+    getExpForLevel,
+    calculateLevel,
+    getSkillEffects,
+    getAvailableSkills,
+    checkDecisionAuthority,
+    checkLongTermGoals,
+    getGoalProgress,
+    getIconSvg
   };
 })();
 
@@ -11587,6 +13660,26 @@ const PageCompany = (function () {
    */
   function renderList(container, subsidiaries, state) {
     const company = state.company || {};
+
+    // 第四阶段：如果没有财务三表数据，即时生成
+    if (!company.financialStatements && subsidiaries.length > 0) {
+      try {
+        const fs = SongFinance.generateGroupFinancials(subsidiaries, company);
+        const aa = SongFinance.analyzeAssetAllocation(
+          subsidiaries, company,
+          state.investments?.portfolio || [],
+          state.investments?.fundPortfolio || [],
+          state.stockMarket?.stocks || [],
+          state.funds || []
+        );
+        SongState.update('company', { ...company, financialStatements: fs, assetAllocation: aa });
+        company.financialStatements = fs;
+        company.assetAllocation = aa;
+      } catch (e) {
+        console.warn('生成财务三表失败:', e);
+      }
+    }
+
     const totalRevenue = subsidiaries.reduce((sum, s) => sum + (s.revenue || 0), 0);
     const totalProfit = subsidiaries.reduce((sum, s) => sum + (s.profit || 0), 0);
     const totalEmployees = subsidiaries.reduce((sum, s) => sum + (s.employees || 0), 0);
@@ -11632,6 +13725,9 @@ const PageCompany = (function () {
           </div>
         </div>
       </div>
+
+      <!-- 第四阶段：财务总览 -->
+      ${renderFinancialOverview(state.company)}
 
       <!-- 风险预警 -->
       ${(highRiskCount > 0 || lowSatisfactionCount > 0) ? `
@@ -11876,6 +13972,9 @@ const PageCompany = (function () {
         </div>
       ` : ''}
 
+      <!-- 第四阶段：子公司财务三表 -->
+      ${renderSubsidiaryFinancials(subsidiary)}
+
       <!-- 历史趋势 -->
       ${recentHistory.length > 1 ? `
         <div class="card">
@@ -11929,6 +14028,341 @@ const PageCompany = (function () {
       <!-- 操作按钮 -->
       <div class="detail-actions">
         <button class="btn btn-secondary" onclick="PageCompany.backToList()">返回列表</button>
+      </div>
+    `;
+  }
+
+  // ═══════════════════════════════════════════════
+  // 第四阶段：财务三表与资产配置
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 渲染财务总览卡片
+   */
+  function renderFinancialOverview(company) {
+    const fs = company?.financialStatements;
+    const ratios = fs?.ratios;
+    const allocation = company?.assetAllocation;
+
+    if (!fs || !ratios) {
+      return `
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">财务总览</span>
+            <span class="tag tag-muted">数据生成中</span>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 13px;">财务三表数据将在首次每日结算后生成，请推进游戏日期。</p>
+        </div>
+      `;
+    }
+
+    const income = fs.incomeStatement;
+    const balance = fs.balanceSheet;
+    const cashFlow = fs.cashFlowStatement;
+
+    // 比率颜色
+    const roeColor = ratios.roe >= 15 ? 'positive' : ratios.roe >= 8 ? 'warning' : 'negative';
+    const debtColor = ratios.debtRatio <= 50 ? 'positive' : ratios.debtRatio <= 70 ? 'warning' : 'negative';
+    const currentColor = ratios.currentRatio >= 2 ? 'positive' : ratios.currentRatio >= 1 ? 'warning' : 'negative';
+
+    return `
+      <div class="card financial-overview-card">
+        <div class="card-header">
+          <span class="card-title">财务总览</span>
+          <button class="btn btn-gold btn-small" onclick="PageCompany.showFinancialStatements()">
+            查看完整三表 →
+          </button>
+        </div>
+
+        <!-- 关键财务比率 -->
+        <div class="financial-ratios-grid">
+          <div class="ratio-item">
+            <div class="ratio-value ${roeColor}">${ratios.roe}%</div>
+            <div class="ratio-label">净资产收益率 ROE</div>
+          </div>
+          <div class="ratio-item">
+            <div class="ratio-value">${ratios.roa}%</div>
+            <div class="ratio-label">总资产收益率 ROA</div>
+          </div>
+          <div class="ratio-item">
+            <div class="ratio-value ${debtColor}">${ratios.debtRatio}%</div>
+            <div class="ratio-label">资产负债率</div>
+          </div>
+          <div class="ratio-item">
+            <div class="ratio-value ${currentColor}">${ratios.currentRatio}</div>
+            <div class="ratio-label">流动比率</div>
+          </div>
+          <div class="ratio-item">
+            <div class="ratio-value">${ratios.grossMargin}%</div>
+            <div class="ratio-label">毛利率</div>
+          </div>
+          <div class="ratio-item">
+            <div class="ratio-value">${ratios.netMargin}%</div>
+            <div class="ratio-label">净利率</div>
+          </div>
+        </div>
+
+        <!-- 三表摘要 -->
+        <div class="financial-summary-grid">
+          <div class="summary-section">
+            <div class="summary-title">利润表摘要</div>
+            <div class="summary-row"><span>营业收入</span><span class="gold">${formatMoney(income.revenue)}</span></div>
+            <div class="summary-row"><span>毛利润</span><span>${formatMoney(income.grossProfit)}</span></div>
+            <div class="summary-row"><span>营业利润</span><span>${formatMoney(income.operatingProfit)}</span></div>
+            <div class="summary-row"><span>净利润</span><span class="${income.netProfit >= 0 ? 'positive' : 'negative'}">${formatMoney(income.netProfit)}</span></div>
+          </div>
+          <div class="summary-section">
+            <div class="summary-title">资产负债表摘要</div>
+            <div class="summary-row"><span>总资产</span><span class="gold">${formatMoney(balance.totalAssets)}</span></div>
+            <div class="summary-row"><span>流动资产</span><span>${formatMoney(balance.currentAssets)}</span></div>
+            <div class="summary-row"><span>总负债</span><span class="negative">${formatMoney(balance.totalLiabilities)}</span></div>
+            <div class="summary-row"><span>所有者权益</span><span class="positive">${formatMoney(balance.totalEquity)}</span></div>
+          </div>
+          <div class="summary-section">
+            <div class="summary-title">现金流量表摘要</div>
+            <div class="summary-row"><span>经营现金流</span><span class="${cashFlow.operatingCashFlow >= 0 ? 'positive' : 'negative'}">${formatMoney(cashFlow.operatingCashFlow)}</span></div>
+            <div class="summary-row"><span>投资现金流</span><span class="${cashFlow.investingCashFlow >= 0 ? 'positive' : 'negative'}">${formatMoney(cashFlow.investingCashFlow)}</span></div>
+            <div class="summary-row"><span>筹资现金流</span><span class="${cashFlow.financingCashFlow >= 0 ? 'positive' : 'negative'}">${formatMoney(cashFlow.financingCashFlow)}</span></div>
+            <div class="summary-row"><span>现金净变动</span><span class="${cashFlow.netCashChange >= 0 ? 'positive' : 'negative'}">${formatMoney(cashFlow.netCashChange)}</span></div>
+          </div>
+        </div>
+
+        ${allocation && allocation.suggestions && allocation.suggestions.length > 0 ? `
+          <div class="financial-suggestions">
+            <div class="suggestions-title">资产配置建议</div>
+            ${allocation.suggestions.map(s => `
+              <div class="suggestion-item suggestion-${s.type}">
+                <span class="suggestion-icon">${s.type === 'danger' ? '⚠️' : s.type === 'warning' ? '⚡' : s.type === 'success' ? '✅' : '💡'}</span>
+                <span class="suggestion-text">${s.text}</span>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  /**
+   * 显示完整财务三表弹窗
+   */
+  function showFinancialStatements() {
+    const state = SongState.getState();
+    const fs = state.company?.financialStatements;
+    if (!fs) {
+      alert('财务三表数据尚未生成，请推进游戏日期后再试。');
+      return;
+    }
+
+    const income = fs.incomeStatement;
+    const balance = fs.balanceSheet;
+    const cashFlow = fs.cashFlowStatement;
+    const ratios = fs.ratios;
+
+    const modal = document.createElement('div');
+    modal.className = 'financial-modal-overlay';
+    modal.innerHTML = `
+      <div class="financial-modal">
+        <div class="financial-modal-header">
+          <h2>松氏集团 · 财务三表</h2>
+          <button class="financial-modal-close" onclick="this.closest('.financial-modal-overlay').remove()">×</button>
+        </div>
+        <div class="financial-modal-tabs">
+          <button class="fin-tab active" data-tab="income" onclick="PageCompany.switchFinTab(this, 'income')">利润表</button>
+          <button class="fin-tab" data-tab="balance" onclick="PageCompany.switchFinTab(this, 'balance')">资产负债表</button>
+          <button class="fin-tab" data-tab="cashflow" onclick="PageCompany.switchFinTab(this, 'cashflow')">现金流量表</button>
+          <button class="fin-tab" data-tab="ratios" onclick="PageCompany.switchFinTab(this, 'ratios')">财务比率</button>
+        </div>
+        <div class="financial-modal-content">
+          <div class="fin-panel active" id="fin-panel-income">
+            ${renderIncomeStatementTable(income)}
+          </div>
+          <div class="fin-panel" id="fin-panel-balance">
+            ${renderBalanceSheetTable(balance)}
+          </div>
+          <div class="fin-panel" id="fin-panel-cashflow">
+            ${renderCashFlowTable(cashFlow)}
+          </div>
+          <div class="fin-panel" id="fin-panel-ratios">
+            ${renderRatiosTable(ratios)}
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+  }
+
+  function switchFinTab(btn, tabName) {
+    const modal = btn.closest('.financial-modal');
+    modal.querySelectorAll('.fin-tab').forEach(t => t.classList.remove('active'));
+    modal.querySelectorAll('.fin-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('fin-panel-' + tabName).classList.add('active');
+  }
+
+  function renderIncomeStatementTable(income) {
+    return `
+      <table class="financial-table">
+        <thead><tr><th>项目</th><th class="num">金额</th><th class="num">占营收比</th></tr></thead>
+        <tbody>
+          <tr class="fin-section"><td colspan="3">一、营业收入</td></tr>
+          <tr><td>营业收入</td><td class="num gold">${formatMoney(income.revenue)}</td><td class="num">100%</td></tr>
+          <tr><td>减：营业成本</td><td class="num negative">${formatMoney(income.cost)}</td><td class="num">${(income.cost/income.revenue*100).toFixed(1)}%</td></tr>
+          <tr class="fin-subtotal"><td>毛利润</td><td class="num">${formatMoney(income.grossProfit)}</td><td class="num">${income.grossMargin}%</td></tr>
+          <tr class="fin-section"><td colspan="3">二、期间费用</td></tr>
+          <tr><td>销售费用</td><td class="num negative">${formatMoney(income.salesExpense)}</td><td class="num">${(income.salesExpense/income.revenue*100).toFixed(1)}%</td></tr>
+          <tr><td>管理费用</td><td class="num negative">${formatMoney(income.adminExpense)}</td><td class="num">${(income.adminExpense/income.revenue*100).toFixed(1)}%</td></tr>
+          <tr><td>研发费用</td><td class="num negative">${formatMoney(income.rdExpense)}</td><td class="num">${income.revenue > 0 ? (income.rdExpense/income.revenue*100).toFixed(1) : 0}%</td></tr>
+          <tr><td>财务费用</td><td class="num negative">${formatMoney(income.financialExpense)}</td><td class="num">${(income.financialExpense/income.revenue*100).toFixed(1)}%</td></tr>
+          <tr class="fin-subtotal"><td>营业利润</td><td class="num">${formatMoney(income.operatingProfit)}</td><td class="num">${(income.operatingProfit/income.revenue*100).toFixed(1)}%</td></tr>
+          <tr><td>加：营业外收支</td><td class="num">${formatMoney(income.nonOperatingIncome)}</td><td class="num">-</td></tr>
+          <tr class="fin-subtotal"><td>利润总额</td><td class="num">${formatMoney(income.totalProfit)}</td><td class="num">${(income.totalProfit/income.revenue*100).toFixed(1)}%</td></tr>
+          <tr><td>减：所得税（25%）</td><td class="num negative">${formatMoney(income.tax)}</td><td class="num">-</td></tr>
+          <tr class="fin-total"><td>净利润</td><td class="num ${income.netProfit >= 0 ? 'positive' : 'negative'}">${formatMoney(income.netProfit)}</td><td class="num">${income.netMargin}%</td></tr>
+        </tbody>
+      </table>
+    `;
+  }
+
+  function renderBalanceSheetTable(balance) {
+    return `
+      <table class="financial-table">
+        <thead><tr><th>资产</th><th class="num">金额</th><th>负债与权益</th><th class="num">金额</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>流动资产</strong></td><td class="num"></td>
+            <td><strong>流动负债</strong></td><td class="num"></td>
+          </tr>
+          <tr><td>货币资金</td><td class="num">${formatMoney(balance.cash)}</td><td>应付账款</td><td class="num">${formatMoney(balance.accountsPayable)}</td></tr>
+          <tr><td>应收账款</td><td class="num">${formatMoney(balance.accountsReceivable)}</td><td>短期借款</td><td class="num">${formatMoney(balance.shortTermLoan)}</td></tr>
+          <tr><td>存货</td><td class="num">${formatMoney(balance.inventory)}</td><td></td><td class="num"></td></tr>
+          <tr class="fin-subtotal"><td>流动资产合计</td><td class="num">${formatMoney(balance.currentAssets)}</td><td>流动负债合计</td><td class="num">${formatMoney(balance.currentLiabilities)}</td></tr>
+          <tr>
+            <td><strong>非流动资产</strong></td><td class="num"></td>
+            <td><strong>非流动负债</strong></td><td class="num"></td>
+          </tr>
+          <tr><td>固定资产</td><td class="num">${formatMoney(balance.fixedAssets)}</td><td>长期借款</td><td class="num">${formatMoney(balance.longTermLoan)}</td></tr>
+          <tr><td>无形资产</td><td class="num">${formatMoney(balance.intangibleAssets)}</td><td>应付债券</td><td class="num">${formatMoney(balance.bondsPayable)}</td></tr>
+          <tr><td>长期投资</td><td class="num">${formatMoney(balance.longTermInvestment)}</td><td></td><td class="num"></td></tr>
+          <tr class="fin-subtotal"><td>非流动资产合计</td><td class="num">${formatMoney(balance.nonCurrentAssets)}</td><td>非流动负债合计</td><td class="num">${formatMoney(balance.nonCurrentLiabilities)}</td></tr>
+          <tr class="fin-total"><td><strong>资产总计</strong></td><td class="num gold">${formatMoney(balance.totalAssets)}</td><td><strong>负债总计</strong></td><td class="num negative">${formatMoney(balance.totalLiabilities)}</td></tr>
+          <tr><td></td><td class="num"></td><td><strong>所有者权益</strong></td><td class="num"></td></tr>
+          <tr><td></td><td class="num"></td><td>实收资本</td><td class="num">${formatMoney(balance.paidInCapital)}</td></tr>
+          <tr><td></td><td class="num"></td><td>资本公积</td><td class="num">${formatMoney(balance.capitalReserve)}</td></tr>
+          <tr><td></td><td class="num"></td><td>盈余公积</td><td class="num">${formatMoney(balance.surplusReserve)}</td></tr>
+          <tr><td></td><td class="num"></td><td>未分配利润</td><td class="num">${formatMoney(balance.undistributedProfit)}</td></tr>
+          <tr class="fin-total"><td></td><td class="num"></td><td><strong>所有者权益合计</strong></td><td class="num positive">${formatMoney(balance.totalEquity)}</td></tr>
+          <tr class="fin-check"><td colspan="4">会计恒等式验证：资产 = 负债 + 权益 → ${balance.balanceCheck ? '✅ 平衡' : '⚠️ 不平衡'}</td></tr>
+        </tbody>
+      </table>
+    `;
+  }
+
+  function renderCashFlowTable(cashFlow) {
+    return `
+      <table class="financial-table">
+        <thead><tr><th>项目</th><th class="num">金额</th></tr></thead>
+        <tbody>
+          <tr class="fin-section"><td colspan="2">一、经营活动产生的现金流量</td></tr>
+          <tr><td>净利润</td><td class="num">${formatMoney(cashFlow.netProfit)}</td></tr>
+          <tr><td>加：固定资产折旧</td><td class="num">${formatMoney(cashFlow.depreciation)}</td></tr>
+          <tr><td>加：无形资产摊销</td><td class="num">${formatMoney(cashFlow.amortization)}</td></tr>
+          <tr><td>减：营运资本增加</td><td class="num ${cashFlow.workingCapitalChange >= 0 ? 'negative' : 'positive'}">${formatMoney(cashFlow.workingCapitalChange)}</td></tr>
+          <tr class="fin-subtotal"><td>经营活动现金流量净额</td><td class="num ${cashFlow.operatingCashFlow >= 0 ? 'positive' : 'negative'}">${formatMoney(cashFlow.operatingCashFlow)}</td></tr>
+          <tr class="fin-section"><td colspan="2">二、投资活动产生的现金流量</td></tr>
+          <tr><td>投资收益</td><td class="num positive">${formatMoney(cashFlow.investmentIncome)}</td></tr>
+          <tr><td>减：资本支出</td><td class="num negative">${formatMoney(cashFlow.capitalExpenditure)}</td></tr>
+          <tr class="fin-subtotal"><td>投资活动现金流量净额</td><td class="num ${cashFlow.investingCashFlow >= 0 ? 'positive' : 'negative'}">${formatMoney(cashFlow.investingCashFlow)}</td></tr>
+          <tr class="fin-section"><td colspan="2">三、筹资活动产生的现金流量</td></tr>
+          <tr><td>借款变动</td><td class="num ${cashFlow.newBorrowing >= 0 ? 'positive' : 'negative'}">${formatMoney(cashFlow.newBorrowing)}</td></tr>
+          <tr><td>减：分配股利</td><td class="num negative">${formatMoney(cashFlow.dividendPaid)}</td></tr>
+          <tr class="fin-subtotal"><td>筹资活动现金流量净额</td><td class="num ${cashFlow.financingCashFlow >= 0 ? 'positive' : 'negative'}">${formatMoney(cashFlow.financingCashFlow)}</td></tr>
+          <tr class="fin-total"><td>现金及现金等价物净增加额</td><td class="num ${cashFlow.netCashChange >= 0 ? 'positive' : 'negative'}">${formatMoney(cashFlow.netCashChange)}</td></tr>
+          <tr class="fin-check"><td>盈利质量（经营现金流/净利润）</td><td class="num">${cashFlow.cashToProfitRatio}</td></tr>
+        </tbody>
+      </table>
+    `;
+  }
+
+  function renderRatiosTable(ratios) {
+    const getRating = (value, good, warn) => value >= good ? '优秀' : value >= warn ? '良好' : '需关注';
+    return `
+      <div class="ratios-grid">
+        <div class="ratio-card">
+          <div class="ratio-card-title">盈利能力</div>
+          <div class="ratio-card-item"><span>净资产收益率 ROE</span><span class="gold">${ratios.roe}%</span><span class="ratio-rating">${getRating(ratios.roe, 15, 8)}</span></div>
+          <div class="ratio-card-item"><span>总资产收益率 ROA</span><span class="gold">${ratios.roa}%</span><span class="ratio-rating">${getRating(ratios.roa, 8, 4)}</span></div>
+          <div class="ratio-card-item"><span>毛利率</span><span class="gold">${ratios.grossMargin}%</span><span class="ratio-rating">${getRating(ratios.grossMargin, 40, 20)}</span></div>
+          <div class="ratio-card-item"><span>净利率</span><span class="gold">${ratios.netMargin}%</span><span class="ratio-rating">${getRating(ratios.netMargin, 15, 8)}</span></div>
+        </div>
+        <div class="ratio-card">
+          <div class="ratio-card-title">偿债能力</div>
+          <div class="ratio-card-item"><span>资产负债率</span><span class="${ratios.debtRatio <= 50 ? 'positive' : ratios.debtRatio <= 70 ? 'warning' : 'negative'}">${ratios.debtRatio}%</span><span class="ratio-rating">${ratios.debtRatio <= 50 ? '稳健' : ratios.debtRatio <= 70 ? '适中' : '偏高'}</span></div>
+          <div class="ratio-card-item"><span>流动比率</span><span class="${ratios.currentRatio >= 2 ? 'positive' : ratios.currentRatio >= 1 ? 'warning' : 'negative'}">${ratios.currentRatio}</span><span class="ratio-rating">${ratios.currentRatio >= 2 ? '优秀' : ratios.currentRatio >= 1 ? '合格' : '风险'}</span></div>
+          <div class="ratio-card-item"><span>权益比率</span><span class="gold">${ratios.equityRatio}%</span><span class="ratio-rating">${ratios.equityRatio >= 50 ? '稳健' : '偏低'}</span></div>
+        </div>
+        <div class="ratio-card">
+          <div class="ratio-card-title">营运与现金流</div>
+          <div class="ratio-card-item"><span>总资产周转率</span><span class="gold">${ratios.assetTurnover}</span><span class="ratio-rating">${ratios.assetTurnover >= 1 ? '高效' : '一般'}</span></div>
+          <div class="ratio-card-item"><span>经营现金流</span><span class="${ratios.operatingCashFlow >= 0 ? 'positive' : 'negative'}">${formatMoney(ratios.operatingCashFlow)}</span><span class="ratio-rating">${ratios.operatingCashFlow >= 0 ? '健康' : '承压'}</span></div>
+          <div class="ratio-card-item"><span>盈利质量</span><span class="gold">${ratios.cashToProfitRatio}</span><span class="ratio-rating">${ratios.cashToProfitRatio >= 1 ? '优秀' : ratios.cashToProfitRatio >= 0.5 ? '良好' : '需关注'}</span></div>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * 渲染子公司三表（在详情页中使用）
+   */
+  function renderSubsidiaryFinancials(subsidiary) {
+    if (subsidiary.type === '公益') {
+      return `
+        <div class="card">
+          <div class="card-header"><span class="card-title">财务数据</span></div>
+          <p style="color: var(--text-secondary); font-size: 13px;">慈善基金为非营利组织，不适用商业财务三表。</p>
+        </div>
+      `;
+    }
+
+    const fin = SongFinance.generateSubsidiaryFinancials(subsidiary);
+    const income = fin.incomeStatement;
+    const balance = fin.balanceSheet;
+    const ratios = fin.ratios;
+
+    return `
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">财务三表（简化）</span>
+          <span class="tag tag-info">年度估算</span>
+        </div>
+        <div class="sub-financials-grid">
+          <div class="sub-fin-section">
+            <div class="sub-fin-title">利润表</div>
+            <div class="sub-fin-row"><span>营业收入</span><span class="gold">${formatMoney(income.revenue)}</span></div>
+            <div class="sub-fin-row"><span>营业成本</span><span class="negative">${formatMoney(income.cost)}</span></div>
+            <div class="sub-fin-row"><span>毛利润</span><span>${formatMoney(income.grossProfit)}</span></div>
+            <div class="sub-fin-row"><span>期间费用</span><span class="negative">${formatMoney(income.salesExpense + income.adminExpense + income.rdExpense)}</span></div>
+            <div class="sub-fin-row sub-fin-total"><span>净利润</span><span class="${income.netProfit >= 0 ? 'positive' : 'negative'}">${formatMoney(income.netProfit)}</span></div>
+          </div>
+          <div class="sub-fin-section">
+            <div class="sub-fin-title">资产负债</div>
+            <div class="sub-fin-row"><span>流动资产</span><span>${formatMoney(balance.currentAssets)}</span></div>
+            <div class="sub-fin-row"><span>固定资产</span><span>${formatMoney(balance.fixedAssets)}</span></div>
+            <div class="sub-fin-row"><span>总资产</span><span class="gold">${formatMoney(balance.totalAssets)}</span></div>
+            <div class="sub-fin-row"><span>总负债</span><span class="negative">${formatMoney(balance.totalLiabilities)}</span></div>
+            <div class="sub-fin-row sub-fin-total"><span>所有者权益</span><span class="positive">${formatMoney(balance.totalEquity)}</span></div>
+          </div>
+          <div class="sub-fin-section">
+            <div class="sub-fin-title">关键比率</div>
+            <div class="sub-fin-row"><span>ROE</span><span class="gold">${ratios.roe}%</span></div>
+            <div class="sub-fin-row"><span>ROA</span><span class="gold">${ratios.roa}%</span></div>
+            <div class="sub-fin-row"><span>毛利率</span><span>${ratios.grossMargin}%</span></div>
+            <div class="sub-fin-row"><span>净利率</span><span>${ratios.netMargin}%</span></div>
+            <div class="sub-fin-row sub-fin-total"><span>资产负债率</span><span class="${balance.debtRatio <= 50 ? 'positive' : 'warning'}">${balance.debtRatio}%</span></div>
+          </div>
+        </div>
       </div>
     `;
   }
@@ -12337,7 +14771,12 @@ const PageCompany = (function () {
     render,
     showDetail,
     backToList,
-    handleCrisisAction
+    handleCrisisAction,
+    // 第四阶段新API
+    showFinancialStatements,
+    switchFinTab,
+    renderFinancialOverview,
+    renderSubsidiaryFinancials
   };
 })();
 
@@ -12652,6 +15091,20 @@ const PageMarket = (function () {
     const portfolio = state.portfolio || [];
     const position = portfolio.find(p => p.stockId === stock.id);
 
+    // 货币符号与涨跌颜色（A股红涨绿跌，港股美股绿涨红跌）
+    const currency = SongStockMarket.getCurrencySymbol(stock.market);
+    const isA = SongStockMarket.isAStock(stock.market);
+    const upClass = isA ? 'stock-up-cn' : 'stock-up-global';
+    const downClass = isA ? 'stock-down-cn' : 'stock-down-global';
+    const priceColorClass = stock.change >= 0 ? upClass : downClass;
+    // 走势图颜色
+    const chartColor = isA
+      ? (stock.change >= 0 ? '#c75c5c' : '#4a9d7a')
+      : (stock.change >= 0 ? '#4a9d7a' : '#c75c5c');
+    const chartFill = isA
+      ? (stock.change >= 0 ? 'rgba(199, 92, 92, 0.15)' : 'rgba(74, 157, 122, 0.15)')
+      : (stock.change >= 0 ? 'rgba(74, 157, 122, 0.15)' : 'rgba(199, 92, 92, 0.15)');
+
     container.innerHTML = `
       <div class="page-header">
         <button class="btn btn-secondary btn-small back-btn" onclick="PageMarket.backToList()">
@@ -12664,8 +15117,8 @@ const PageMarket = (function () {
       <!-- 价格大卡片 -->
       <div class="card stock-detail-header">
         <div class="stock-price-large">
-          <div class="price-large ${stock.change >= 0 ? 'positive' : 'negative'}">HK$ ${stock.price.toFixed(2)}</div>
-          <div class="price-change-large ${stock.change >= 0 ? 'positive' : 'negative'}">
+          <div class="price-large ${priceColorClass}">${currency} ${stock.price.toFixed(2)}</div>
+          <div class="price-change-large ${priceColorClass}">
             ${stock.change >= 0 ? '+' : ''}${stock.change.toFixed(2)}% 
             (${stock.change >= 0 ? '+' : ''}${(stock.price - stock.previousClose).toFixed(2)})
           </div>
@@ -12787,19 +15240,27 @@ const PageMarket = (function () {
             </div>
             <div class="position-row">
               <span class="position-label">平均成本</span>
-              <span class="position-value">HK$ ${position.avgCost.toFixed(2)}</span>
+              <span class="position-value">${currency} ${position.avgCost.toFixed(2)}</span>
             </div>
             <div class="position-row">
               <span class="position-label">当前市值</span>
-              <span class="position-value">HK$ ${(stock.price * position.shares).toFixed(2)}</span>
+              <span class="position-value">${currency} ${(stock.price * position.shares).toFixed(2)}</span>
             </div>
             <div class="position-row">
               <span class="position-label">浮动盈亏</span>
-              <span class="position-value ${stock.price >= position.avgCost ? 'positive' : 'negative'}">
-                ${stock.price >= position.avgCost ? '+' : ''}HK$ ${((stock.price - position.avgCost) * position.shares).toFixed(2)}
+              <span class="position-value ${stock.price >= position.avgCost ? upClass : downClass}">
+                ${stock.price >= position.avgCost ? '+' : ''}${currency} ${((stock.price - position.avgCost) * position.shares).toFixed(2)}
                 (${(((stock.price - position.avgCost) / position.avgCost) * 100).toFixed(2)}%)
               </span>
             </div>
+            ${position.realizedProfit !== undefined && position.realizedProfit !== 0 ? `
+              <div class="position-row">
+                <span class="position-label">已实现盈亏</span>
+                <span class="position-value ${position.realizedProfit >= 0 ? upClass : downClass}">
+                  ${position.realizedProfit >= 0 ? '+' : ''}${currency} ${position.realizedProfit.toFixed(2)}
+                </span>
+              </div>
+            ` : ''}
           </div>
         </div>
       ` : ''}
@@ -12842,8 +15303,14 @@ const PageMarket = (function () {
     }).join(' ');
 
     const isPositive = stock.change >= 0;
-    const color = isPositive ? '#4a9d7a' : '#c75c5c';
-    const fillColor = isPositive ? 'rgba(74, 157, 122, 0.15)' : 'rgba(199, 92, 92, 0.15)';
+    const isA = SongStockMarket.isAStock(stock.market);
+    // A股红涨绿跌，港股美股绿涨红跌
+    const color = isA
+      ? (isPositive ? '#c75c5c' : '#4a9d7a')
+      : (isPositive ? '#4a9d7a' : '#c75c5c');
+    const fillColor = isA
+      ? (isPositive ? 'rgba(199, 92, 92, 0.15)' : 'rgba(74, 157, 122, 0.15)')
+      : (isPositive ? 'rgba(74, 157, 122, 0.15)' : 'rgba(199, 92, 92, 0.15)');
 
     // 生成网格线
     const gridLines = [0.25, 0.5, 0.75].map(ratio => {
@@ -12877,13 +15344,32 @@ const PageMarket = (function () {
     const stock = state.stockMarket?.stocks?.find(s => s.id === modal.stockId);
     const position = state.portfolio?.find(p => p.stockId === modal.stockId);
     const cashFlow = state.company?.cashFlow || 0;
+    const today = state.gameDate?.current || new Date().toISOString().split('T')[0];
 
     if (!stock) return '';
 
+    const currency = SongStockMarket.getCurrencySymbol(stock.market);
     const shares = modal.shares || 100;
-    const estimatedCost = stock.price * shares;
-    const commission = Math.max(estimatedCost * 0.001, 5);
-    const totalAmount = modal.type === 'buy' ? estimatedCost + commission : estimatedCost - commission - (estimatedCost * 0.001);
+
+    // 计算滑点和实际成交价
+    const slippage = SongStockMarket.calculateSlippage(stock, shares, modal.type);
+    const actualPrice = slippage.actualPrice;
+    const tradeAmount = actualPrice * shares;
+
+    // 计算费用
+    const fees = SongStockMarket.calculateFees(stock, tradeAmount, modal.type);
+    const totalAmount = modal.type === 'buy' ? tradeAmount + fees.totalFee : tradeAmount - fees.totalFee;
+
+    // 涨跌停价格
+    const limits = SongStockMarket.getLimitPrices(stock);
+
+    // 可卖数量（T+1）
+    const sellableShares = position ? SongStockMarket.getSellableShares(position, today) : 0;
+    const isT1Restricted = position && sellableShares < position.shares;
+
+    // 涨跌停状态
+    const isLimitUp = limits.hasLimit && stock.price >= limits.limitUp;
+    const isLimitDown = limits.hasLimit && stock.price <= limits.limitDown;
 
     return `
       <div class="modal-overlay" onclick="PageMarket.closeTradeModal()">
@@ -12896,19 +15382,40 @@ const PageMarket = (function () {
             <div class="trade-info">
               <div class="trade-row">
                 <span class="trade-label">当前价格</span>
-                <span class="trade-value">HK$ ${stock.price.toFixed(2)}</span>
+                <span class="trade-value">${currency} ${stock.price.toFixed(2)}</span>
               </div>
+              ${slippage.hasSlippage ? `
+                <div class="trade-row">
+                  <span class="trade-label">预估成交价</span>
+                  <span class="trade-value warning">${currency} ${actualPrice.toFixed(2)} <small>(滑点${slippage.slippageRate}%)</small></span>
+                </div>
+              ` : ''}
               <div class="trade-row">
                 <span class="trade-label">可用资金</span>
-                <span class="trade-value">HK$ ${cashFlow.toLocaleString()}</span>
+                <span class="trade-value">${formatMoney(cashFlow)}</span>
               </div>
               ${position ? `
                 <div class="trade-row">
                   <span class="trade-label">当前持仓</span>
-                  <span class="trade-value">${position.shares} 股</span>
+                  <span class="trade-value">${position.shares.toLocaleString()} 股</span>
+                </div>
+                ${modal.type === 'sell' ? `
+                  <div class="trade-row">
+                    <span class="trade-label">可卖数量</span>
+                    <span class="trade-value ${isT1Restricted ? 'warning' : ''}">${sellableShares.toLocaleString()} 股${isT1Restricted ? ' <small>(T+1限制)</small>' : ''}</span>
+                  </div>
+                ` : ''}
+              ` : ''}
+              ${limits.hasLimit ? `
+                <div class="trade-row">
+                  <span class="trade-label">涨跌停</span>
+                  <span class="trade-value"><small>${limits.limitPercent}% 涨停 ${currency}${limits.limitUp.toFixed(2)} / 跌停 ${currency}${limits.limitDown.toFixed(2)}</small></span>
                 </div>
               ` : ''}
             </div>
+
+            ${isLimitUp && modal.type === 'buy' ? '<div class="trade-warning">股票已涨停，可能无法买入</div>' : ''}
+            ${isLimitDown && modal.type === 'sell' ? '<div class="trade-warning">股票已跌停，可能无法卖出</div>' : ''}
 
             <div class="trade-input-section">
               <label class="trade-input-label">交易数量（股）</label>
@@ -12922,27 +15429,34 @@ const PageMarket = (function () {
                 <button class="quick-option" onclick="PageMarket.setShares(500)">500</button>
                 <button class="quick-option" onclick="PageMarket.setShares(1000)">1000</button>
                 <button class="quick-option" onclick="PageMarket.setShares(5000)">5000</button>
+                ${modal.type === 'sell' && position ? `<button class="quick-option" onclick="PageMarket.setShares(${sellableShares})">全仓</button>` : ''}
               </div>
             </div>
 
             <div class="trade-summary">
               <div class="trade-row">
                 <span class="trade-label">预估金额</span>
-                <span class="trade-value">HK$ ${estimatedCost.toFixed(2)}</span>
+                <span class="trade-value">${currency} ${tradeAmount.toFixed(2)}</span>
               </div>
               <div class="trade-row">
                 <span class="trade-label">佣金</span>
-                <span class="trade-value">HK$ ${commission.toFixed(2)}</span>
+                <span class="trade-value">${currency} ${fees.commission.toFixed(2)}</span>
               </div>
-              ${modal.type === 'sell' ? `
+              ${fees.stampTax > 0 ? `
                 <div class="trade-row">
                   <span class="trade-label">印花税</span>
-                  <span class="trade-value">HK$ ${(estimatedCost * 0.001).toFixed(2)}</span>
+                  <span class="trade-value">${currency} ${fees.stampTax.toFixed(2)}</span>
+                </div>
+              ` : ''}
+              ${fees.transferFee > 0 ? `
+                <div class="trade-row">
+                  <span class="trade-label">过户费</span>
+                  <span class="trade-value">${currency} ${fees.transferFee.toFixed(2)}</span>
                 </div>
               ` : ''}
               <div class="trade-row total">
                 <span class="trade-label">${modal.type === 'buy' ? '预计支出' : '预计收入'}</span>
-                <span class="trade-value ${modal.type === 'buy' ? 'negative' : 'positive'}">HK$ ${totalAmount.toFixed(2)}</span>
+                <span class="trade-value ${modal.type === 'buy' ? 'negative' : 'positive'}">${currency} ${totalAmount.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -13056,6 +15570,7 @@ const PageMarket = (function () {
     const stock = state.stockMarket?.stocks?.find(s => s.id === tradeModal.stockId);
     const portfolio = state.portfolio || [];
     const company = state.company || {};
+    const today = state.gameDate?.current || new Date().toISOString().split('T')[0];
 
     if (!stock) {
       SongApp.showToast('股票信息不存在');
@@ -13064,9 +15579,9 @@ const PageMarket = (function () {
 
     let result;
     if (tradeModal.type === 'buy') {
-      result = SongStockMarket.buyStock(stock, tradeModal.shares, portfolio, company);
+      result = SongStockMarket.buyStock(stock, tradeModal.shares, portfolio, company, today);
     } else {
-      result = SongStockMarket.sellStock(stock, tradeModal.shares, portfolio, company);
+      result = SongStockMarket.sellStock(stock, tradeModal.shares, portfolio, company, today);
     }
 
     if (!result.success) {
@@ -13074,10 +15589,15 @@ const PageMarket = (function () {
       return;
     }
 
-    // 更新状态（投资收益计入总资产）
+    // 保存交易记录
+    const tradeRecords = state.stockMarket?.tradeRecords || [];
+    const updatedTradeRecords = result.tradeRecord ? [result.tradeRecord, ...tradeRecords].slice(0, 100) : tradeRecords;
+
+    // 更新状态
     const updates = {
       'portfolio': result.portfolio,
-      'company.cashFlow': result.cashFlow
+      'company.cashFlow': result.cashFlow,
+      'stockMarket.tradeRecords': updatedTradeRecords
     };
 
     // 卖出时，已实现盈亏计入总资产
@@ -13089,10 +15609,14 @@ const PageMarket = (function () {
     await SongState.batchUpdate(updates);
 
     const action = tradeModal.type === 'buy' ? '买入' : '卖出';
-    let toastMsg = `${action}成功！${tradeModal.shares} 股 ${stock.name}`;
+    const currency = SongStockMarket.getCurrencySymbol(stock.market);
+    let toastMsg = `${action}成功！${tradeModal.shares} 股 ${stock.name} @ ${currency}${result.actualPrice.toFixed(2)}`;
     if (tradeModal.type === 'sell' && result.profit !== undefined) {
       const profitText = result.profit >= 0 ? `盈利 ${formatMoney(result.profit)}` : `亏损 ${formatMoney(Math.abs(result.profit))}`;
       toastMsg += `（${profitText}）`;
+    }
+    if (result.slippage && result.slippage.hasSlippage) {
+      toastMsg += ` 滑点${result.slippage.slippageRate}%`;
     }
     SongApp.showToast(toastMsg);
 
@@ -13156,7 +15680,7 @@ const PageInvestment = (function () {
   // 当前交易弹窗
   let fundTradeModal = null;
   // 当前 tab
-  let currentTab = 'overview'; // overview / stocks / funds
+  let currentTab = 'overview'; // overview / stocks / funds / market / records
 
   /**
    * 渲染投资页面
@@ -13261,6 +15785,9 @@ const PageInvestment = (function () {
         <button class="tab-btn ${currentTab === 'market' ? 'active' : ''}" onclick="PageInvestment.switchTab('market')">
           基金市场 (${funds.length})
         </button>
+        <button class="tab-btn ${currentTab === 'records' ? 'active' : ''}" onclick="PageInvestment.switchTab('records')">
+          交易记录 (${(state.stockMarket?.tradeRecords || []).length})
+        </button>
       </div>
 
       <!-- 股票持仓 -->
@@ -13275,15 +15802,28 @@ const PageInvestment = (function () {
                 const cost = item.shares * item.avgCost;
                 const profit = value - cost;
                 const profitRate = cost > 0 ? (profit / cost) * 100 : 0;
+                const currency = stock ? SongStockMarket.getCurrencySymbol(stock.market) : '¥';
+                const isA = stock ? SongStockMarket.isAStock(stock.market) : true;
+                const upClass = isA ? 'stock-up-cn' : 'stock-up-global';
+                const downClass = isA ? 'stock-down-cn' : 'stock-down-global';
+                const profitClass = profit >= 0 ? upClass : downClass;
+                const today = state.gameDate?.current || new Date().toISOString().split('T')[0];
+                const sellable = SongStockMarket.getSellableShares(item, today);
+                const isT1Restricted = sellable < item.shares;
+                const realizedProfit = item.realizedProfit || 0;
                 return `
                   <div class="portfolio-item" onclick="PageInvestment.goToStock('${item.stockId}')">
                     <div class="portfolio-info">
-                      <div class="portfolio-name">${item.stockName}</div>
-                      <div class="portfolio-shares">${item.shares.toLocaleString()} 股 · 成本 ${item.avgCost.toFixed(2)}</div>
+                      <div class="portfolio-name">
+                        ${item.stockName}
+                        ${isT1Restricted ? '<span class="tag tag-warning t1-tag">T+1</span>' : ''}
+                      </div>
+                      <div class="portfolio-shares">${item.shares.toLocaleString()} 股 · 成本 ${currency}${item.avgCost.toFixed(2)}</div>
+                      ${realizedProfit !== 0 ? `<div class="portfolio-realized">已实现盈亏: <span class="${realizedProfit >= 0 ? upClass : downClass}">${realizedProfit >= 0 ? '+' : ''}${currency}${realizedProfit.toFixed(2)}</span></div>` : ''}
                     </div>
                     <div class="portfolio-value">
                       <div class="value-amount">${formatMoney(value)}</div>
-                      <div class="value-profit ${profit >= 0 ? 'positive' : 'negative'}">
+                      <div class="value-profit ${profitClass}">
                         ${profit >= 0 ? '+' : ''}${formatMoney(profit)} (${profitRate >= 0 ? '+' : ''}${profitRate.toFixed(2)}%)
                       </div>
                     </div>
@@ -13341,6 +15881,46 @@ const PageInvestment = (function () {
           <div class="fund-list">
             ${funds.map(fund => renderFundCard(fund, fundPortfolio)).join('')}
           </div>
+        </div>
+      ` : ''}
+
+      <!-- 交易记录 -->
+      ${currentTab === 'records' ? `
+        <div class="section">
+          ${(state.stockMarket?.tradeRecords || []).length > 0 ? `
+            <div class="trade-records-list">
+              ${state.stockMarket.tradeRecords.slice(0, 50).map(record => {
+                const currency = SongStockMarket.getCurrencySymbol(record.market);
+                const isBuy = record.type === 'buy';
+                return `
+                  <div class="trade-record-item">
+                    <div class="record-left">
+                      <div class="record-type ${isBuy ? 'buy' : 'sell'}">${isBuy ? '买入' : '卖出'}</div>
+                      <div class="record-info">
+                        <div class="record-name">${record.stockName}</div>
+                        <div class="record-meta">${record.shares.toLocaleString()}股 @ ${currency}${record.price.toFixed(2)} · ${record.date}</div>
+                      </div>
+                    </div>
+                    <div class="record-right">
+                      <div class="record-amount ${isBuy ? 'negative' : 'positive'}">
+                        ${isBuy ? '-' : '+'}${currency}${record.amount.toFixed(2)}
+                      </div>
+                      ${!isBuy && record.profit !== undefined ? `
+                        <div class="record-profit ${record.profit >= 0 ? 'positive' : 'negative'}">
+                          盈亏: ${record.profit >= 0 ? '+' : ''}${currency}${record.profit.toFixed(2)} (${record.profitPercent}%)
+                        </div>
+                      ` : ''}
+                      <div class="record-fees">费用: ${currency}${record.fees.toFixed(2)}</div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          ` : `
+            <div class="empty-state-mini">
+              <p>暂无交易记录</p>
+            </div>
+          `}
         </div>
       ` : ''}
 
@@ -13994,6 +16574,14 @@ const PageHeir = (function () {
     const predictedEnding = SongGrowth.predictEnding(state);
     const styles = SongGrowth.analyzeStyle(abilities);
 
+    // 第五阶段：等级、技能、目标
+    const levelInfo = SongGrowth.calculateLevel(heir.exp || 0);
+    const unlockedSkills = heir.unlockedSkills || [];
+    const skillEffects = SongGrowth.getSkillEffects(unlockedSkills);
+    const availableSkills = SongGrowth.getAvailableSkills(levelInfo.level, unlockedSkills);
+    const goalProgress = SongGrowth.getGoalProgress(state);
+    const completedGoals = goalProgress.filter(g => g.completed);
+
     container.innerHTML = `
       <div class="page-header">
         <h1 class="page-title">继承人档案</h1>
@@ -14004,6 +16592,7 @@ const PageHeir = (function () {
       <div class="card heir-profile">
         <div class="profile-avatar">
           <div class="avatar-placeholder">松</div>
+          <div class="profile-level-badge">Lv.${levelInfo.level}</div>
         </div>
         <div class="profile-info">
           <h2 class="profile-name">${heir.name}</h2>
@@ -14013,6 +16602,17 @@ const PageHeir = (function () {
             <span class="meta-item"><span class="meta-label">身份：</span>长女 / 继承人</span>
             <span class="meta-item"><span class="meta-label">经营天数：</span>${state.meta?.totalPlayDays || 0} 天</span>
             <span class="meta-item"><span class="meta-label">决策次数：</span>${state.events?.history?.length || 0} 次</span>
+            <span class="meta-item"><span class="meta-label">技能点：</span><span class="gold">${heir.skillPoints || 0}</span></span>
+          </div>
+          <!-- 经验条 -->
+          <div class="exp-bar-container">
+            <div class="exp-bar-label">
+              <span>经验值</span>
+              <span>${levelInfo.currentExp} / ${levelInfo.expToNext}</span>
+            </div>
+            <div class="exp-bar">
+              <div class="exp-bar-fill" style="width: ${levelInfo.progress * 100}%"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -14102,6 +16702,82 @@ const PageHeir = (function () {
         </div>
       </div>
 
+      <!-- 第五阶段：技能系统 -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">技能系统</span>
+          <span class="tag tag-gold">${unlockedSkills.length} / ${SongGrowth.SKILLS.length} 已解锁 · ${heir.skillPoints || 0} 技能点</span>
+        </div>
+        ${unlockedSkills.length > 0 ? `
+          <div class="skills-grid">
+            ${unlockedSkills.map(skillId => {
+              const skill = SongGrowth.SKILLS.find(s => s.id === skillId);
+              return skill ? `
+                <div class="skill-card unlocked">
+                  <div class="skill-icon">${skill.icon}</div>
+                  <div class="skill-info">
+                    <div class="skill-name">${skill.name}</div>
+                    <div class="skill-desc">${skill.description}</div>
+                  </div>
+                </div>
+              ` : '';
+            }).join('')}
+          </div>
+        ` : `
+          <div class="empty-state-small">
+            <p>尚未解锁任何技能，提升等级获取技能点后可解锁</p>
+          </div>
+        `}
+        ${availableSkills.length > 0 ? `
+          <div class="skills-section-title">可解锁技能</div>
+          <div class="skills-grid">
+            ${availableSkills.map(skill => `
+              <div class="skill-card available ${(heir.skillPoints || 0) >= skill.cost ? '' : 'locked'}">
+                <div class="skill-icon">${skill.icon}</div>
+                <div class="skill-info">
+                  <div class="skill-name">${skill.name} <span class="skill-cost">${skill.cost}点</span></div>
+                  <div class="skill-desc">${skill.description}</div>
+                  <button class="btn btn-small btn-gold skill-unlock-btn"
+                          onclick="PageHeir.unlockSkill('${skill.id}')"
+                          ${(heir.skillPoints || 0) >= skill.cost ? '' : 'disabled'}>
+                    ${(heir.skillPoints || 0) >= skill.cost ? '解锁' : '技能点不足'}
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+
+      <!-- 第五阶段：长期目标 -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">长期目标</span>
+          <span class="tag tag-gold">${completedGoals.length} / ${goalProgress.length} 已完成</span>
+        </div>
+        <div class="goals-grid">
+          ${goalProgress.map(goal => `
+            <div class="goal-card ${goal.completed ? 'completed' : ''}">
+              <div class="goal-icon goal-icon-svg">${SongGrowth.getIconSvg(goal.iconId)}</div>
+              <div class="goal-info">
+                <div class="goal-name">${goal.name}</div>
+                <div class="goal-desc">${goal.description}</div>
+                <div class="goal-progress-bar">
+                  <div class="goal-progress-fill" style="width: ${goal.progress}%"></div>
+                </div>
+                <div class="goal-progress-text">
+                  ${goal.isRatio ? `${(goal.progress).toFixed(0)}%` : `${formatGoalNumber(goal.current)} / ${formatGoalNumber(goal.target)}`}
+                  ${goal.completed ? ' ✓ 已完成' : ''}
+                </div>
+              </div>
+              <div class="goal-difficulty tag tag-${goal.difficulty === 'legendary' ? 'gold' : goal.difficulty === 'hard' ? 'danger' : goal.difficulty === 'medium' ? 'warning' : 'info'}">
+                ${goal.difficulty === 'legendary' ? '传奇' : goal.difficulty === 'hard' ? '困难' : goal.difficulty === 'medium' ? '中等' : '简单'}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
       <!-- 成长里程碑 -->
       <div class="section">
         <div class="section-header">
@@ -14111,7 +16787,7 @@ const PageHeir = (function () {
         <div class="milestones-grid">
           ${allMilestones.map(m => `
             <div class="milestone-card ${m.unlocked ? 'unlocked' : 'locked'}">
-              <div class="milestone-card-icon">${m.icon}</div>
+              <div class="milestone-card-icon milestone-icon-svg">${SongGrowth.getIconSvg(m.iconId)}</div>
               <div class="milestone-card-title">${m.title}</div>
               <div class="milestone-card-desc">${m.description}</div>
               ${m.unlocked ? `<div class="milestone-card-date">✓ ${m.unlockedDate || '已解锁'}</div>` : `<div class="milestone-card-locked">🔒 未解锁</div>`}
@@ -14458,6 +17134,49 @@ const PageHeir = (function () {
     }
   }
 
+  // ═══════════════════════════════════════════════
+  // 第五阶段：技能解锁
+  // ═══════════════════════════════════════════════
+
+  async function unlockSkill(skillId) {
+    const state = SongState.getState();
+    const heir = state.heir || {};
+    const skillPoints = heir.skillPoints || 0;
+    const unlockedSkills = heir.unlockedSkills || [];
+
+    const skill = SongGrowth.SKILLS.find(s => s.id === skillId);
+    if (!skill) return;
+
+    if (skillPoints < skill.cost) {
+      SongApp.showToast('技能点不足');
+      return;
+    }
+
+    if (unlockedSkills.includes(skillId)) {
+      SongApp.showToast('该技能已解锁');
+      return;
+    }
+
+    const newUnlocked = [...unlockedSkills, skillId];
+    const newSkillPoints = skillPoints - skill.cost;
+
+    await SongState.update('heir', {
+      ...heir,
+      unlockedSkills: newUnlocked,
+      skillPoints: newSkillPoints
+    });
+
+    SongApp.showToast(`🎉 技能「${skill.name}」解锁成功！`);
+    SongApp.renderCurrentPage();
+  }
+
+  function formatGoalNumber(value) {
+    if (typeof value !== 'number') return value;
+    if (Math.abs(value) >= 100000000) return (value / 100000000).toFixed(1) + '亿';
+    if (Math.abs(value) >= 10000) return (value / 10000).toFixed(1) + '万';
+    return Math.round(value).toString();
+  }
+
   return {
     render,
     openButler,
@@ -14466,7 +17185,9 @@ const PageHeir = (function () {
     saveJournalEntry,
     deleteJournalEntry,
     aiOrganizeJournal,
-    copyOrganizedResult
+    copyOrganizedResult,
+    // 第五阶段新API
+    unlockSkill
   };
 })();
 
@@ -15098,11 +17819,11 @@ const SongApp = (function () {
 
       initialized = true;
       clearTimeout(totalTimeout);
-      console.log('[SongApp] 松氏家族办公室启动完成');
+      console.log('[SongApp] 家族办公室启动完成');
 
       // 欢迎提示
       setTimeout(() => {
-        showToast('欢迎回到松氏家族办公室，松庭');
+        showToast('欢迎回到家族办公室，松庭');
       }, 500);
 
     } catch (e) {
