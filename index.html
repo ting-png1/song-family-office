@@ -4308,6 +4308,28 @@ body::before {
   font-size: 12px;
 }
 
+/* 危机处理成功提示动画 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .ai-error {
   color: var(--color-danger);
   font-size: 13px;
@@ -11398,6 +11420,56 @@ const PageCompany = (function () {
   // 当前查看的子公司详情
   let currentDetailId = null;
 
+  // 危机处理冷却状态（防止反复点击）
+  let crisisActionCooldown = false;
+
+  /**
+   * 显示危机处理成功提示（全屏模态弹窗，2秒后自动消失）
+   */
+  function showCrisisSuccess(message) {
+    // 移除已存在的提示
+    const existing = document.getElementById('crisis-success-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'crisis-success-modal';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      animation: fadeIn 0.2s ease;
+    `;
+    modal.innerHTML = `
+      <div style="
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        border: 2px solid #d4af37;
+        border-radius: 16px;
+        padding: 40px 60px;
+        text-align: center;
+        box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+        animation: scaleIn 0.3s ease;
+      ">
+        <div style="font-size: 48px; margin-bottom: 16px;">✓</div>
+        <div style="font-size: 20px; font-weight: 600; color: #d4af37; margin-bottom: 8px; font-family: 'Noto Serif SC', serif;">操作成功</div>
+        <div style="font-size: 14px; color: #a0a0a0; font-family: 'Noto Serif SC', serif;">${message}</div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    // 2秒后自动消失
+    setTimeout(() => {
+      modal.style.animation = 'fadeOut 0.3s ease';
+      setTimeout(() => modal.remove(), 300);
+    }, 2000);
+  }
+
   /**
    * 渲染公司管理页面
    */
@@ -11711,8 +11783,8 @@ const PageCompany = (function () {
                 </div>
                 <button class="btn ${action.dangerous ? 'btn-danger' : action.risky ? 'btn-warning' : 'btn-primary'} btn-sm crisis-action-btn"
                         onclick="PageCompany.handleCrisisAction('${subsidiary.id}', '${action.id}')"
-                        ${action.disabled ? 'disabled' : ''}>
-                  ${action.disabled ? action.disabledReason : '执行'}
+                        ${action.disabled || crisisActionCooldown ? 'disabled' : ''}>
+                  ${crisisActionCooldown ? '操作冷却中...' : (action.disabled ? action.disabledReason : '执行')}
                 </button>
               </div>
             `).join('')}
@@ -11974,13 +12046,28 @@ const PageCompany = (function () {
    * 处理危机处理动作
    */
   async function handleCrisisAction(subsidiaryId, actionId) {
+    // 冷却检查（防止反复点击）
+    if (crisisActionCooldown) {
+      console.log('[Crisis] 冷却中，忽略点击');
+      return;
+    }
+
     try {
       console.log('[Crisis] 执行危机处理:', subsidiaryId, actionId);
+
+      // 设置3秒冷却
+      crisisActionCooldown = true;
+      setTimeout(() => {
+        crisisActionCooldown = false;
+        console.log('[Crisis] 冷却结束');
+      }, 3000);
+
       const state = SongState.getState();
       const subsidiaries = state.subsidiaries || [];
       const subsidiaryIndex = subsidiaries.findIndex(s => s.id === subsidiaryId);
       if (subsidiaryIndex === -1) {
         console.warn('[Crisis] 子公司不存在:', subsidiaryId);
+        crisisActionCooldown = false;
         return;
       }
 
@@ -11989,21 +12076,18 @@ const PageCompany = (function () {
       const action = actions.find(a => a.id === actionId);
       if (!action) {
         console.warn('[Crisis] 操作不存在:', actionId);
+        crisisActionCooldown = false;
         return;
       }
       if (action.disabled) {
         console.warn('[Crisis] 操作已禁用:', actionId, action.disabledReason);
         if (window.showToast) window.showToast(action.disabledReason || '无法执行此操作');
+        crisisActionCooldown = false;
         return;
       }
 
-      // 确认危险操作
-      if (action.dangerous) {
-        if (!confirm(`确定要出售${subsidiary.name}吗？此操作不可撤销！`)) return;
-      }
-      if (action.risky) {
-        if (!confirm(`业务重组存在风险，确定要执行吗？`)) return;
-      }
+      // 注意：不使用原生 confirm，因为在 webview/iframe 中可能不工作
+      // 危险操作（出售剥离）直接执行，靠冷却时间和成功提示防止误操作
 
       // 确保 company 和 heir 对象存在且结构正确
       const company = state.company ? { ...state.company } : { cash: 0 };
@@ -12096,7 +12180,13 @@ const PageCompany = (function () {
             'company': company,
             'heir': heir
           });
-          if (window.showToast) window.showToast(`已成功出售${subsidiary.name}，获得 ${formatMoney(salePrice)}！`);
+          // 清除全局状态监听的定时器，避免重复渲染闪烁
+          if (window._songRefreshTimer) {
+            clearTimeout(window._songRefreshTimer);
+            window._songRefreshTimer = null;
+          }
+          console.log('[Crisis] 出售剥离完成:', subsidiary.name, salePrice);
+          showCrisisSuccess(`已成功出售${subsidiary.name}，获得 ${formatMoney(salePrice)}`);
           backToList();
           return;
       }
@@ -12109,11 +12199,23 @@ const PageCompany = (function () {
         'heir': heir
       });
 
+      // 清除全局状态监听的定时器，避免重复渲染闪烁
+      if (window._songRefreshTimer) {
+        clearTimeout(window._songRefreshTimer);
+        window._songRefreshTimer = null;
+      }
+
+      // 手动渲染当前页面（确保数据更新后立即刷新）
+      const appContent = document.getElementById('app-content');
+      if (appContent) {
+        render(appContent);
+      }
+
       console.log('[Crisis] 危机处理完成:', actionId);
-      if (window.showToast) window.showToast(`${action.name}执行成功！`);
-      // 不手动渲染，由全局状态监听统一处理，避免闪烁
+      showCrisisSuccess(`${action.name}执行成功，数据已更新`);
     } catch (e) {
       console.error('[Crisis] 危机处理失败:', e);
+      crisisActionCooldown = false; // 失败时清除冷却
       if (window.showToast) window.showToast('操作失败，请重试');
     }
   }
