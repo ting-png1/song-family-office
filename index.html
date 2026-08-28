@@ -4192,6 +4192,122 @@ body::before {
   }
 }
 
+/* ═══════════════════════════════════════════════
+   危机处理样式
+   ═══════════════════════════════════════════════ */
+
+.crisis-card {
+  border-left: 3px solid #e74c3c;
+  background: linear-gradient(135deg, var(--color-bg-elevated) 0%, rgba(231, 76, 60, 0.03) 100%);
+}
+
+.crisis-title {
+  color: #e74c3c;
+}
+
+.crisis-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.crisis-action-item {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm);
+  transition: all 0.2s ease;
+}
+
+.crisis-action-item:hover:not(.disabled) {
+  border-color: var(--color-accent-gold);
+  transform: translateY(-1px);
+}
+
+.crisis-action-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.crisis-action-item.risky {
+  border-left: 3px solid #f1c40f;
+}
+
+.crisis-action-item.dangerous {
+  border-left: 3px solid #e74c3c;
+}
+
+.crisis-action-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+
+.crisis-action-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-family: var(--font-serif);
+}
+
+.crisis-action-desc {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-serif);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.crisis-action-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.crisis-cost {
+  font-size: 11px;
+  color: #e67e22;
+  font-family: var(--font-serif);
+}
+
+.crisis-effect {
+  font-size: 11px;
+  color: #2ecc71;
+  font-family: var(--font-serif);
+}
+
+.crisis-action-btn {
+  width: 100%;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  border: none;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c0392b, #a93226);
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #f1c40f, #d4ac0d);
+  color: var(--color-bg-primary);
+  border: none;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background: linear-gradient(135deg, #d4ac0d, #b7950b);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
 .ai-error {
   color: var(--color-danger);
   font-size: 13px;
@@ -6251,20 +6367,68 @@ const SongFinance = (function () {
 
   /**
    * 初始化子公司数据
+   * @param {string} startDate - 游戏起始日期 (YYYY-MM-DD)，默认为今天
+   * @param {number} historyDays - 生成多少天的历史数据，默认30天
    */
-  function initSubsidiaries() {
-    return DEFAULT_SUBSIDIARIES.map(s => ({
-      ...s,
-      lastUpdated: new Date().toISOString(),
-      history: [{
-        date: new Date().toISOString().split('T')[0],
-        revenue: s.revenue,
-        profit: s.profit,
-        employees: s.employees,
-        satisfaction: s.satisfaction,
-        reputation: s.reputation
-      }]
-    }));
+  function initSubsidiaries(startDate, historyDays = 30) {
+    const baseDate = startDate || new Date().toISOString().split('T')[0];
+
+    return DEFAULT_SUBSIDIARIES.map(s => {
+      // 生成历史数据：从起始日期往前推 historyDays 天，带小幅波动
+      const history = [];
+      let revenue = s.revenue * randomFloat(0.92, 0.98); // 从较低值开始，逐步增长到当前值
+      let profit = s.profit * randomFloat(0.9, 0.97);
+      let satisfaction = s.satisfaction + randomInt(-5, 3);
+      let reputation = s.reputation + randomInt(-3, 2);
+      let employees = Math.max(1, s.employees + randomInt(-15, 5));
+
+      for (let i = historyDays; i >= 0; i--) {
+        const d = new Date(baseDate);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+
+        // 每天小幅波动，整体趋势向当前值靠拢
+        const revenueDrift = (s.revenue - revenue) * 0.08; // 每天向当前值靠拢8%
+        const profitDrift = (s.profit - profit) * 0.08;
+        const satisfactionDrift = (s.satisfaction - satisfaction) * 0.1;
+        const reputationDrift = (s.reputation - reputation) * 0.1;
+        const employeeDrift = (s.employees - employees) * 0.05;
+
+        revenue = revenue + revenueDrift + revenue * randomFloat(-0.015, 0.015);
+        profit = profit + profitDrift + profit * randomFloat(-0.025, 0.025);
+        satisfaction = clamp(satisfaction + satisfactionDrift + randomFloat(-1, 1), 0, 100);
+        reputation = clamp(reputation + reputationDrift + randomFloat(-0.8, 0.8), 0, 100);
+        employees = Math.max(1, Math.round(employees + employeeDrift + randomInt(-3, 3)));
+
+        // 最后一天强制设为当前值
+        if (i === 0) {
+          revenue = s.revenue;
+          profit = s.profit;
+          satisfaction = s.satisfaction;
+          reputation = s.reputation;
+          employees = s.employees;
+        }
+
+        history.push({
+          date: dateStr,
+          revenue: Math.round(revenue),
+          profit: Math.round(profit),
+          employees: employees,
+          satisfaction: Math.round(satisfaction),
+          reputation: Math.round(reputation)
+        });
+      }
+
+      // history 是按时间正序排列的（最早→最新），但我们存储时最新的在前
+      // 所以需要反转，让最新的在数组开头
+      const reversedHistory = history.reverse();
+
+      return {
+        ...s,
+        lastUpdated: new Date().toISOString(),
+        history: reversedHistory
+      };
+    });
   }
 
   /**
@@ -8201,11 +8365,13 @@ const SongStockMarket = (function () {
 
   /**
    * 初始化股票市场数据
+   * @param {string} startDate - 游戏起始日期 (YYYY-MM-DD)
    */
-  function initStockMarket() {
+  function initStockMarket(startDate) {
+    const baseDate = startDate || new Date().toISOString().split('T')[0];
     const stocks = DEFAULT_STOCKS.map(stock => {
       // 生成 30 天历史价格
-      const priceHistory = generatePriceHistory(stock.price, 30, stock.beta);
+      const priceHistory = generatePriceHistory(stock.price, 30, stock.beta, baseDate);
 
       return {
         ...stock,
@@ -8216,7 +8382,7 @@ const SongStockMarket = (function () {
     });
 
     // 生成初始新闻
-    const news = generateNews(5);
+    const news = generateNews(5, baseDate);
 
     return {
       stocks,
@@ -8227,13 +8393,18 @@ const SongStockMarket = (function () {
 
   /**
    * 生成历史价格数据
+   * @param {number} currentPrice - 当前价格
+   * @param {number} days - 生成多少天历史
+   * @param {number} beta - 波动率
+   * @param {string} endDate - 结束日期（游戏当前日期）
    */
-  function generatePriceHistory(currentPrice, days, beta = 1) {
+  function generatePriceHistory(currentPrice, days, beta = 1, endDate) {
     const history = [];
+    const baseEndDate = endDate || new Date().toISOString().split('T')[0];
     let price = currentPrice * randomFloat(0.85, 0.95); // 从较低价格开始
 
     for (let i = days; i >= 0; i--) {
-      const date = new Date();
+      const date = new Date(baseEndDate);
       date.setDate(date.getDate() - i);
 
       // 每日波动（beta 越大波动越大）
@@ -8843,11 +9014,13 @@ const SongFund = (function () {
 
   /**
    * 初始化基金数据
+   * @param {string} startDate - 游戏起始日期 (YYYY-MM-DD)
    */
-  function initFunds() {
+  function initFunds(startDate) {
+    const baseDate = startDate || new Date().toISOString().split('T')[0];
     return DEFAULT_FUNDS.map(fund => {
       // 生成 90 天历史净值
-      const navHistory = generateNavHistory(fund.nav, 90, fund.type);
+      const navHistory = generateNavHistory(fund.nav, 90, fund.type, baseDate);
 
       // 根据历史数据重新计算收益率
       const returns = calculateReturns(navHistory);
@@ -8863,9 +9036,14 @@ const SongFund = (function () {
 
   /**
    * 生成历史净值数据
+   * @param {number} currentNav - 当前净值
+   * @param {number} days - 生成多少天历史
+   * @param {string} fundType - 基金类型
+   * @param {string} endDate - 结束日期（游戏当前日期）
    */
-  function generateNavHistory(currentNav, days, fundType) {
+  function generateNavHistory(currentNav, days, fundType, endDate) {
     const history = [];
+    const baseEndDate = endDate || new Date().toISOString().split('T')[0];
     let nav = currentNav * randomFloat(0.85, 0.95);
 
     // 不同类型基金的波动率不同
@@ -8878,7 +9056,7 @@ const SongFund = (function () {
     }[fundType] || 0.01;
 
     for (let i = days; i >= 0; i--) {
-      const date = new Date();
+      const date = new Date(baseEndDate);
       date.setDate(date.getDate() - i);
 
       // 每日波动
@@ -11501,6 +11679,38 @@ const PageCompany = (function () {
         </div>
       </div>
 
+      <!-- 危机处理区域 -->
+      ${isInCrisis(subsidiary) ? `
+        <div class="card crisis-card">
+          <div class="card-header">
+            <span class="card-title crisis-title">⚠️ 危机处理</span>
+            <span class="tag tag-danger">需要干预</span>
+          </div>
+          <div class="crisis-actions-list">
+            ${getCrisisActions(subsidiary).map(action => `
+              <div class="crisis-action-item ${action.disabled ? 'disabled' : ''} ${action.risky ? 'risky' : ''} ${action.dangerous ? 'dangerous' : ''}">
+                <div class="crisis-action-header">
+                  <span class="crisis-action-name">${action.name}</span>
+                  ${action.delayed ? '<span class="tag tag-info">延迟生效</span>' : ''}
+                  ${action.risky ? '<span class="tag tag-warning">高风险</span>' : ''}
+                  ${action.dangerous ? '<span class="tag tag-danger">不可逆</span>' : ''}
+                </div>
+                <div class="crisis-action-desc">${action.desc}</div>
+                <div class="crisis-action-meta">
+                  <span class="crisis-cost">${action.costLabel}</span>
+                  <span class="crisis-effect">${action.effect}</span>
+                </div>
+                <button class="btn ${action.dangerous ? 'btn-danger' : action.risky ? 'btn-warning' : 'btn-primary'} btn-sm crisis-action-btn"
+                        onclick="PageCompany.handleCrisisAction('${subsidiary.id}', '${action.id}')"
+                        ${action.disabled ? 'disabled' : ''}>
+                  ${action.disabled ? action.disabledReason : '执行'}
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+
       <!-- 历史趋势 -->
       ${recentHistory.length > 1 ? `
         <div class="card">
@@ -11614,6 +11824,243 @@ const PageCompany = (function () {
   }
 
   /**
+   * 判断子公司是否处于危机状态
+   */
+  function isInCrisis(subsidiary) {
+    return subsidiary.profit < 0 ||
+           subsidiary.satisfaction < 55 ||
+           subsidiary.reputation < 55 ||
+           subsidiary.risk === 'high';
+  }
+
+  /**
+   * 获取危机处理选项
+   */
+  function getCrisisActions(subsidiary) {
+    const actions = [];
+    const state = SongState.getState();
+    const cash = state.company?.cash || 0;
+
+    // 1. 注入紧急资金（亏损或现金流紧张时）
+    if (subsidiary.profit < 0) {
+      const amount = Math.min(200000000, Math.max(50000000, Math.abs(subsidiary.profit) * 2));
+      actions.push({
+        id: 'inject_capital',
+        name: '注入紧急资金',
+        icon: '💰',
+        desc: `向${subsidiary.name}注入 ${formatMoney(amount)} 资金，立即改善财务状况`,
+        cost: amount,
+        costLabel: `消耗现金流 ${formatMoney(amount)}`,
+        effect: '利润 +15%，声誉 +5，风险等级降低',
+        disabled: cash < amount,
+        disabledReason: '现金流不足'
+      });
+    }
+
+    // 2. 更换管理层（满意度低或风险高时）
+    if (subsidiary.satisfaction < 65 || subsidiary.risk === 'high') {
+      actions.push({
+        id: 'change_management',
+        name: '更换管理团队',
+        icon: '👔',
+        desc: '撤换现任管理层，引入新的经营团队',
+        cost: 0,
+        costLabel: '家族信任度 -8',
+        effect: '3天后：利润 +20%，满意度 +15，风险等级降低',
+        delayed: true,
+        disabled: false
+      });
+    }
+
+    // 3. 裁员降本（亏损或满意度高时）
+    if (subsidiary.profit < 0 || subsidiary.employees > 500) {
+      const layoffCount = Math.round(subsidiary.employees * 0.1);
+      actions.push({
+        id: 'layoff_cost_cutting',
+        name: '裁员降本',
+        icon: '📉',
+        desc: `裁减 ${layoffCount} 名员工，降低运营成本`,
+        cost: 0,
+        costLabel: `员工满意度 -15，裁员 ${layoffCount} 人`,
+        effect: '立即：利润 +25%，员工数 -10%',
+        disabled: false
+      });
+    }
+
+    // 4. 增加营销投入（声誉低时）
+    if (subsidiary.reputation < 65) {
+      const amount = Math.min(100000000, Math.max(30000000, subsidiary.revenue * 0.02));
+      actions.push({
+        id: 'marketing_investment',
+        name: '增加营销投入',
+        icon: '📢',
+        desc: `投入 ${formatMoney(amount)} 用于品牌建设和市场推广`,
+        cost: amount,
+        costLabel: `消耗现金流 ${formatMoney(amount)}`,
+        effect: '声誉 +12，7天后营收 +15%',
+        delayed: true,
+        disabled: cash < amount,
+        disabledReason: '现金流不足'
+      });
+    }
+
+    // 5. 业务重组（高风险或持续亏损时）
+    if (subsidiary.risk === 'high' || (subsidiary.profit < 0 && subsidiary.history && subsidiary.history.length > 5)) {
+      const recentLosses = subsidiary.history.slice(0, 5).filter(h => h.profit < 0).length;
+      if (recentLosses >= 3 || subsidiary.risk === 'high') {
+        actions.push({
+          id: 'business_restructuring',
+          name: '业务重组',
+          icon: '🔄',
+          desc: '对业务进行深度重组，高风险高回报',
+          cost: 100000000,
+          costLabel: '消耗现金流 1.00亿，家族信任度 -5',
+          effect: '50%概率：利润 +40%，满意度 +20，风险降低；50%概率：利润 -25%，满意度 -10',
+          risky: true,
+          disabled: cash < 100000000,
+          disabledReason: '现金流不足'
+        });
+      }
+    }
+
+    // 6. 出售剥离（持续严重亏损时）
+    if (subsidiary.profit < 0 && subsidiary.history && subsidiary.history.length > 10) {
+      const recentLosses = subsidiary.history.slice(0, 7).filter(h => h.profit < 0).length;
+      if (recentLosses >= 5) {
+        const salePrice = Math.max(50000000, subsidiary.totalAssets * 0.6);
+        actions.push({
+          id: 'sell_divest',
+          name: '出售剥离',
+          icon: '🏷️',
+          desc: `将${subsidiary.name}出售，获得 ${formatMoney(salePrice)} 一次性收入`,
+          cost: 0,
+          costLabel: `获得现金流 ${formatMoney(salePrice)}，失去该子公司`,
+          effect: '立即获得资金，但不再拥有该子公司',
+          dangerous: true,
+          disabled: false
+        });
+      }
+    }
+
+    return actions;
+  }
+
+  /**
+   * 处理危机处理动作
+   */
+  async function handleCrisisAction(subsidiaryId, actionId) {
+    const state = SongState.getState();
+    const subsidiaries = state.subsidiaries || [];
+    const subsidiaryIndex = subsidiaries.findIndex(s => s.id === subsidiaryId);
+    if (subsidiaryIndex === -1) return;
+
+    const subsidiary = subsidiaries[subsidiaryIndex];
+    const actions = getCrisisActions(subsidiary);
+    const action = actions.find(a => a.id === actionId);
+    if (!action || action.disabled) return;
+
+    // 确认危险操作
+    if (action.dangerous) {
+      if (!confirm(`确定要出售${subsidiary.name}吗？此操作不可撤销！`)) return;
+    }
+    if (action.risky) {
+      if (!confirm(`业务重组存在风险，确定要执行吗？`)) return;
+    }
+
+    let company = { ...state.company };
+    let heir = { ...state.heir };
+    let newSubsidiary = { ...subsidiary };
+
+    switch (actionId) {
+      case 'inject_capital':
+        company.cash -= action.cost;
+        newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.15);
+        newSubsidiary.reputation = Math.min(100, newSubsidiary.reputation + 5);
+        newSubsidiary.risk = newSubsidiary.risk === 'high' ? 'medium' : newSubsidiary.risk;
+        break;
+
+      case 'change_management':
+        heir.familyTrust = Math.max(0, heir.familyTrust - 8);
+        // 延迟效果通过 effects 系统处理
+        if (window.SongEffects && window.SongEffects.addEffect) {
+          window.SongEffects.addEffect({
+            type: 'subsidiary_management_change',
+            targetId: subsidiaryId,
+            startDay: (state.gameDate?.dayCount || 0) + 3,
+            duration: 1,
+            data: { profitBonus: 0.20, satisfactionBonus: 15, riskReduce: true }
+          });
+        } else {
+          // 降级：立即生效一半效果
+          newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.10);
+          newSubsidiary.satisfaction = Math.min(100, newSubsidiary.satisfaction + 8);
+        }
+        break;
+
+      case 'layoff_cost_cutting':
+        const layoffCount = Math.round(newSubsidiary.employees * 0.1);
+        newSubsidiary.employees = Math.max(1, newSubsidiary.employees - layoffCount);
+        newSubsidiary.satisfaction = Math.max(0, newSubsidiary.satisfaction - 15);
+        newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.25);
+        break;
+
+      case 'marketing_investment':
+        company.cash -= action.cost;
+        newSubsidiary.reputation = Math.min(100, newSubsidiary.reputation + 12);
+        // 延迟效果
+        if (window.SongEffects && window.SongEffects.addEffect) {
+          window.SongEffects.addEffect({
+            type: 'subsidiary_marketing',
+            targetId: subsidiaryId,
+            startDay: (state.gameDate?.dayCount || 0) + 7,
+            duration: 30,
+            data: { revenueBonus: 0.15 }
+          });
+        }
+        break;
+
+      case 'business_restructuring':
+        company.cash -= 100000000;
+        heir.familyTrust = Math.max(0, heir.familyTrust - 5);
+        const success = Math.random() > 0.5;
+        if (success) {
+          newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.40);
+          newSubsidiary.satisfaction = Math.min(100, newSubsidiary.satisfaction + 20);
+          newSubsidiary.risk = 'low';
+          newSubsidiary.reputation = Math.min(100, newSubsidiary.reputation + 10);
+          alert(`业务重组成功！${subsidiary.name}经营状况大幅改善！`);
+        } else {
+          newSubsidiary.profit = Math.round(newSubsidiary.profit * 0.75);
+          newSubsidiary.satisfaction = Math.max(0, newSubsidiary.satisfaction - 10);
+          newSubsidiary.risk = 'high';
+          alert(`业务重组失败！${subsidiary.name}经营状况进一步恶化...`);
+        }
+        break;
+
+      case 'sell_divest':
+        const salePrice = Math.max(50000000, subsidiary.totalAssets * 0.6);
+        company.cash += salePrice;
+        // 从子公司列表中移除
+        subsidiaries.splice(subsidiaryIndex, 1);
+        await SongState.update('subsidiaries', subsidiaries);
+        await SongState.update('company', company);
+        await SongState.update('heir', heir);
+        alert(`已成功出售${subsidiary.name}，获得 ${formatMoney(salePrice)}！`);
+        backToList();
+        return;
+    }
+
+    // 更新子公司
+    subsidiaries[subsidiaryIndex] = newSubsidiary;
+    await SongState.update('subsidiaries', subsidiaries);
+    await SongState.update('company', company);
+    await SongState.update('heir', heir);
+
+    // 重新渲染
+    render(document.getElementById('app-content'));
+  }
+
+  /**
    * 显示子公司详情
    */
   function showDetail(id) {
@@ -11645,7 +12092,8 @@ const PageCompany = (function () {
   return {
     render,
     showDetail,
-    backToList
+    backToList,
+    handleCrisisAction
   };
 })();
 
@@ -11682,7 +12130,8 @@ const PageMarket = (function () {
     const needsReset = stocks.length === 0 || !stocks[0]?.market;
     if (needsReset) {
       console.log('[Market] 检测到旧格式股票数据，重新初始化');
-      const initData = SongStockMarket.initStockMarket();
+      const startDate = state.gameDate?.current || new Date().toISOString().split('T')[0];
+      const initData = SongStockMarket.initStockMarket(startDate);
       stocks = initData.stocks;
       news = initData.news;
       SongState.update('stockMarket', initData);
@@ -11690,7 +12139,8 @@ const PageMarket = (function () {
 
     // 如果没有基金数据，初始化
     if (funds.length === 0) {
-      funds = SongFund.initFunds();
+      const startDate = state.gameDate?.current || new Date().toISOString().split('T')[0];
+      funds = SongFund.initFunds(startDate);
       SongState.update('funds', funds);
     }
 
@@ -14585,7 +15035,8 @@ const SongApp = (function () {
     const state = SongState.getState();
     if (!state.subsidiaries || state.subsidiaries.length === 0) {
       console.log('[SongApp] 初始化子公司数据');
-      const subsidiaries = SongFinance.initSubsidiaries();
+      const startDate = state.gameDate?.current || new Date().toISOString().split('T')[0];
+      const subsidiaries = SongFinance.initSubsidiaries(startDate, 30);
       await SongState.update('subsidiaries', subsidiaries);
 
       // 同时初始化公司财务数据
@@ -14601,7 +15052,8 @@ const SongApp = (function () {
     const state = SongState.getState();
     if (!state.stockMarket || !state.stockMarket.stocks || state.stockMarket.stocks.length === 0) {
       console.log('[SongApp] 初始化股票市场数据');
-      const stockMarket = SongStockMarket.initStockMarket();
+      const startDate = state.gameDate?.current || new Date().toISOString().split('T')[0];
+      const stockMarket = SongStockMarket.initStockMarket(startDate);
       await SongState.update('stockMarket', stockMarket);
     }
   }
@@ -14613,7 +15065,8 @@ const SongApp = (function () {
     const state = SongState.getState();
     if (!state.funds || state.funds.length === 0) {
       console.log('[SongApp] 初始化基金数据');
-      const funds = SongFund.initFunds();
+      const startDate = state.gameDate?.current || new Date().toISOString().split('T')[0];
+      const funds = SongFund.initFunds(startDate);
       await SongState.update('funds', funds);
     }
     // 初始化基金持仓（如果为空）
