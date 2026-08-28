@@ -6628,6 +6628,47 @@ body::before {
   border-radius: var(--radius-md);
 }
 
+/* 金色返回箭头按钮 */
+.back-btn-gold-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-accent-gold);
+  border-radius: 50%;
+  background: rgba(184, 150, 90, 0.1);
+  color: var(--color-accent-gold);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.back-btn-gold-icon:hover {
+  background: rgba(184, 150, 90, 0.2);
+  transform: translateX(-2px);
+}
+
+.back-btn-gold-icon:active {
+  transform: scale(0.95);
+}
+
+/* 财务总览查看三表按钮 - 简洁风格 */
+.financial-overview-card .btn-gold {
+  background: transparent !important;
+  border: 1px solid var(--color-accent-gold) !important;
+  color: var(--color-accent-gold) !important;
+  font-size: 12px !important;
+  padding: 6px 14px !important;
+  border-radius: 20px !important;
+  font-weight: 500 !important;
+}
+
+.financial-overview-card .btn-gold:hover {
+  background: rgba(184, 150, 90, 0.15) !important;
+}
+
 
 </style>
 </head>
@@ -18194,11 +18235,16 @@ const PageMarket = (function () {
 
     container.innerHTML = `
       <div class="page-header">
-        <button class="btn btn-secondary btn-small back-btn" onclick="PageMarket.backFromFundMarket()" style="margin-bottom: 8px;">
-          ← 返回
+        <button class="back-btn-gold-icon" onclick="PageMarket.backFromFundMarket()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"/>
+            <path d="M12 19l-7-7 7-7"/>
+          </svg>
         </button>
-        <h1 class="page-title">基金市场</h1>
-        <p class="page-subtitle">${funds.length} 只基金 · 股票型/债券型/混合型/货币型</p>
+        <div>
+          <h1 class="page-title">基金市场</h1>
+          <p class="page-subtitle">${funds.length} 只基金 · 股票型/债券型/混合型/货币型</p>
+        </div>
       </div>
 
       <!-- 基金市场概览 -->
