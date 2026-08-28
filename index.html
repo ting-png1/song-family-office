@@ -6494,6 +6494,140 @@ body::before {
   transform: scale(0.95);
 }
 
+/* ═══════════════════════════════════════════════
+   折叠式公司卡片
+   ═══════════════════════════════════════════════ */
+.company-card-collapsible {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.company-card-collapsible:hover {
+  border-color: var(--color-accent-gold);
+}
+
+.company-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  gap: var(--spacing-md);
+}
+
+.company-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.company-header-info .company-name {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.company-header-info .company-type {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.company-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.company-header-right .company-badges {
+  display: flex;
+  gap: 6px;
+}
+
+.expand-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--color-text-muted);
+  transition: transform 0.2s ease;
+}
+
+.expand-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+.company-card-content {
+  padding: 0 var(--spacing-md) var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--spacing-md);
+}
+
+/* ═══════════════════════════════════════════════
+   资产页二级页面标题区分
+   ═══════════════════════════════════════════════ */
+.assets-sub-content .page-title {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+}
+
+.assets-sub-content .page-subtitle {
+  font-size: 12px !important;
+}
+
+.assets-sub-content .page-header {
+  margin-bottom: var(--spacing-md) !important;
+  padding-bottom: var(--spacing-sm) !important;
+}
+
+/* ═══════════════════════════════════════════════
+   折叠式区域（市场新闻、股票行情等）
+   ═══════════════════════════════════════════════ */
+.collapsible-section {
+  margin-bottom: var(--spacing-md);
+}
+
+.collapsible-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.collapsible-section-header:hover {
+  border-color: var(--color-accent-gold);
+}
+
+.collapsible-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.collapsible-section-count {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  background: var(--color-bg-secondary);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.collapsible-section-content {
+  margin-top: 8px;
+  padding: var(--spacing-md);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
 
 </style>
 </head>
@@ -15362,6 +15496,9 @@ const PageCompany = (function () {
   // 危机处理冷却状态（防止反复点击）
   let crisisActionCooldown = false;
 
+  // 子公司卡片展开状态（折叠式列表）
+  let expandedCompanyIds = new Set();
+
   /**
    * 显示危机处理成功提示（全屏模态弹窗，2秒后自动消失）
    */
@@ -15580,79 +15717,107 @@ const PageCompany = (function () {
   }
 
   /**
-   * 渲染子公司卡片
+   * 渲染子公司卡片（支持折叠/展开）
    */
   function renderCompanyCard(company) {
     const profitMargin = company.revenue > 0 ? ((company.profit / company.revenue) * 100).toFixed(1) : '0';
     const growthRate = company.growthRate || 0;
+    const isExpanded = expandedCompanyIds.has(company.id);
 
     return `
-      <div class="company-card" data-id="${company.id}">
-        <div class="company-header">
-          <div class="company-info">
+      <div class="company-card company-card-collapsible ${isExpanded ? 'expanded' : ''}" data-id="${company.id}">
+        <!-- 折叠头部（始终显示） -->
+        <div class="company-card-header" onclick="PageCompany.toggleCompanyExpand('${company.id}')">
+          <div class="company-header-info">
             <h3 class="company-name">${company.name}</h3>
             <span class="company-type">${company.type}</span>
           </div>
-          <div class="company-badges">
-            <span class="tag tag-${company.risk === 'high' ? 'danger' : company.risk === 'medium' ? 'warning' : 'success'}">
-              风险${company.risk === 'high' ? '高' : company.risk === 'medium' ? '中' : '低'}
+          <div class="company-header-right">
+            <div class="company-badges">
+              <span class="tag tag-${company.risk === 'high' ? 'danger' : company.risk === 'medium' ? 'warning' : 'success'}">
+                风险${company.risk === 'high' ? '高' : company.risk === 'medium' ? '中' : '低'}
+              </span>
+              <span class="tag tag-${company.potential === 'high' ? 'gold' : company.potential === 'medium' ? 'info' : 'muted'}">
+                潜力${company.potential === 'high' ? '高' : company.potential === 'medium' ? '中' : '低'}
+              </span>
+            </div>
+            <span class="expand-arrow ${isExpanded ? 'expanded' : ''}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
             </span>
-            <span class="tag tag-${company.potential === 'high' ? 'gold' : company.potential === 'medium' ? 'info' : 'muted'}">
-              潜力${company.potential === 'high' ? '高' : company.potential === 'medium' ? '中' : '低'}
+          </div>
+        </div>
+
+        <!-- 展开内容（折叠时隐藏） -->
+        <div class="company-card-content" style="display: ${isExpanded ? 'block' : 'none'}">
+          ${company.description ? `<p class="company-desc">${company.description}</p>` : ''}
+
+          <div class="company-stats">
+            <div class="stat-item">
+              <span class="stat-label">年营收</span>
+              <span class="stat-value">${formatMoney(company.revenue || 0)}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">年利润</span>
+              <span class="stat-value ${(company.profit || 0) >= 0 ? 'positive' : 'negative'}">${formatMoney(company.profit || 0)}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">利润率</span>
+              <span class="stat-value">${profitMargin}%</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">增长率</span>
+              <span class="stat-value ${growthRate >= 0 ? 'positive' : 'negative'}">${growthRate >= 0 ? '+' : ''}${growthRate}%</span>
+            </div>
+          </div>
+
+          <div class="company-progress">
+            <div class="progress-item">
+              <span class="progress-label">员工满意度</span>
+              <div class="progress-bar"><div class="progress-fill" style="width: ${company.satisfaction || 0}%"></div></div>
+              <span class="progress-value">${company.satisfaction || 0}%</span>
+            </div>
+            <div class="progress-item">
+              <span class="progress-label">市场声誉</span>
+              <div class="progress-bar"><div class="progress-fill" style="width: ${company.reputation || 0}%"></div></div>
+              <span class="progress-value">${company.reputation || 0}%</span>
+            </div>
+          </div>
+
+          <div class="company-meta">
+            <span class="meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              ${company.employees || 0} 人
+            </span>
+            <span class="meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+              市值占比 ${company.marketShare || 0}%
             </span>
           </div>
+
+          <button class="btn btn-primary company-detail-btn" onclick="event.stopPropagation(); PageCompany.showDetail('${company.id}')">
+            查看详情
+          </button>
         </div>
-
-        ${company.description ? `<p class="company-desc">${company.description}</p>` : ''}
-
-        <div class="company-stats">
-          <div class="stat-item">
-            <span class="stat-label">年营收</span>
-            <span class="stat-value">${formatMoney(company.revenue || 0)}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">年利润</span>
-            <span class="stat-value ${(company.profit || 0) >= 0 ? 'positive' : 'negative'}">${formatMoney(company.profit || 0)}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">利润率</span>
-            <span class="stat-value">${profitMargin}%</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">增长率</span>
-            <span class="stat-value ${growthRate >= 0 ? 'positive' : 'negative'}">${growthRate >= 0 ? '+' : ''}${growthRate}%</span>
-          </div>
-        </div>
-
-        <div class="company-progress">
-          <div class="progress-item">
-            <span class="progress-label">员工满意度</span>
-            <div class="progress-bar"><div class="progress-fill" style="width: ${company.satisfaction || 0}%"></div></div>
-            <span class="progress-value">${company.satisfaction || 0}%</span>
-          </div>
-          <div class="progress-item">
-            <span class="progress-label">市场声誉</span>
-            <div class="progress-bar"><div class="progress-fill" style="width: ${company.reputation || 0}%"></div></div>
-            <span class="progress-value">${company.reputation || 0}%</span>
-          </div>
-        </div>
-
-        <div class="company-meta">
-          <span class="meta-item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            ${company.employees || 0} 人
-          </span>
-          <span class="meta-item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
-            市值占比 ${company.marketShare || 0}%
-          </span>
-        </div>
-
-        <button class="btn btn-primary company-detail-btn" onclick="PageCompany.showDetail('${company.id}')">
-          查看详情
-        </button>
       </div>
     `;
+  }
+
+  /**
+   * 切换子公司卡片展开/折叠状态
+   */
+  function toggleCompanyExpand(companyId) {
+    if (expandedCompanyIds.has(companyId)) {
+      expandedCompanyIds.delete(companyId);
+    } else {
+      expandedCompanyIds.add(companyId);
+    }
+    // 重新渲染当前页面
+    const container = document.getElementById('app-content');
+    if (container) {
+      render(container);
+    }
   }
 
   /**
@@ -16924,6 +17089,7 @@ const PageCompany = (function () {
     showDetail,
     backToList,
     resetDetail,
+    toggleCompanyExpand,
     showMetricDetail,
     backToOverview,
     handleCrisisAction,
@@ -16956,6 +17122,10 @@ const PageMarket = (function () {
   let currentStockId = null;
   // 当前交易弹窗状态
   let tradeModal = null;
+  // 是否显示基金市场视图
+  let showFundMarketView = false;
+  // 折叠区域展开状态
+  let expandedSections = new Set(['macro']); // 默认展开宏观经济
 
   /**
    * 渲染市场页面
@@ -16986,6 +17156,12 @@ const PageMarket = (function () {
     }
 
     const marketIndex = state.company?.marketIndex || 1000;
+
+    // 如果正在查看基金市场视图，渲染基金市场列表
+    if (showFundMarketView) {
+      renderFundMarketView(container, funds, state);
+      return;
+    }
 
     // 如果正在查看股票详情，渲染详情页
     if (currentStockId) {
@@ -17120,45 +17296,68 @@ const PageMarket = (function () {
         </div>
       </div>
 
-      <!-- 市场新闻 -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">市场新闻</span>
-          <div class="card-header-actions">
-            <span class="tag tag-info">${news.length} 条</span>
+      <!-- 市场新闻（折叠式） -->
+      <div class="collapsible-section">
+        <div class="collapsible-section-header" onclick="PageMarket.toggleSection('news')">
+          <div class="collapsible-section-title">
+            <span>市场新闻</span>
+            <span class="collapsible-section-count">${news.length} 条</span>
+          </div>
+          <span class="expand-arrow ${expandedSections.has('news') ? 'expanded' : ''}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </span>
+        </div>
+        ${expandedSections.has('news') ? `
+        <div class="collapsible-section-content">
+          <div id="ai-news-content" style="display: none;" class="ai-generated-content">
+            <div class="ai-content-header">
+              <span class="ai-content-label">🤖 AI 生成财经简报</span>
+              <button class="ai-content-close" id="ai-news-close">×</button>
+            </div>
+            <div class="ai-content-body" id="ai-news-body"></div>
+          </div>
+          <div class="news-list">
+            ${news.slice(0, 8).map(item => `
+              <div class="news-item-full">
+                <span class="news-impact-dot ${item.impact}"></span>
+                <div class="news-content">
+                  <p class="news-title">${item.title}</p>
+                  <span class="news-time">${item.time}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div style="margin-top: 12px; text-align: center;">
             <button class="btn btn-sm btn-ai" id="ai-news-btn" ${SongAI.isEnabled() ? '' : 'disabled title="请先在设置中配置 AI"'}>
               ✨ AI 简报
             </button>
           </div>
         </div>
-        <div id="ai-news-content" style="display: none;" class="ai-generated-content">
-          <div class="ai-content-header">
-            <span class="ai-content-label">🤖 AI 生成财经简报</span>
-            <button class="ai-content-close" id="ai-news-close">×</button>
-          </div>
-          <div class="ai-content-body" id="ai-news-body"></div>
-        </div>
-        <div class="news-list">
-          ${news.slice(0, 8).map(item => `
-            <div class="news-item-full">
-              <span class="news-impact-dot ${item.impact}"></span>
-              <div class="news-content">
-                <p class="news-title">${item.title}</p>
-                <span class="news-time">${item.time}</span>
-              </div>
-            </div>
-          `).join('')}
-        </div>
+        ` : ''}
       </div>
 
-      <!-- 股票列表 -->
-      <div class="section">
-        <div class="section-header">
-          <span class="section-title">股票行情</span>
+      <!-- 股票列表（折叠式） -->
+      <div class="collapsible-section">
+        <div class="collapsible-section-header" onclick="PageMarket.toggleSection('stocks')">
+          <div class="collapsible-section-title">
+            <span>股票行情</span>
+            <span class="collapsible-section-count">${stocks.length} 只</span>
+          </div>
+          <span class="expand-arrow ${expandedSections.has('stocks') ? 'expanded' : ''}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </span>
         </div>
-        <div class="stock-list">
-          ${stocks.map(stock => renderStockCard(stock)).join('')}
+        ${expandedSections.has('stocks') ? `
+        <div class="collapsible-section-content">
+          <div class="stock-list">
+            ${stocks.map(stock => renderStockCard(stock)).join('')}
+          </div>
         </div>
+        ` : ''}
       </div>
 
       <!-- 交易弹窗 -->
@@ -17973,14 +18172,119 @@ const PageMarket = (function () {
   }
 
   /**
+   * 渲染基金市场视图（带返回按钮）
+   */
+  function renderFundMarketView(container, funds, state) {
+    const fundAvgReturn = funds.length > 0
+      ? (funds.reduce((sum, f) => sum + (f.annualReturn || 0), 0) / funds.length).toFixed(2)
+      : 0;
+    const fundUpCount = funds.filter(f => (f.todayChange || 0) >= 0).length;
+
+    container.innerHTML = `
+      <div class="page-header">
+        <button class="btn btn-icon back-btn-icon" onclick="PageMarket.backFromFundMarket()" style="margin-right: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"/>
+            <path d="M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div>
+          <h1 class="page-title">基金市场</h1>
+          <p class="page-subtitle">${funds.length} 只基金 · 股票型/债券型/混合型/货币型</p>
+        </div>
+      </div>
+
+      <!-- 基金市场概览 -->
+      <div class="card market-index-card">
+        <div class="market-index-main">
+          <div class="index-value-large ${fundAvgReturn >= 0 ? 'positive' : 'negative'}">${fundAvgReturn >= 0 ? '+' : ''}${fundAvgReturn}%</div>
+          <div class="index-label">年均收益</div>
+        </div>
+        <div class="market-index-stats">
+          <div class="index-stat">
+            <span class="index-stat-value positive">${fundUpCount}</span>
+            <span class="index-stat-label">上涨</span>
+          </div>
+          <div class="index-stat">
+            <span class="index-stat-value negative">${funds.length - fundUpCount}</span>
+            <span class="index-stat-label">下跌</span>
+          </div>
+          <div class="index-stat">
+            <span class="index-stat-value">${funds.length}</span>
+            <span class="index-stat-label">基金数</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 基金列表 -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">全部基金</span>
+        </div>
+        <div class="fund-list">
+          ${funds.map(fund => `
+            <div class="fund-item" onclick="PageInvestment.showFundDetail('${fund.id}')">
+              <div class="fund-item-header">
+                <div class="fund-item-info">
+                  <h4 class="fund-item-name">${fund.name}</h4>
+                  <span class="fund-item-type">${fund.type || '混合型'}</span>
+                </div>
+                <div class="fund-item-return ${(fund.todayChange || 0) >= 0 ? 'positive' : 'negative'}">
+                  ${(fund.todayChange || 0) >= 0 ? '+' : ''}${(fund.todayChange || 0).toFixed(2)}%
+                </div>
+              </div>
+              <div class="fund-item-stats">
+                <div class="fund-stat">
+                  <span class="fund-stat-label">单位净值</span>
+                  <span class="fund-stat-value">${(fund.nav || 1).toFixed(4)}</span>
+                </div>
+                <div class="fund-stat">
+                  <span class="fund-stat-label">年化收益</span>
+                  <span class="fund-stat-value ${(fund.annualReturn || 0) >= 0 ? 'positive' : 'negative'}">${(fund.annualReturn || 0) >= 0 ? '+' : ''}${(fund.annualReturn || 0).toFixed(2)}%</span>
+                </div>
+                <div class="fund-stat">
+                  <span class="fund-stat-label">风险等级</span>
+                  <span class="fund-stat-value">${fund.riskLevel || '中风险'}</span>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * 切换折叠区域展开/折叠状态
+   */
+  function toggleSection(sectionId) {
+    if (expandedSections.has(sectionId)) {
+      expandedSections.delete(sectionId);
+    } else {
+      expandedSections.add(sectionId);
+    }
+    // 重新渲染当前页面
+    const container = document.getElementById('app-content');
+    if (container) {
+      render(container);
+    }
+  }
+
+  /**
+   * 从基金市场视图返回
+   */
+  function backFromFundMarket() {
+    showFundMarketView = false;
+    render(document.getElementById('app-content'));
+  }
+
+  /**
    * 跳转到基金市场
    */
   function goToFundMarket() {
-    // 切换到投资页面并激活基金市场 tab
-    if (typeof PageInvestment !== 'undefined' && PageInvestment.switchTab) {
-      PageInvestment.switchTab('fundMarket');
-    }
-    SongApp.navigateTo('investment');
+    // 在市场页面内部显示基金市场视图，不跳转到投资页面
+    showFundMarketView = true;
+    render(document.getElementById('app-content'));
   }
 
   // 公开 API
@@ -17997,7 +18301,9 @@ const PageMarket = (function () {
     updateShares,
     updateTradeModalDisplay,
     confirmTrade,
-    goToFundMarket
+    goToFundMarket,
+    backFromFundMarket,
+    toggleSection
   };
 })();
 

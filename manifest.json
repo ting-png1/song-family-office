@@ -1,0 +1,18 @@
+{
+  "sdkVersion": "1.0",
+  "id": "song.family.office.pro",
+  "name": "家族办公室",
+  "version": "0.1.0",
+  "author": "松庭",
+  "description": "松氏家族经营模拟终端——以松家长女松庭的身份，逐步接手家族企业、投资基金与各类资产，处理每日事务、面对市场变化、做出商业决策。",
+  "icon": "icon.png",
+  "entry": "index.html",
+  "permissions": [
+    "app.data.read",
+    "app.data.write",
+    "ai.generate",
+    "ui.toast",
+    "notification.create"
+  ],
+  "extensions": {}
+}
