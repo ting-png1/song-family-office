@@ -6366,6 +6366,61 @@ const SongFinance = (function () {
   // ═══════════════════════════════════════════════
 
   /**
+   * 基于子公司当前数据生成历史数据
+   * @param {Object} subsidiary - 子公司当前数据
+   * @param {string} endDate - 结束日期（游戏当前日期）
+   * @param {number} historyDays - 生成多少天历史
+   * @returns {Array} 历史数据数组（最新的在前）
+   */
+  function generateSubsidiaryHistory(subsidiary, endDate, historyDays = 30) {
+    const baseDate = endDate || new Date().toISOString().split('T')[0];
+    const history = [];
+
+    let revenue = subsidiary.revenue * randomFloat(0.92, 0.98);
+    let profit = subsidiary.profit * randomFloat(0.9, 0.97);
+    let satisfaction = subsidiary.satisfaction + randomInt(-5, 3);
+    let reputation = subsidiary.reputation + randomInt(-3, 2);
+    let employees = Math.max(1, subsidiary.employees + randomInt(-15, 5));
+
+    for (let i = historyDays; i >= 0; i--) {
+      const d = new Date(baseDate);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+
+      const revenueDrift = (subsidiary.revenue - revenue) * 0.08;
+      const profitDrift = (subsidiary.profit - profit) * 0.08;
+      const satisfactionDrift = (subsidiary.satisfaction - satisfaction) * 0.1;
+      const reputationDrift = (subsidiary.reputation - reputation) * 0.1;
+      const employeeDrift = (subsidiary.employees - employees) * 0.05;
+
+      revenue = revenue + revenueDrift + revenue * randomFloat(-0.015, 0.015);
+      profit = profit + profitDrift + profit * randomFloat(-0.025, 0.025);
+      satisfaction = clamp(satisfaction + satisfactionDrift + randomFloat(-1, 1), 0, 100);
+      reputation = clamp(reputation + reputationDrift + randomFloat(-0.8, 0.8), 0, 100);
+      employees = Math.max(1, Math.round(employees + employeeDrift + randomInt(-3, 3)));
+
+      if (i === 0) {
+        revenue = subsidiary.revenue;
+        profit = subsidiary.profit;
+        satisfaction = subsidiary.satisfaction;
+        reputation = subsidiary.reputation;
+        employees = subsidiary.employees;
+      }
+
+      history.push({
+        date: dateStr,
+        revenue: Math.round(revenue),
+        profit: Math.round(profit),
+        employees: employees,
+        satisfaction: Math.round(satisfaction),
+        reputation: Math.round(reputation)
+      });
+    }
+
+    return history.reverse(); // 最新的在前
+  }
+
+  /**
    * 初始化子公司数据
    * @param {string} startDate - 游戏起始日期 (YYYY-MM-DD)，默认为今天
    * @param {number} historyDays - 生成多少天的历史数据，默认30天
@@ -6374,59 +6429,12 @@ const SongFinance = (function () {
     const baseDate = startDate || new Date().toISOString().split('T')[0];
 
     return DEFAULT_SUBSIDIARIES.map(s => {
-      // 生成历史数据：从起始日期往前推 historyDays 天，带小幅波动
-      const history = [];
-      let revenue = s.revenue * randomFloat(0.92, 0.98); // 从较低值开始，逐步增长到当前值
-      let profit = s.profit * randomFloat(0.9, 0.97);
-      let satisfaction = s.satisfaction + randomInt(-5, 3);
-      let reputation = s.reputation + randomInt(-3, 2);
-      let employees = Math.max(1, s.employees + randomInt(-15, 5));
-
-      for (let i = historyDays; i >= 0; i--) {
-        const d = new Date(baseDate);
-        d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0];
-
-        // 每天小幅波动，整体趋势向当前值靠拢
-        const revenueDrift = (s.revenue - revenue) * 0.08; // 每天向当前值靠拢8%
-        const profitDrift = (s.profit - profit) * 0.08;
-        const satisfactionDrift = (s.satisfaction - satisfaction) * 0.1;
-        const reputationDrift = (s.reputation - reputation) * 0.1;
-        const employeeDrift = (s.employees - employees) * 0.05;
-
-        revenue = revenue + revenueDrift + revenue * randomFloat(-0.015, 0.015);
-        profit = profit + profitDrift + profit * randomFloat(-0.025, 0.025);
-        satisfaction = clamp(satisfaction + satisfactionDrift + randomFloat(-1, 1), 0, 100);
-        reputation = clamp(reputation + reputationDrift + randomFloat(-0.8, 0.8), 0, 100);
-        employees = Math.max(1, Math.round(employees + employeeDrift + randomInt(-3, 3)));
-
-        // 最后一天强制设为当前值
-        if (i === 0) {
-          revenue = s.revenue;
-          profit = s.profit;
-          satisfaction = s.satisfaction;
-          reputation = s.reputation;
-          employees = s.employees;
-        }
-
-        history.push({
-          date: dateStr,
-          revenue: Math.round(revenue),
-          profit: Math.round(profit),
-          employees: employees,
-          satisfaction: Math.round(satisfaction),
-          reputation: Math.round(reputation)
-        });
-      }
-
-      // history 是按时间正序排列的（最早→最新），但我们存储时最新的在前
-      // 所以需要反转，让最新的在数组开头
-      const reversedHistory = history.reverse();
+      const history = generateSubsidiaryHistory(s, baseDate, historyDays);
 
       return {
         ...s,
         lastUpdated: new Date().toISOString(),
-        history: reversedHistory
+        history: history
       };
     });
   }
@@ -6661,6 +6669,7 @@ const SongFinance = (function () {
   return {
     DEFAULT_SUBSIDIARIES,
     initSubsidiaries,
+    generateSubsidiaryHistory,
     updateSubsidiariesDaily,
     calculateGroupFinancials,
     dailySettlement,
@@ -11949,115 +11958,149 @@ const PageCompany = (function () {
    * 处理危机处理动作
    */
   async function handleCrisisAction(subsidiaryId, actionId) {
-    const state = SongState.getState();
-    const subsidiaries = state.subsidiaries || [];
-    const subsidiaryIndex = subsidiaries.findIndex(s => s.id === subsidiaryId);
-    if (subsidiaryIndex === -1) return;
-
-    const subsidiary = subsidiaries[subsidiaryIndex];
-    const actions = getCrisisActions(subsidiary);
-    const action = actions.find(a => a.id === actionId);
-    if (!action || action.disabled) return;
-
-    // 确认危险操作
-    if (action.dangerous) {
-      if (!confirm(`确定要出售${subsidiary.name}吗？此操作不可撤销！`)) return;
-    }
-    if (action.risky) {
-      if (!confirm(`业务重组存在风险，确定要执行吗？`)) return;
-    }
-
-    let company = { ...state.company };
-    let heir = { ...state.heir };
-    let newSubsidiary = { ...subsidiary };
-
-    switch (actionId) {
-      case 'inject_capital':
-        company.cash -= action.cost;
-        newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.15);
-        newSubsidiary.reputation = Math.min(100, newSubsidiary.reputation + 5);
-        newSubsidiary.risk = newSubsidiary.risk === 'high' ? 'medium' : newSubsidiary.risk;
-        break;
-
-      case 'change_management':
-        heir.familyTrust = Math.max(0, heir.familyTrust - 8);
-        // 延迟效果通过 effects 系统处理
-        if (window.SongEffects && window.SongEffects.addEffect) {
-          window.SongEffects.addEffect({
-            type: 'subsidiary_management_change',
-            targetId: subsidiaryId,
-            startDay: (state.gameDate?.dayCount || 0) + 3,
-            duration: 1,
-            data: { profitBonus: 0.20, satisfactionBonus: 15, riskReduce: true }
-          });
-        } else {
-          // 降级：立即生效一半效果
-          newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.10);
-          newSubsidiary.satisfaction = Math.min(100, newSubsidiary.satisfaction + 8);
-        }
-        break;
-
-      case 'layoff_cost_cutting':
-        const layoffCount = Math.round(newSubsidiary.employees * 0.1);
-        newSubsidiary.employees = Math.max(1, newSubsidiary.employees - layoffCount);
-        newSubsidiary.satisfaction = Math.max(0, newSubsidiary.satisfaction - 15);
-        newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.25);
-        break;
-
-      case 'marketing_investment':
-        company.cash -= action.cost;
-        newSubsidiary.reputation = Math.min(100, newSubsidiary.reputation + 12);
-        // 延迟效果
-        if (window.SongEffects && window.SongEffects.addEffect) {
-          window.SongEffects.addEffect({
-            type: 'subsidiary_marketing',
-            targetId: subsidiaryId,
-            startDay: (state.gameDate?.dayCount || 0) + 7,
-            duration: 30,
-            data: { revenueBonus: 0.15 }
-          });
-        }
-        break;
-
-      case 'business_restructuring':
-        company.cash -= 100000000;
-        heir.familyTrust = Math.max(0, heir.familyTrust - 5);
-        const success = Math.random() > 0.5;
-        if (success) {
-          newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.40);
-          newSubsidiary.satisfaction = Math.min(100, newSubsidiary.satisfaction + 20);
-          newSubsidiary.risk = 'low';
-          newSubsidiary.reputation = Math.min(100, newSubsidiary.reputation + 10);
-          alert(`业务重组成功！${subsidiary.name}经营状况大幅改善！`);
-        } else {
-          newSubsidiary.profit = Math.round(newSubsidiary.profit * 0.75);
-          newSubsidiary.satisfaction = Math.max(0, newSubsidiary.satisfaction - 10);
-          newSubsidiary.risk = 'high';
-          alert(`业务重组失败！${subsidiary.name}经营状况进一步恶化...`);
-        }
-        break;
-
-      case 'sell_divest':
-        const salePrice = Math.max(50000000, subsidiary.totalAssets * 0.6);
-        company.cash += salePrice;
-        // 从子公司列表中移除
-        subsidiaries.splice(subsidiaryIndex, 1);
-        await SongState.update('subsidiaries', subsidiaries);
-        await SongState.update('company', company);
-        await SongState.update('heir', heir);
-        alert(`已成功出售${subsidiary.name}，获得 ${formatMoney(salePrice)}！`);
-        backToList();
+    try {
+      console.log('[Crisis] 执行危机处理:', subsidiaryId, actionId);
+      const state = SongState.getState();
+      const subsidiaries = state.subsidiaries || [];
+      const subsidiaryIndex = subsidiaries.findIndex(s => s.id === subsidiaryId);
+      if (subsidiaryIndex === -1) {
+        console.warn('[Crisis] 子公司不存在:', subsidiaryId);
         return;
+      }
+
+      const subsidiary = subsidiaries[subsidiaryIndex];
+      const actions = getCrisisActions(subsidiary);
+      const action = actions.find(a => a.id === actionId);
+      if (!action) {
+        console.warn('[Crisis] 操作不存在:', actionId);
+        return;
+      }
+      if (action.disabled) {
+        console.warn('[Crisis] 操作已禁用:', actionId, action.disabledReason);
+        if (window.showToast) window.showToast(action.disabledReason || '无法执行此操作');
+        return;
+      }
+
+      // 确认危险操作
+      if (action.dangerous) {
+        if (!confirm(`确定要出售${subsidiary.name}吗？此操作不可撤销！`)) return;
+      }
+      if (action.risky) {
+        if (!confirm(`业务重组存在风险，确定要执行吗？`)) return;
+      }
+
+      // 确保 company 和 heir 对象存在且结构正确
+      const company = state.company ? { ...state.company } : { cash: 0 };
+      const heir = state.heir ? { ...state.heir } : {};
+      heir.abilities = heir.abilities ? { ...heir.abilities } : {};
+      // 确保 familyTrust 存在
+      if (typeof heir.abilities.familyTrust !== 'number') {
+        heir.abilities.familyTrust = 50;
+      }
+      // 确保 cash 存在
+      if (typeof company.cash !== 'number') {
+        company.cash = 0;
+      }
+
+      let newSubsidiary = { ...subsidiary };
+
+      switch (actionId) {
+        case 'inject_capital':
+          company.cash -= action.cost;
+          newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.15);
+          newSubsidiary.reputation = Math.min(100, newSubsidiary.reputation + 5);
+          newSubsidiary.risk = newSubsidiary.risk === 'high' ? 'medium' : newSubsidiary.risk;
+          break;
+
+        case 'change_management':
+          heir.abilities.familyTrust = Math.max(0, heir.abilities.familyTrust - 8);
+          // 延迟效果通过 effects 系统处理
+          if (window.SongEffects && window.SongEffects.addEffect) {
+            window.SongEffects.addEffect({
+              type: 'subsidiary_management_change',
+              targetId: subsidiaryId,
+              startDay: (state.gameDate?.dayCount || 0) + 3,
+              duration: 1,
+              data: { profitBonus: 0.20, satisfactionBonus: 15, riskReduce: true }
+            });
+          } else {
+            // 降级：立即生效一半效果
+            newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.10);
+            newSubsidiary.satisfaction = Math.min(100, newSubsidiary.satisfaction + 8);
+          }
+          break;
+
+        case 'layoff_cost_cutting':
+          const layoffCount = Math.round(newSubsidiary.employees * 0.1);
+          newSubsidiary.employees = Math.max(1, newSubsidiary.employees - layoffCount);
+          newSubsidiary.satisfaction = Math.max(0, newSubsidiary.satisfaction - 15);
+          newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.25);
+          break;
+
+        case 'marketing_investment':
+          company.cash -= action.cost;
+          newSubsidiary.reputation = Math.min(100, newSubsidiary.reputation + 12);
+          // 延迟效果
+          if (window.SongEffects && window.SongEffects.addEffect) {
+            window.SongEffects.addEffect({
+              type: 'subsidiary_marketing',
+              targetId: subsidiaryId,
+              startDay: (state.gameDate?.dayCount || 0) + 7,
+              duration: 30,
+              data: { revenueBonus: 0.15 }
+            });
+          }
+          break;
+
+        case 'business_restructuring':
+          company.cash -= 100000000;
+          heir.abilities.familyTrust = Math.max(0, heir.abilities.familyTrust - 5);
+          const success = Math.random() > 0.5;
+          if (success) {
+            newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.40);
+            newSubsidiary.satisfaction = Math.min(100, newSubsidiary.satisfaction + 20);
+            newSubsidiary.risk = 'low';
+            newSubsidiary.reputation = Math.min(100, newSubsidiary.reputation + 10);
+            if (window.showToast) window.showToast(`业务重组成功！${subsidiary.name}经营状况大幅改善！`);
+          } else {
+            newSubsidiary.profit = Math.round(newSubsidiary.profit * 0.75);
+            newSubsidiary.satisfaction = Math.max(0, newSubsidiary.satisfaction - 10);
+            newSubsidiary.risk = 'high';
+            if (window.showToast) window.showToast(`业务重组失败！${subsidiary.name}经营状况进一步恶化...`);
+          }
+          break;
+
+        case 'sell_divest':
+          const salePrice = Math.max(50000000, (subsidiary.totalAssets || 100000000) * 0.6);
+          company.cash += salePrice;
+          // 从子公司列表中移除
+          subsidiaries.splice(subsidiaryIndex, 1);
+          await SongState.update('subsidiaries', subsidiaries);
+          await SongState.update('company', company);
+          await SongState.update('heir', heir);
+          if (window.showToast) window.showToast(`已成功出售${subsidiary.name}，获得 ${formatMoney(salePrice)}！`);
+          backToList();
+          return;
+      }
+
+      // 更新子公司
+      subsidiaries[subsidiaryIndex] = newSubsidiary;
+      await SongState.update('subsidiaries', subsidiaries);
+      await SongState.update('company', company);
+      await SongState.update('heir', heir);
+
+      console.log('[Crisis] 危机处理完成:', actionId);
+      if (window.showToast) window.showToast(`${action.name}执行成功！`);
+
+      // 重新渲染
+      const appContent = document.getElementById('app-content');
+      if (appContent) {
+        render(appContent);
+      }
+    } catch (e) {
+      console.error('[Crisis] 危机处理失败:', e);
+      if (window.showToast) window.showToast('操作失败，请重试');
     }
-
-    // 更新子公司
-    subsidiaries[subsidiaryIndex] = newSubsidiary;
-    await SongState.update('subsidiaries', subsidiaries);
-    await SongState.update('company', company);
-    await SongState.update('heir', heir);
-
-    // 重新渲染
-    render(document.getElementById('app-content'));
   }
 
   /**
@@ -14817,6 +14860,10 @@ const SongApp = (function () {
       updateInitProgress('正在加载基金数据...');
       await initFundsIfEmpty();
 
+      // 3.75 迁移旧格式的历史数据（日期是真实日期的旧存档）
+      updateInitProgress('正在检查数据格式...');
+      await migrateOldHistoryData();
+
       // 3.8 如果是新的一天，执行每日结算
       updateInitProgress('正在执行每日结算...');
       await checkAndRunDailySettlement();
@@ -15077,6 +15124,105 @@ const SongApp = (function () {
     if (!state.portfolio) {
       await SongState.update('portfolio', []);
     }
+  }
+
+  /**
+   * 检测并迁移旧格式的历史数据（日期是真实日期的旧存档）
+   */
+  async function migrateOldHistoryData() {
+    const state = SongState.getState();
+    const gameDate = state.gameDate?.current || new Date().toISOString().split('T')[0];
+    let migrated = false;
+
+    // 1. 检测子公司历史数据
+    if (state.subsidiaries && state.subsidiaries.length > 0) {
+      let needsMigration = false;
+      for (const sub of state.subsidiaries) {
+        // 旧格式特征：历史数据为空、只有1条、或第一条记录日期晚于游戏当前日期
+        if (!sub.history || sub.history.length <= 1) {
+          needsMigration = true;
+          break;
+        }
+        const firstDate = sub.history[0]?.date;
+        if (firstDate && firstDate > gameDate) {
+          needsMigration = true;
+          break;
+        }
+      }
+
+      if (needsMigration) {
+        console.log('[SongApp] 检测到旧格式子公司历史数据，正在迁移...');
+        const migratedSubs = state.subsidiaries.map(sub => {
+          try {
+            const history = SongFinance.generateSubsidiaryHistory(sub, gameDate, 30);
+            return { ...sub, history };
+          } catch (e) {
+            console.warn('[SongApp] 子公司历史数据迁移失败:', sub.name, e);
+            return sub;
+          }
+        });
+        await SongState.update('subsidiaries', migratedSubs);
+        migrated = true;
+        console.log('[SongApp] 子公司历史数据迁移完成');
+      }
+    }
+
+    // 2. 检测股票历史数据
+    if (state.stockMarket && state.stockMarket.stocks && state.stockMarket.stocks.length > 0) {
+      let needsMigration = false;
+      for (const stock of state.stockMarket.stocks) {
+        if (!stock.priceHistory || stock.priceHistory.length <= 1) {
+          needsMigration = true;
+          break;
+        }
+        const firstDate = stock.priceHistory[0]?.date;
+        if (firstDate && firstDate > gameDate) {
+          needsMigration = true;
+          break;
+        }
+      }
+
+      if (needsMigration) {
+        console.log('[SongApp] 检测到旧格式股票历史数据，重新初始化...');
+        const newStockMarket = SongStockMarket.initStockMarket(gameDate);
+        // 保留用户的持仓数据
+        newStockMarket.portfolio = state.stockMarket.portfolio || [];
+        await SongState.update('stockMarket', newStockMarket);
+        migrated = true;
+        console.log('[SongApp] 股票历史数据迁移完成');
+      }
+    }
+
+    // 3. 检测基金历史数据
+    if (state.funds && state.funds.length > 0) {
+      let needsMigration = false;
+      for (const fund of state.funds) {
+        if (!fund.navHistory || fund.navHistory.length <= 1) {
+          needsMigration = true;
+          break;
+        }
+        const firstDate = fund.navHistory[0]?.date;
+        if (firstDate && firstDate > gameDate) {
+          needsMigration = true;
+          break;
+        }
+      }
+
+      if (needsMigration) {
+        console.log('[SongApp] 检测到旧格式基金历史数据，重新初始化...');
+        const newFunds = SongFund.initFunds(gameDate);
+        // 保留用户的基金持仓数据
+        await SongState.update('funds', newFunds);
+        migrated = true;
+        console.log('[SongApp] 基金历史数据迁移完成');
+      }
+    }
+
+    if (migrated) {
+      showToast('历史数据已自动迁移至游戏日期');
+    }
+
+    return migrated;
   }
 
   /**
