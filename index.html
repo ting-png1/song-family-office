@@ -11932,10 +11932,10 @@ const PageCompany = (function () {
       }
     }
 
-    // 6. 出售剥离（持续严重亏损时）
-    if (subsidiary.profit < 0 && subsidiary.history && subsidiary.history.length > 10) {
-      const recentLosses = subsidiary.history.slice(0, 7).filter(h => h.profit < 0).length;
-      if (recentLosses >= 5) {
+    // 6. 出售剥离（持续亏损时）
+    if (subsidiary.profit < 0 && subsidiary.history && subsidiary.history.length > 3) {
+      const recentLosses = subsidiary.history.slice(0, 3).filter(h => h.profit < 0).length;
+      if (recentLosses >= 2) {
         const salePrice = Math.max(50000000, (subsidiary.revenue || 100000000) * 2);
         actions.push({
           id: 'sell_divest',
@@ -12091,9 +12091,11 @@ const PageCompany = (function () {
           company.cash += salePrice;
           // 从子公司列表中移除
           subsidiaries.splice(subsidiaryIndex, 1);
-          await SongState.update('subsidiaries', subsidiaries);
-          await SongState.update('company', company);
-          await SongState.update('heir', heir);
+          await SongState.batchUpdate({
+            'subsidiaries': subsidiaries,
+            'company': company,
+            'heir': heir
+          });
           if (window.showToast) window.showToast(`已成功出售${subsidiary.name}，获得 ${formatMoney(salePrice)}！`);
           backToList();
           return;
@@ -12101,18 +12103,15 @@ const PageCompany = (function () {
 
       // 更新子公司
       subsidiaries[subsidiaryIndex] = newSubsidiary;
-      await SongState.update('subsidiaries', subsidiaries);
-      await SongState.update('company', company);
-      await SongState.update('heir', heir);
+      await SongState.batchUpdate({
+        'subsidiaries': subsidiaries,
+        'company': company,
+        'heir': heir
+      });
 
       console.log('[Crisis] 危机处理完成:', actionId);
       if (window.showToast) window.showToast(`${action.name}执行成功！`);
-
-      // 重新渲染
-      const appContent = document.getElementById('app-content');
-      if (appContent) {
-        render(appContent);
-      }
+      // 不手动渲染，由全局状态监听统一处理，避免闪烁
     } catch (e) {
       console.error('[Crisis] 危机处理失败:', e);
       if (window.showToast) window.showToast('操作失败，请重试');
