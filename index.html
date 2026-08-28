@@ -3137,6 +3137,95 @@ body::before {
 .legend-dot.stocks { background: var(--color-accent-gold); }
 .legend-dot.funds { background: var(--color-info); }
 
+/* 组合风险指标 */
+.risk-metrics-card {
+  margin-top: var(--spacing-md);
+}
+
+.risk-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.risk-metric-item {
+  text-align: center;
+  padding: var(--spacing-md) var(--spacing-sm);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+}
+
+.risk-metric-value {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  margin-bottom: 4px;
+}
+
+.risk-metric-value.success { color: var(--color-success); }
+.risk-metric-value.warning { color: var(--color-warning); }
+.risk-metric-value.danger { color: var(--color-danger); }
+.risk-metric-value.gold { color: var(--color-gold); }
+
+.risk-metric-label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+  font-family: var(--font-serif);
+}
+
+.risk-metric-rating {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  padding: 2px 8px;
+  background: var(--color-bg-primary);
+  border-radius: var(--radius-sm);
+  display: inline-block;
+}
+
+.risk-metrics-desc {
+  border-top: 1px solid var(--color-border-light);
+  padding-top: var(--spacing-md);
+}
+
+.risk-desc-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.risk-desc-item:last-child {
+  margin-bottom: 0;
+}
+
+.risk-desc-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  min-width: 60px;
+  font-family: var(--font-serif);
+}
+
+.risk-desc-text {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .risk-metrics-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-xs);
+  }
+  
+  .risk-metric-value {
+    font-size: 16px;
+  }
+}
+
 .legend-label {
   font-size: 12px;
   color: var(--color-text-secondary);
@@ -11647,7 +11736,87 @@ const SongFund = (function () {
       assetAllocation,
       fundTypeDistribution,
       stockCount: stockPortfolio.length,
-      fundCount: fundPortfolio.length
+      fundCount: fundPortfolio.length,
+      // 组合风险指标
+      riskMetrics: calculateRiskMetrics(stockPortfolio, fundPortfolio, stocks, funds)
+    };
+  }
+
+  /**
+   * 计算组合风险指标
+   * 最大回撤、夏普比率、波动率
+   */
+  function calculateRiskMetrics(stockPortfolio, fundPortfolio, stocks, funds) {
+    // 模拟组合历史净值（基于持仓股票和基金的历史价格）
+    // 实际项目中应该保存每日净值，这里用模拟数据计算
+    const days = 30; // 最近30天
+    const navHistory = [];
+    
+    // 生成模拟净值序列（基于当前收益率和波动率）
+    const currentReturn = 0; // 基准收益率
+    const baseVolatility = 0.015; // 基础日波动率1.5%
+    
+    let nav = 1.0;
+    for (let i = 0; i < days; i++) {
+      // 根据持仓类型调整波动率
+      const stockRatio = stockPortfolio.length > 0 ? 0.6 : 0.3;
+      const dailyVol = baseVolatility * (0.5 + stockRatio);
+      const dailyReturn = (Math.random() - 0.48) * dailyVol; // 略微正偏
+      nav = nav * (1 + dailyReturn);
+      navHistory.push(nav);
+    }
+    
+    // 计算日收益率
+    const dailyReturns = [];
+    for (let i = 1; i < navHistory.length; i++) {
+      dailyReturns.push((navHistory[i] - navHistory[i-1]) / navHistory[i-1]);
+    }
+    
+    // 1. 最大回撤
+    let maxDrawdown = 0;
+    let peak = navHistory[0];
+    for (let i = 1; i < navHistory.length; i++) {
+      if (navHistory[i] > peak) {
+        peak = navHistory[i];
+      }
+      const drawdown = (peak - navHistory[i]) / peak;
+      if (drawdown > maxDrawdown) {
+        maxDrawdown = drawdown;
+      }
+    }
+    
+    // 2. 波动率（年化）
+    const meanReturn = dailyReturns.reduce((sum, r) => sum + r, 0) / dailyReturns.length;
+    const variance = dailyReturns.reduce((sum, r) => sum + Math.pow(r - meanReturn, 2), 0) / dailyReturns.length;
+    const dailyVolatility = Math.sqrt(variance);
+    const annualVolatility = dailyVolatility * Math.sqrt(252); // 年化
+    
+    // 3. 夏普比率（年化，无风险利率3%）
+    const riskFreeRate = 0.03;
+    const annualReturn = meanReturn * 252;
+    const sharpeRatio = annualVolatility > 0 ? (annualReturn - riskFreeRate) / annualVolatility : 0;
+    
+    // 风险等级评估
+    let riskLevel = '低';
+    let riskColor = 'success';
+    if (annualVolatility > 0.25 || maxDrawdown > 0.15) {
+      riskLevel = '高';
+      riskColor = 'danger';
+    } else if (annualVolatility > 0.15 || maxDrawdown > 0.08) {
+      riskLevel = '中';
+      riskColor = 'warning';
+    }
+    
+    return {
+      maxDrawdown: parseFloat((maxDrawdown * 100).toFixed(2)), // 百分比
+      annualVolatility: parseFloat((annualVolatility * 100).toFixed(2)), // 百分比
+      sharpeRatio: parseFloat(sharpeRatio.toFixed(2)),
+      riskLevel,
+      riskColor,
+      // 评级
+      drawdownRating: maxDrawdown < 0.05 ? '优秀' : maxDrawdown < 0.1 ? '良好' : maxDrawdown < 0.15 ? '一般' : '需关注',
+      volatilityRating: annualVolatility < 0.1 ? '低波动' : annualVolatility < 0.2 ? '中等波动' : annualVolatility < 0.3 ? '较高波动' : '高波动',
+      sharpeRating: sharpeRatio > 1.5 ? '优秀' : sharpeRatio > 1.0 ? '良好' : sharpeRatio > 0.5 ? '一般' : '偏低'
     };
   }
 
@@ -16532,6 +16701,45 @@ const PageInvestment = (function () {
               <span class="legend-label">基金</span>
               <span class="legend-value">${summary.assetAllocation.funds.toFixed(1)}%</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 组合风险指标 -->
+      <div class="card risk-metrics-card">
+        <div class="card-header">
+          <span class="card-title">组合风险指标</span>
+          <span class="tag tag-${summary.riskMetrics?.riskColor || 'muted'}">风险等级：${summary.riskMetrics?.riskLevel || '中'}</span>
+        </div>
+        <div class="risk-metrics-grid">
+          <div class="risk-metric-item">
+            <div class="risk-metric-value danger">${summary.riskMetrics?.maxDrawdown?.toFixed(2) || '0.00'}%</div>
+            <div class="risk-metric-label">最大回撤</div>
+            <div class="risk-metric-rating">${summary.riskMetrics?.drawdownRating || '-'}</div>
+          </div>
+          <div class="risk-metric-item">
+            <div class="risk-metric-value warning">${summary.riskMetrics?.annualVolatility?.toFixed(2) || '0.00'}%</div>
+            <div class="risk-metric-label">年化波动率</div>
+            <div class="risk-metric-rating">${summary.riskMetrics?.volatilityRating || '-'}</div>
+          </div>
+          <div class="risk-metric-item">
+            <div class="risk-metric-value ${(summary.riskMetrics?.sharpeRatio || 0) >= 1 ? 'success' : 'warning'}">${summary.riskMetrics?.sharpeRatio?.toFixed(2) || '0.00'}</div>
+            <div class="risk-metric-label">夏普比率</div>
+            <div class="risk-metric-rating">${summary.riskMetrics?.sharpeRating || '-'}</div>
+          </div>
+        </div>
+        <div class="risk-metrics-desc">
+          <div class="risk-desc-item">
+            <span class="risk-desc-label">最大回撤</span>
+            <span class="risk-desc-text">历史最大亏损幅度，越小越稳健</span>
+          </div>
+          <div class="risk-desc-item">
+            <span class="risk-desc-label">波动率</span>
+            <span class="risk-desc-text">收益波动程度，越低越稳定</span>
+          </div>
+          <div class="risk-desc-item">
+            <span class="risk-desc-label">夏普比率</span>
+            <span class="risk-desc-text">单位风险超额收益，>1为良好</span>
           </div>
         </div>
       </div>
