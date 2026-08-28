@@ -20,6 +20,9 @@
 /* 引入思源宋体 Noto Serif SC（Google Fonts CDN，中文高级衬线） */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&display=swap');
 
+/* 引入中文手写体（继承人手记使用） */
+@import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=ZCOOL+XiaoWei&display=swap');
+
 /* ═══════════════════════════════════════════════
    1. CSS 变量与设计令牌
    ═══════════════════════════════════════════════ */
@@ -78,6 +81,7 @@
   --font-display: "Cormorant Garamond", "Noto Serif SC", "Songti SC", "STSong", Georgia, serif;
   /* 中文专用字体栈（确保中文一定用思源宋体） */
   --font-chinese: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
+  --font-handwriting: "Ma Shan Zheng", "Liu Jian Mao Cao", "Long Cang", "ZCOOL XiaoWei", cursive;
 
   /* 间距 */
   --spacing-xs: 4px;
@@ -864,6 +868,73 @@ body::before {
   color: var(--color-text-primary);
 }
 
+/* 基金市场入口 */
+.fund-market-entry {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: var(--spacing-md);
+}
+
+.fund-market-entry:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.fund-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fund-entry-info {
+  flex: 1;
+}
+
+.fund-entry-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
+  font-family: var(--font-serif);
+}
+
+.fund-entry-subtitle {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.fund-entry-stats {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-right: var(--spacing-md);
+}
+
+.fund-entry-stat {
+  text-align: center;
+}
+
+.fund-entry-stat-value {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-text-primary);
+}
+
+.fund-entry-stat-label {
+  display: block;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.fund-entry-arrow {
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+}
+
 /* 股票价格 */
 .stock-price {
   text-align: right;
@@ -885,6 +956,26 @@ body::before {
 
 .price-change.positive { color: var(--color-success); }
 .price-change.negative { color: var(--color-danger); }
+
+/* 股票涨跌颜色：A股红涨绿跌，港股美股红跌绿涨 */
+.price-change.stock-up-cn { color: #e74c3c; }
+.price-change.stock-down-cn { color: #27ae60; }
+.price-change.stock-up-global { color: #27ae60; }
+.price-change.stock-down-global { color: #e74c3c; }
+
+/* 股票市场标签 */
+.stock-market-tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.stock-name {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
 
 /* 市场指数 */
 .market-index-main {
@@ -3802,6 +3893,335 @@ body::before {
   }
 }
 
+/* ═══════════════════════════════════════════════
+   私人管家样式
+   ═══════════════════════════════════════════════ */
+
+.butler-entry-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: var(--spacing-md);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.butler-entry-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.15);
+  border-color: rgba(212, 175, 55, 0.4);
+}
+
+.butler-entry-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.butler-entry-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(212, 175, 55, 0.05));
+  border-radius: var(--radius-md);
+  color: var(--color-accent-gold);
+}
+
+.butler-entry-info {
+  flex: 1;
+}
+
+.butler-entry-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 2px 0;
+  font-family: var(--font-serif);
+}
+
+.butler-entry-subtitle {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.butler-entry-arrow {
+  color: var(--color-text-muted);
+}
+
+.butler-header {
+  position: relative;
+}
+
+.butler-header .btn-back {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  padding: 4px 8px;
+}
+
+.butler-header .btn-back:hover {
+  color: var(--color-accent-gold);
+}
+
+.butler-tabs {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  background: var(--color-bg-elevated);
+  padding: 4px;
+  border-radius: var(--radius-md);
+}
+
+.butler-tab-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-family: var(--font-serif);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.butler-tab-btn.active {
+  background: var(--color-accent-gold);
+  color: var(--color-bg-primary);
+  font-weight: 600;
+}
+
+.butler-tab-btn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.manual-card {
+  margin-bottom: var(--spacing-md);
+}
+
+.manual-content {
+  padding: var(--spacing-md);
+}
+
+.manual-text {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--color-text-secondary);
+  font-family: var(--font-serif);
+  white-space: pre-wrap;
+}
+
+.manual-placeholder {
+  text-align: center;
+  padding: var(--spacing-xl) var(--spacing-md);
+}
+
+.placeholder-icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-md);
+}
+
+.placeholder-text {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-serif);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.placeholder-hint {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.journal-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.journal-input-card {
+  margin-bottom: 0;
+}
+
+.journal-date {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+}
+
+.journal-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: var(--spacing-md);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: 15px;
+  line-height: 1.8;
+  font-family: var(--font-handwriting);
+  resize: vertical;
+  margin-bottom: var(--spacing-md);
+  box-sizing: border-box;
+}
+
+.journal-textarea:focus {
+  outline: none;
+  border-color: var(--color-accent-gold);
+}
+
+.journal-textarea::placeholder {
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+}
+
+.journal-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.journal-actions .btn {
+  flex: 1;
+  min-width: 120px;
+}
+
+.ai-organize-result {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-accent-gold);
+}
+
+.ai-organized-content {
+  position: relative;
+}
+
+.ai-organized-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.ai-organized-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent-gold);
+  font-family: var(--font-serif);
+}
+
+.ai-organized-copy {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.ai-organized-copy:hover {
+  border-color: var(--color-accent-gold);
+  color: var(--color-accent-gold);
+}
+
+.ai-organized-text {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--color-text-secondary);
+  font-family: var(--font-serif);
+  white-space: pre-wrap;
+}
+
+.ai-loading {
+  text-align: center;
+  padding: var(--spacing-md);
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.ai-error {
+  color: var(--color-danger);
+  font-size: 14px;
+  text-align: center;
+  padding: var(--spacing-md);
+}
+
+.journal-history-card {
+  margin-bottom: 0;
+}
+
+.journal-list {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.journal-item {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.journal-item:last-child {
+  border-bottom: none;
+}
+
+.journal-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+}
+
+.journal-item-date {
+  font-size: 12px;
+  color: var(--color-accent-gold);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.journal-item-delete {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+}
+
+.journal-item-delete:hover {
+  color: var(--color-danger);
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.journal-item-content {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--color-text-secondary);
+  font-family: var(--font-handwriting);
+  white-space: pre-wrap;
+}
+
+.journal-empty {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
 
 </style>
 </head>
@@ -6248,173 +6668,353 @@ const SongStockMarket = (function () {
   // ═══════════════════════════════════════════════
 
   const DEFAULT_STOCKS = [
+    // ═══════════ A股（红涨绿跌）═══════════
     {
-      id: 'song_finance',
-      name: '松氏金融',
-      industry: '金融',
-      price: 48.50,
-      previousClose: 47.80,
-      open: 48.00,
-      high: 49.20,
-      low: 47.50,
-      volume: 12500000,
-      marketCap: 48500000000,
-      peRatio: 12.5,
-      dividend: 3.2,
-      risk: 'low',
-      beta: 0.8,
-      description: '松氏集团核心金融板块，涵盖投资银行、资产管理、对冲基金等业务，现金流稳定，分红优厚。',
-      priceHistory: []
-    },
-    {
-      id: 'song_tech',
-      name: '松氏科技',
-      industry: '科技',
-      price: 32.80,
-      previousClose: 33.50,
-      open: 33.20,
-      high: 33.80,
-      low: 32.10,
-      volume: 28000000,
-      marketCap: 32800000000,
+      id: 'a_maotai',
+      code: '600519',
+      name: '贵州茅台',
+      market: 'A股',
+      industry: '白酒消费',
+      price: 1688.50,
+      previousClose: 1675.20,
+      open: 1680.00,
+      high: 1695.80,
+      low: 1672.30,
+      volume: 3250000,
+      marketCap: 2120000000000,
       peRatio: 28.5,
-      dividend: 0.5,
-      risk: 'medium',
-      beta: 1.3,
-      description: '聚焦人工智能、企业服务、半导体等科技领域的投资与运营，成长性强但波动较大。',
-      priceHistory: []
-    },
-    {
-      id: 'song_realestate',
-      name: '松氏地产',
-      industry: '地产',
-      price: 25.60,
-      previousClose: 25.30,
-      open: 25.40,
-      high: 26.10,
-      low: 25.00,
-      volume: 18000000,
-      marketCap: 25600000000,
-      peRatio: 8.2,
-      dividend: 5.5,
-      risk: 'medium',
-      beta: 1.0,
-      description: '港岛核心商业地产、高端酒店、住宅开发等业务，资产扎实，受政策影响较大。',
-      priceHistory: []
-    },
-    {
-      id: 'hk_land',
-      name: '香港置地',
-      industry: '地产',
-      price: 56.20,
-      previousClose: 55.40,
-      open: 55.80,
-      high: 56.80,
-      low: 55.20,
-      volume: 8500000,
-      marketCap: 56200000000,
-      peRatio: 10.5,
-      dividend: 4.8,
+      dividend: 1.8,
       risk: 'low',
       beta: 0.7,
-      description: '香港老牌地产巨头，核心商业区地标物业持有者，租金收入稳定。',
+      description: '中国白酒行业龙头，高端白酒绝对霸主，品牌护城河极深，现金流充沛，分红稳定。',
       priceHistory: []
     },
     {
-      id: 'tech_growth',
-      name: '科创成长',
-      industry: '科技',
-      price: 18.90,
-      previousClose: 19.80,
-      open: 19.50,
-      high: 20.10,
-      low: 18.50,
-      volume: 45000000,
-      marketCap: 18900000000,
-      peRatio: 45.2,
-      dividend: 0,
-      risk: 'high',
-      beta: 1.8,
-      description: '高成长科技概念股，涵盖云计算、大数据、AI 等前沿领域，波动剧烈但潜力巨大。',
+      id: 'a_catl',
+      code: '300750',
+      name: '宁德时代',
+      market: 'A股',
+      industry: '新能源',
+      price: 218.60,
+      previousClose: 225.40,
+      open: 223.00,
+      high: 226.80,
+      low: 215.20,
+      volume: 28500000,
+      marketCap: 960000000000,
+      peRatio: 22.3,
+      dividend: 0.5,
+      risk: 'medium',
+      beta: 1.4,
+      description: '全球动力电池龙头，市占率全球第一，深度绑定特斯拉、宝马等车企，新能源赛道核心标的。',
       priceHistory: []
     },
     {
-      id: 'luxury_asia',
-      name: '亚洲奢侈品',
-      industry: '奢侈品',
-      price: 88.40,
-      previousClose: 87.80,
-      open: 88.00,
-      high: 89.50,
-      low: 87.20,
-      volume: 5200000,
-      marketCap: 88400000000,
-      peRatio: 22.8,
-      dividend: 2.0,
+      id: 'a_byd',
+      code: '002594',
+      name: '比亚迪',
+      market: 'A股',
+      industry: '新能源汽车',
+      price: 256.80,
+      previousClose: 251.30,
+      open: 253.00,
+      high: 259.50,
+      low: 250.80,
+      volume: 18600000,
+      marketCap: 748000000000,
+      peRatio: 25.8,
+      dividend: 0.3,
+      risk: 'medium',
+      beta: 1.3,
+      description: '全球新能源汽车销量冠军，垂直整合能力强，电池+电机+电控全自研，出海加速。',
+      priceHistory: []
+    },
+    {
+      id: 'a_pingan',
+      code: '601318',
+      name: '中国平安',
+      market: 'A股',
+      industry: '金融保险',
+      price: 48.20,
+      previousClose: 47.80,
+      open: 48.00,
+      high: 48.60,
+      low: 47.50,
+      volume: 45200000,
+      marketCap: 875000000000,
+      peRatio: 8.5,
+      dividend: 4.2,
       risk: 'low',
       beta: 0.9,
-      description: '亚洲高端奢侈品集团，旗下拥有多个知名品牌，受益于高净值人群消费增长。',
+      description: '中国综合金融龙头，保险+银行+投资全牌照，股息率高，估值处于历史低位。',
       priceHistory: []
     },
     {
-      id: 'green_energy',
-      name: '绿色能源',
-      industry: '能源',
-      price: 15.30,
-      previousClose: 14.60,
-      open: 14.80,
-      high: 15.80,
-      low: 14.50,
-      volume: 32000000,
-      marketCap: 15300000000,
-      peRatio: 35.6,
+      id: 'a_cmb',
+      code: '600036',
+      name: '招商银行',
+      market: 'A股',
+      industry: '银行',
+      price: 35.60,
+      previousClose: 35.40,
+      open: 35.50,
+      high: 35.90,
+      low: 35.20,
+      volume: 32800000,
+      marketCap: 898000000000,
+      peRatio: 6.2,
+      dividend: 5.8,
+      risk: 'low',
+      beta: 0.6,
+      description: '中国零售银行之王，财富管理能力突出，资产质量优良，高股息防御性品种。',
+      priceHistory: []
+    },
+
+    // ═══════════ 港股（红跌绿涨）═══════════
+    {
+      id: 'hk_tencent',
+      code: '00700',
+      name: '腾讯控股',
+      market: '港股',
+      industry: '互联网科技',
+      price: 385.40,
+      previousClose: 378.60,
+      open: 380.00,
+      high: 388.20,
+      low: 376.50,
+      volume: 18500000,
+      marketCap: 3680000000000,
+      peRatio: 18.5,
       dividend: 0.8,
+      risk: 'medium',
+      beta: 1.2,
+      description: '中国互联网绝对龙头，社交+游戏+广告+金融科技全生态，微信月活超13亿，回购力度大。',
+      priceHistory: []
+    },
+    {
+      id: 'hk_alibaba',
+      code: '09988',
+      name: '阿里巴巴',
+      market: '港股',
+      industry: '电商云计算',
+      price: 82.50,
+      previousClose: 85.20,
+      open: 84.00,
+      high: 84.80,
+      low: 81.20,
+      volume: 28600000,
+      marketCap: 1680000000000,
+      peRatio: 12.8,
+      dividend: 1.2,
+      risk: 'medium',
+      beta: 1.3,
+      description: '中国电商龙头，淘宝+天猫+阿里云+菜鸟全链路，AI大模型投入加大，云业务增长加速。',
+      priceHistory: []
+    },
+    {
+      id: 'hk_meituan',
+      code: '03690',
+      name: '美团',
+      market: '港股',
+      industry: '本地生活',
+      price: 128.60,
+      previousClose: 132.40,
+      open: 131.00,
+      high: 132.80,
+      low: 126.50,
+      volume: 15800000,
+      marketCap: 828000000000,
+      peRatio: 28.5,
+      dividend: 0,
       risk: 'high',
       beta: 1.6,
-      description: '新能源与清洁能源概念股，涵盖光伏、风电、储能等领域，政策驱动明显。',
+      description: '中国本地生活服务龙头，外卖+到店+酒旅+即时零售，社区团购减亏，新业务逐步盈利。',
       priceHistory: []
     },
     {
-      id: 'bank_hk',
+      id: 'hk_hsbc',
+      code: '00005',
       name: '汇丰控股',
-      industry: '金融',
+      market: '港股',
+      industry: '银行金融',
       price: 62.80,
       previousClose: 62.50,
       open: 62.60,
       high: 63.20,
       low: 62.10,
       volume: 15000000,
-      marketCap: 125600000000,
+      marketCap: 1256000000000,
       peRatio: 9.8,
       dividend: 5.2,
       risk: 'low',
       beta: 0.6,
-      description: '全球知名金融集团，业务遍及欧洲、亚洲、北美，股息率高，防御性强。',
+      description: '全球知名金融集团，业务遍及欧洲、亚洲、北美，股息率高，防御性强，加息周期受益。',
+      priceHistory: []
+    },
+    {
+      id: 'hk_aia',
+      code: '01299',
+      name: '友邦保险',
+      market: '港股',
+      industry: '保险',
+      price: 58.30,
+      previousClose: 57.80,
+      open: 58.00,
+      high: 58.90,
+      low: 57.50,
+      volume: 12500000,
+      marketCap: 725000000000,
+      peRatio: 15.2,
+      dividend: 2.8,
+      risk: 'low',
+      beta: 0.8,
+      description: '亚太地区最大人寿保险公司，深耕中国内地及东南亚市场，新业务价值增长稳健。',
+      priceHistory: []
+    },
+
+    // ═══════════ 美股（红跌绿涨）═══════════
+    {
+      id: 'us_aapl',
+      code: 'AAPL',
+      name: '苹果',
+      market: '美股',
+      industry: '消费电子',
+      price: 225.80,
+      previousClose: 222.40,
+      open: 223.00,
+      high: 227.50,
+      low: 221.80,
+      volume: 52500000,
+      marketCap: 3450000000000,
+      peRatio: 32.5,
+      dividend: 0.5,
+      risk: 'low',
+      beta: 1.1,
+      description: '全球市值最高公司，iPhone+Mac+iPad+Watch+服务全生态，品牌忠诚度极高，现金流怪兽。',
+      priceHistory: []
+    },
+    {
+      id: 'us_msft',
+      code: 'MSFT',
+      name: '微软',
+      market: '美股',
+      industry: '软件云计算',
+      price: 418.50,
+      previousClose: 412.80,
+      open: 415.00,
+      high: 421.20,
+      low: 413.50,
+      volume: 22800000,
+      marketCap: 3110000000000,
+      peRatio: 35.8,
+      dividend: 0.7,
+      risk: 'low',
+      beta: 0.9,
+      description: '全球软件龙头，Windows+Office+Azure云+OpenAI合作，AI转型最成功的科技巨头之一。',
+      priceHistory: []
+    },
+    {
+      id: 'us_nvda',
+      code: 'NVDA',
+      name: '英伟达',
+      market: '美股',
+      industry: '半导体AI',
+      price: 125.60,
+      previousClose: 118.40,
+      open: 120.00,
+      high: 128.50,
+      low: 119.20,
+      volume: 285000000,
+      marketCap: 3080000000000,
+      peRatio: 65.2,
+      dividend: 0.03,
+      risk: 'high',
+      beta: 1.7,
+      description: '全球AI算力绝对霸主，GPU市占率超80%，数据中心芯片供不应求，AI浪潮最大受益者。',
+      priceHistory: []
+    },
+    {
+      id: 'us_tsla',
+      code: 'TSLA',
+      name: '特斯拉',
+      market: '美股',
+      industry: '新能源汽车',
+      price: 248.30,
+      previousClose: 255.60,
+      open: 253.00,
+      high: 256.80,
+      low: 245.20,
+      volume: 98500000,
+      marketCap: 792000000000,
+      peRatio: 68.5,
+      dividend: 0,
+      risk: 'high',
+      beta: 2.1,
+      description: '全球新能源汽车先驱，电动车+自动驾驶+储能+机器人，马斯克个人IP加持，波动极大。',
+      priceHistory: []
+    },
+    {
+      id: 'us_amzn',
+      code: 'AMZN',
+      name: '亚马逊',
+      market: '美股',
+      industry: '电商云计算',
+      price: 185.40,
+      previousClose: 182.80,
+      open: 184.00,
+      high: 187.20,
+      low: 183.50,
+      volume: 42500000,
+      marketCap: 1920000000000,
+      peRatio: 42.5,
+      dividend: 0,
+      risk: 'medium',
+      beta: 1.2,
+      description: '全球电商+云计算双龙头，AWS云业务利润奶牛，广告业务高增长，AI基础设施布局完善。',
       priceHistory: []
     }
   ];
 
   // 市场新闻模板
   const NEWS_TEMPLATES = [
-    { title: '香港金融管理局宣布维持基准利率不变', impact: 'neutral', industries: ['金融', '地产'] },
-    { title: '科技板块迎来政策利好，多只个股上涨', impact: 'positive', industries: ['科技'] },
-    { title: '地产市场成交量回升，分析师看好后市', impact: 'positive', industries: ['地产'] },
-    { title: '美联储暗示可能降息，全球市场反应积极', impact: 'positive', industries: ['金融', '科技', '地产'] },
-    { title: '新能源补贴政策延续，绿色能源板块走强', impact: 'positive', industries: ['能源'] },
-    { title: '高净值人群消费升级，奢侈品销售创新高', impact: 'positive', industries: ['奢侈品'] },
-    { title: '科技股估值偏高，机构建议谨慎追高', impact: 'negative', industries: ['科技'] },
-    { title: '地产调控政策收紧，市场情绪谨慎', impact: 'negative', industries: ['地产'] },
-    { title: '全球经济增长放缓，金融板块承压', impact: 'negative', industries: ['金融'] },
-    { title: '新能源产能过剩担忧，板块出现调整', impact: 'negative', industries: ['能源'] },
-    { title: '松氏集团宣布加大科技领域投资', impact: 'positive', industries: ['科技'] },
-    { title: '松氏金融获国际评级机构上调评级', impact: 'positive', industries: ['金融'] },
-    { title: '松氏地产新项目开盘热销', impact: 'positive', industries: ['地产'] },
+    { title: '美联储维持利率不变，暗示年内可能降息', impact: 'positive', industries: ['金融', '科技', '新能源汽车'] },
+    { title: '中国央行宣布降准0.5个百分点，释放长期流动性', impact: 'positive', industries: ['银行', '金融保险', '地产'] },
+    { title: '英伟达发布新一代AI芯片，性能提升3倍', impact: 'positive', industries: ['半导体AI', '软件云计算'] },
+    { title: '苹果iPhone新品销量超预期，供应链受益', impact: 'positive', industries: ['消费电子'] },
+    { title: '特斯拉FSD自动驾驶获批新地区，股价异动', impact: 'positive', industries: ['新能源汽车'] },
+    { title: '腾讯游戏版号获批，新品上线在即', impact: 'positive', industries: ['互联网科技'] },
+    { title: '阿里巴巴云业务增长超预期，AI投入见效', impact: 'positive', industries: ['电商云计算'] },
+    { title: '贵州茅台批价企稳，高端消费回暖', impact: 'positive', industries: ['白酒消费'] },
+    { title: '宁德时代获欧洲大客户订单，出海加速', impact: 'positive', industries: ['新能源'] },
+    { title: '比亚迪新能源汽车销量再创新高', impact: 'positive', industries: ['新能源汽车'] },
+    { title: '美团即时零售业务增长迅猛，亏损收窄', impact: 'positive', industries: ['本地生活'] },
+    { title: '汇丰控股上调全年业绩指引，股息有望增加', impact: 'positive', industries: ['银行金融'] },
+    { title: '友邦保险新业务价值超预期，内地市场强劲', impact: 'positive', industries: ['保险'] },
+    { title: '微软Azure云业务增长加速，AI贡献显著', impact: 'positive', industries: ['软件云计算'] },
+    { title: '亚马逊AWS营收创新高，广告业务高增长', impact: 'positive', industries: ['电商云计算'] },
+    { title: '美国通胀数据超预期，美联储降息预期降温', impact: 'negative', industries: ['科技', '新能源', '消费电子'] },
+    { title: '中国地产数据不及预期，市场情绪谨慎', impact: 'negative', industries: ['银行', '金融保险'] },
+    { title: '英伟达出口管制升级，中国业务承压', impact: 'negative', industries: ['半导体AI'] },
+    { title: '苹果在华销量下滑，竞争加剧', impact: 'negative', industries: ['消费电子'] },
+    { title: '特斯拉召回部分车型，质量问题引担忧', impact: 'negative', industries: ['新能源汽车'] },
+    { title: '腾讯游戏业务增长放缓，监管趋严', impact: 'negative', industries: ['互联网科技'] },
+    { title: '阿里巴巴电商竞争加剧，利润率承压', impact: 'negative', industries: ['电商云计算'] },
+    { title: '贵州茅台批价回落，高端消费疲软', impact: 'negative', industries: ['白酒消费'] },
+    { title: '宁德时代价格战加剧，毛利率承压', impact: 'negative', industries: ['新能源'] },
+    { title: '比亚迪价格战引发行业担忧，利润空间压缩', impact: 'negative', industries: ['新能源汽车'] },
+    { title: '美团外卖佣金争议持续，监管风险上升', impact: 'negative', industries: ['本地生活'] },
+    { title: '汇丰控股地缘政治风险升温，业务不确定性增加', impact: 'negative', industries: ['银行金融'] },
+    { title: '友邦保险内地业务增速放缓，新单保费承压', impact: 'negative', industries: ['保险'] },
+    { title: '微软AI投入巨大，短期利润率承压', impact: 'negative', industries: ['软件云计算'] },
+    { title: '亚马逊消费业务增长放缓，成本控制压力大', impact: 'negative', industries: ['电商云计算'] },
     { title: '市场观望情绪浓厚，成交量萎缩', impact: 'neutral', industries: [] },
-    { title: '北向资金持续流入，港股市场获得支撑', impact: 'positive', industries: ['金融', '科技', '地产'] },
-    { title: '地缘政治紧张，市场避险情绪升温', impact: 'negative', industries: ['科技', '能源'] },
-    { title: '消费数据超预期，奢侈品板块受益', impact: 'positive', industries: ['奢侈品'] },
-    { title: '科技巨头财报不及预期，板块集体回调', impact: 'negative', industries: ['科技'] },
-    { title: '通胀数据回落，市场预期货币政策宽松', impact: 'positive', industries: ['金融', '地产', '科技'] }
+    { title: '北向资金净流入，外资看好A股后市', impact: 'positive', industries: ['银行', '白酒消费', '新能源'] },
+    { title: '南向资金持续流入港股，科技股获青睐', impact: 'positive', industries: ['互联网科技', '电商云计算'] },
+    { title: '地缘政治紧张，市场避险情绪升温', impact: 'negative', industries: ['科技', '新能源汽车', '半导体AI'] },
+    { title: '全球经济增长放缓预期，周期股承压', impact: 'negative', industries: ['银行', '保险', '银行金融'] },
+    { title: 'AI产业趋势明确，资金持续流入科技板块', impact: 'positive', industries: ['半导体AI', '软件云计算', '互联网科技'] },
+    { title: '新能源汽车渗透率持续提升，行业空间广阔', impact: 'positive', industries: ['新能源汽车', '新能源'] },
+    { title: '消费复苏信号显现，可选消费受益', impact: 'positive', industries: ['白酒消费', '本地生活'] }
   ];
 
   // ═══════════════════════════════════════════════
@@ -6687,6 +7287,7 @@ const SongStockMarket = (function () {
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
 
+    if (minutes <= 0) return '刚刚';
     if (minutes < 60) return `${minutes} 分钟前`;
     if (hours < 24) return `${hours} 小时前`;
 
@@ -9438,6 +10039,7 @@ const PageMarket = (function () {
     let stockMarket = state.stockMarket || {};
     let stocks = stockMarket.stocks || [];
     let news = stockMarket.news || [];
+    let funds = state.funds || [];
 
     // 如果没有股票数据，初始化
     if (stocks.length === 0) {
@@ -9445,6 +10047,12 @@ const PageMarket = (function () {
       stocks = initData.stocks;
       news = initData.news;
       SongState.update('stockMarket', initData);
+    }
+
+    // 如果没有基金数据，初始化
+    if (funds.length === 0) {
+      funds = SongFund.initFunds();
+      SongState.update('funds', funds);
     }
 
     const marketIndex = state.company?.marketIndex || 1000;
@@ -9461,15 +10069,21 @@ const PageMarket = (function () {
     }
 
     // 渲染列表页
-    renderMarketList(container, stocks, news, marketIndex);
+    renderMarketList(container, stocks, news, marketIndex, funds);
   }
 
   /**
    * 渲染市场列表页
    */
-  function renderMarketList(container, stocks, news, marketIndex) {
+  function renderMarketList(container, stocks, news, marketIndex, funds) {
     const upCount = stocks.filter(s => s.change >= 0).length;
     const downCount = stocks.filter(s => s.change < 0).length;
+
+    // 基金市场统计
+    const fundAvgReturn = funds.length > 0
+      ? (funds.reduce((sum, f) => sum + f.return1y, 0) / funds.length).toFixed(2)
+      : '0.00';
+    const fundUpCount = funds.filter(f => f.return1d >= 0).length;
 
     container.innerHTML = `
       <div class="page-header">
@@ -9499,6 +10113,31 @@ const PageMarket = (function () {
             <span class="stat-label">股票数</span>
             <span class="stat-value">${stocks.length}</span>
           </div>
+        </div>
+      </div>
+
+      <!-- 基金市场入口 -->
+      <div class="fund-market-entry card" onclick="PageMarket.goToFundMarket()">
+        <div class="fund-entry-header">
+          <div class="fund-entry-info">
+            <h3 class="fund-entry-title">基金市场</h3>
+            <p class="fund-entry-subtitle">${funds.length} 只基金 · 股票型/债券型/混合型/货币型</p>
+          </div>
+          <div class="fund-entry-stats">
+            <div class="fund-entry-stat">
+              <span class="fund-entry-stat-value ${fundAvgReturn >= 0 ? 'positive' : 'negative'}">${fundAvgReturn >= 0 ? '+' : ''}${fundAvgReturn}%</span>
+              <span class="fund-entry-stat-label">年均收益</span>
+            </div>
+            <div class="fund-entry-stat">
+              <span class="fund-entry-stat-value">${fundUpCount}/${funds.length}</span>
+              <span class="fund-entry-stat-label">今日上涨</span>
+            </div>
+          </div>
+        </div>
+        <div class="fund-entry-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
         </div>
       </div>
 
@@ -9598,10 +10237,37 @@ const PageMarket = (function () {
   function renderStockCard(stock) {
     const miniTrend = stock.priceHistory?.slice(-7) || [];
 
+    // 根据市场类型决定涨跌颜色和货币符号
+    // A股：红涨绿跌；港股/美股：红跌绿涨（国际惯例）
+    const isAStock = stock.market === 'A股';
+    const isUp = stock.change >= 0;
+    const priceColorClass = isAStock
+      ? (isUp ? 'stock-up-cn' : 'stock-down-cn')
+      : (isUp ? 'stock-up-global' : 'stock-down-global');
+    const sparklineColor = isAStock
+      ? (isUp ? '#c75c5c' : '#4a9d7a')
+      : (isUp ? '#4a9d7a' : '#c75c5c');
+    const sparklineFill = isAStock
+      ? (isUp ? 'rgba(199, 92, 92, 0.1)' : 'rgba(74, 157, 122, 0.1)')
+      : (isUp ? 'rgba(74, 157, 122, 0.1)' : 'rgba(199, 92, 92, 0.1)');
+
+    // 货币符号
+    const currencySymbol = stock.market === 'A股' ? '¥' : stock.market === '港股' ? 'HK
+</html>
+ : '
+</html>
+;
+
+    // 市场标签
+    const marketTag = stock.market || '';
+
     return `
       <div class="stock-card" data-id="${stock.id}" onclick="PageMarket.showStockDetail('${stock.id}')">
         <div class="stock-info">
-          <div class="stock-name">${stock.name}</div>
+          <div class="stock-name">
+            ${stock.name}
+            <span class="tag tag-gold stock-market-tag">${marketTag}</span>
+          </div>
           <div class="stock-industry">
             ${stock.industry} · 
             <span class="tag tag-${stock.risk === 'high' ? 'danger' : stock.risk === 'medium' ? 'warning' : 'success'}">
@@ -9610,12 +10276,12 @@ const PageMarket = (function () {
           </div>
         </div>
         <div class="stock-mini-chart">
-          ${renderMiniSparkline(miniTrend, stock.change >= 0)}
+          ${renderMiniSparkline(miniTrend, sparklineColor, sparklineFill)}
         </div>
         <div class="stock-price">
-          <div class="price-value">HK$ ${stock.price.toFixed(2)}</div>
-          <div class="price-change ${stock.change >= 0 ? 'positive' : 'negative'}">
-            ${stock.change >= 0 ? '+' : ''}${stock.change.toFixed(2)}%
+          <div class="price-value">${currencySymbol} ${stock.price.toFixed(2)}</div>
+          <div class="price-change ${priceColorClass}">
+            ${isUp ? '+' : ''}${stock.change.toFixed(2)}%
           </div>
         </div>
       </div>
@@ -9625,7 +10291,7 @@ const PageMarket = (function () {
   /**
    * 渲染迷你走势图（sparkline）
    */
-  function renderMiniSparkline(history, isPositive) {
+  function renderMiniSparkline(history, color, fillColor) {
     if (!history || history.length < 2) return '<div class="sparkline-placeholder"></div>';
 
     const closes = history.map(h => h.close);
@@ -9638,9 +10304,6 @@ const PageMarket = (function () {
       const y = 100 - ((close - min) / range) * 100;
       return `${x},${y}`;
     }).join(' ');
-
-    const color = isPositive ? '#4a9d7a' : '#c75c5c';
-    const fillColor = isPositive ? 'rgba(74, 157, 122, 0.1)' : 'rgba(199, 92, 92, 0.1)';
 
     return `
       <svg class="sparkline" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -10105,6 +10768,17 @@ const PageMarket = (function () {
     return amount.toLocaleString();
   }
 
+  /**
+   * 跳转到基金市场
+   */
+  function goToFundMarket() {
+    // 切换到投资页面并激活基金市场 tab
+    if (typeof PageInvestment !== 'undefined' && PageInvestment.switchTab) {
+      PageInvestment.switchTab('fundMarket');
+    }
+    SongApp.navigateTo('investment');
+  }
+
   // 公开 API
   return {
     render,
@@ -10116,7 +10790,8 @@ const PageMarket = (function () {
     adjustShares,
     setShares,
     updateShares,
-    confirmTrade
+    confirmTrade,
+    goToFundMarket
   };
 })();
 
@@ -10944,8 +11619,19 @@ if (typeof window !== 'undefined') {
 const PageHeir = (function () {
   'use strict';
 
+  // 私人管家状态
+  let showButler = false;
+  let butlerTab = 'manual'; // manual / journal
+
   function render(container) {
     const state = SongState.getState();
+
+    // 如果显示私人管家界面
+    if (showButler) {
+      renderButler(container, state);
+      return;
+    }
+
     const heir = state.heir;
     const abilities = heir.abilities;
     const allMilestones = SongGrowth.getAllMilestones(state);
@@ -10972,6 +11658,28 @@ const PageHeir = (function () {
             <span class="meta-item"><span class="meta-label">身份：</span>长女 / 继承人</span>
             <span class="meta-item"><span class="meta-label">经营天数：</span>${state.meta?.totalPlayDays || 0} 天</span>
             <span class="meta-item"><span class="meta-label">决策次数：</span>${state.events?.history?.length || 0} 次</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 私人管家入口 -->
+      <div class="card butler-entry-card" onclick="PageHeir.openButler()">
+        <div class="butler-entry-content">
+          <div class="butler-entry-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+              <path d="M12 11v2M9 14h6"/>
+            </svg>
+          </div>
+          <div class="butler-entry-info">
+            <h3 class="butler-entry-title">私人管家</h3>
+            <p class="butler-entry-subtitle">说明书 · 继承人手记 · AI 智能整理</p>
+          </div>
+          <div class="butler-entry-arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
           </div>
         </div>
       </div>
@@ -11146,8 +11854,260 @@ const PageHeir = (function () {
     return map[key] || key;
   }
 
+  // ═══════════════════════════════════════════════
+  // 私人管家功能
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 打开私人管家界面
+   */
+  function openButler() {
+    showButler = true;
+    butlerTab = 'manual';
+    SongApp.renderCurrentPage();
+  }
+
+  /**
+   * 关闭私人管家界面
+   */
+  function closeButler() {
+    showButler = false;
+    SongApp.renderCurrentPage();
+  }
+
+  /**
+   * 切换私人管家 tab
+   */
+  function switchButlerTab(tab) {
+    butlerTab = tab;
+    SongApp.renderCurrentPage();
+  }
+
+  /**
+   * 渲染私人管家界面
+   */
+  function renderButler(container, state) {
+    const butlerData = state.butler || {};
+    const manualContent = butlerData.manual || '';
+    const journalEntries = butlerData.journal || [];
+
+    container.innerHTML = `
+      <div class="page-header butler-header">
+        <button class="btn btn-back" onclick="PageHeir.closeButler()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          返回
+        </button>
+        <h1 class="page-title">私人管家</h1>
+        <p class="page-subtitle">专属助理 · 记录与整理</p>
+      </div>
+
+      <!-- Tab 切换 -->
+      <div class="butler-tabs">
+        <button class="butler-tab-btn ${butlerTab === 'manual' ? 'active' : ''}" onclick="PageHeir.switchButlerTab('manual')">
+          📖 说明书
+        </button>
+        <button class="butler-tab-btn ${butlerTab === 'journal' ? 'active' : ''}" onclick="PageHeir.switchButlerTab('journal')">
+          ✍️ 继承人手记
+        </button>
+      </div>
+
+      <!-- 说明书内容 -->
+      ${butlerTab === 'manual' ? `
+        <div class="card manual-card">
+          <div class="card-header">
+            <span class="card-title">管家说明书</span>
+            <span class="tag tag-gold">待完善</span>
+          </div>
+          <div class="manual-content">
+            ${manualContent ? `
+              <div class="manual-text">${manualContent.replace(/\n/g, '<br>')}</div>
+            ` : `
+              <div class="manual-placeholder">
+                <div class="placeholder-icon">📋</div>
+                <p class="placeholder-text">说明书档案尚未建立</p>
+                <p class="placeholder-hint">后续将由您告知管家需要记录的内容</p>
+              </div>
+            `}
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- 继承人手记内容 -->
+      ${butlerTab === 'journal' ? `
+        <div class="journal-section">
+          <!-- 新建手记 -->
+          <div class="card journal-input-card">
+            <div class="card-header">
+              <span class="card-title">今日手记</span>
+              <span class="journal-date">${new Date().toLocaleDateString('zh-CN')}</span>
+            </div>
+            <textarea 
+              class="journal-textarea" 
+              id="journal-input" 
+              placeholder="记录今天的经营决策、市场观察、心得体会..."
+              rows="5"
+            ></textarea>
+            <div class="journal-actions">
+              <button class="btn btn-primary" onclick="PageHeir.saveJournalEntry()">
+                💾 保存手记
+              </button>
+              <button class="btn btn-ai" id="ai-organize-btn" ${SongAI.isEnabled() ? '' : 'disabled title="请先在设置中配置 AI"'} onclick="PageHeir.aiOrganizeJournal()">
+                ✨ AI 智能整理
+              </button>
+            </div>
+            <div id="ai-organize-result" style="display: none;" class="ai-organize-result"></div>
+          </div>
+
+          <!-- 历史手记 -->
+          <div class="card journal-history-card">
+            <div class="card-header">
+              <span class="card-title">历史手记</span>
+              <span class="tag tag-info">${journalEntries.length} 条</span>
+            </div>
+            <div class="journal-list">
+              ${journalEntries.length > 0 ? journalEntries.map((entry, index) => `
+                <div class="journal-item">
+                  <div class="journal-item-header">
+                    <span class="journal-item-date">${entry.date}</span>
+                    <button class="journal-item-delete" onclick="PageHeir.deleteJournalEntry(${index})" title="删除">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="journal-item-content">${entry.content.replace(/\n/g, '<br>')}</div>
+                </div>
+              `).join('') : `
+                <div class="journal-empty">
+                  <p>暂无手记记录，开始记录你的经营历程吧</p>
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      ` : ''}
+    `;
+  }
+
+  /**
+   * 保存手记条目
+   */
+  async function saveJournalEntry() {
+    const input = document.getElementById('journal-input');
+    if (!input || !input.value.trim()) {
+      SongApp.showToast('请输入手记内容');
+      return;
+    }
+
+    const state = SongState.getState();
+    const butlerData = state.butler || {};
+    const journal = butlerData.journal || [];
+
+    const newEntry = {
+      date: new Date().toLocaleDateString('zh-CN'),
+      time: new Date().toLocaleTimeString('zh-CN'),
+      content: input.value.trim()
+    };
+
+    const updatedJournal = [newEntry, ...journal];
+    await SongState.update('butler', { ...butlerData, journal: updatedJournal });
+
+    input.value = '';
+    SongApp.showToast('手记保存成功');
+    SongApp.renderCurrentPage();
+  }
+
+  /**
+   * 删除手记条目
+   */
+  async function deleteJournalEntry(index) {
+    const state = SongState.getState();
+    const butlerData = state.butler || {};
+    const journal = butlerData.journal || [];
+
+    const updatedJournal = journal.filter((_, i) => i !== index);
+    await SongState.update('butler', { ...butlerData, journal: updatedJournal });
+
+    SongApp.showToast('手记已删除');
+    SongApp.renderCurrentPage();
+  }
+
+  /**
+   * AI 智能整理手记
+   */
+  async function aiOrganizeJournal() {
+    if (!SongAI.isEnabled()) {
+      SongApp.showToast('请先在设置中配置 AI API Key');
+      return;
+    }
+
+    const input = document.getElementById('journal-input');
+    const content = input ? input.value.trim() : '';
+
+    if (!content) {
+      SongApp.showToast('请先输入需要整理的手记内容');
+      return;
+    }
+
+    const btn = document.getElementById('ai-organize-btn');
+    const resultDiv = document.getElementById('ai-organize-result');
+
+    btn.disabled = true;
+    btn.textContent = '整理中...';
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<div class="ai-loading">AI 正在智能整理，请稍候...</div>';
+
+    try {
+      const systemPrompt = '你是一位专业的家族办公室管家，擅长整理和总结经营记录。';
+      const userPrompt = `请将以下继承人经营手记整理成结构化的要点总结，分为：1.今日决策 2.市场观察 3.心得体会 4.后续计划。保持原文的核心信息，语言简洁专业。\n\n原文：\n${content}`;
+
+      const organized = await SongAI.callAI(systemPrompt, userPrompt);
+
+      resultDiv.innerHTML = `
+        <div class="ai-organized-content">
+          <div class="ai-organized-header">
+            <span class="ai-organized-label">✨ AI 智能整理结果</span>
+            <button class="ai-organized-copy" onclick="PageHeir.copyOrganizedResult()">复制</button>
+          </div>
+          <div class="ai-organized-text">${organized.replace(/\n/g, '<br>')}</div>
+        </div>
+      `;
+
+      // 保存整理结果到临时变量，供复制使用
+      window._lastOrganizedResult = organized;
+
+    } catch (e) {
+      resultDiv.innerHTML = `<div class="ai-error">整理失败：${e.message}</div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '✨ AI 智能整理';
+    }
+  }
+
+  /**
+   * 复制整理结果
+   */
+  function copyOrganizedResult() {
+    if (window._lastOrganizedResult) {
+      navigator.clipboard.writeText(window._lastOrganizedResult).then(() => {
+        SongApp.showToast('已复制到剪贴板');
+      }).catch(() => {
+        SongApp.showToast('复制失败，请手动复制');
+      });
+    }
+  }
+
   return {
-    render
+    render,
+    openButler,
+    closeButler,
+    switchButlerTab,
+    saveJournalEntry,
+    deleteJournalEntry,
+    aiOrganizeJournal,
+    copyOrganizedResult
   };
 })();
 
