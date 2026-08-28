@@ -15676,7 +15676,7 @@ const PageCompany = (function () {
 
       <!-- 高管薪酬与股权激励 -->
       ${(() => {
-        const comp = window.SongInvestmentStrategy ? SongInvestmentStrategy.calculateExecutiveCompensation(subsidiary) : null;
+        const comp = (typeof SongInvestmentStrategy !== 'undefined') ? SongInvestmentStrategy.calculateExecutiveCompensation(subsidiary) : null;
         if (!comp) return '';
         return `
           <div class="card">
@@ -16918,8 +16918,8 @@ const PageMarket = (function () {
     const fundUpCount = funds.filter(f => f.return1d >= 0).length;
 
     // 宏观经济数据
-    const macroData = window.SongMacroEconomy ? SongMacroEconomy.getMacroData() : null;
-    const economicCycle = window.SongMacroEconomy ? SongMacroEconomy.getEconomicCycle() : null;
+    const macroData = (typeof SongMacroEconomy !== 'undefined') ? SongMacroEconomy.getMacroData() : null;
+    const economicCycle = (typeof SongMacroEconomy !== 'undefined') ? SongMacroEconomy.getEconomicCycle() : null;
 
     container.innerHTML = `
       <div class="page-header">
@@ -18051,7 +18051,7 @@ const PageInvestment = (function () {
         <div class="strategy-section">
           <div class="strategy-section-title">资产再平衡</div>
           ${(() => {
-            const drift = window.SongInvestmentStrategy ? SongInvestmentStrategy.calculateAllocationDrift() : null;
+            const drift = (typeof SongInvestmentStrategy !== 'undefined') ? SongInvestmentStrategy.calculateAllocationDrift() : null;
             if (!drift) return '<div class="strategy-empty">功能加载中...</div>';
             return `
               <div class="rebalance-info">
@@ -18082,7 +18082,7 @@ const PageInvestment = (function () {
         <div class="strategy-section">
           <div class="strategy-section-title">定投计划</div>
           ${(() => {
-            const plans = window.SongInvestmentStrategy ? SongInvestmentStrategy.getSIPPlans() : [];
+            const plans = (typeof SongInvestmentStrategy !== 'undefined') ? SongInvestmentStrategy.getSIPPlans() : [];
             if (plans.length === 0) {
               return '<div class="strategy-empty">暂无定投计划，可在持仓中设置定投</div>';
             }
@@ -18105,10 +18105,10 @@ const PageInvestment = (function () {
         <div class="strategy-section">
           <div class="strategy-section-title">止损止盈</div>
           ${(() => {
-            const settings = window.SongInvestmentStrategy ? SongInvestmentStrategy.getStopSettings : null;
+            const settings = (typeof SongInvestmentStrategy !== 'undefined') ? SongInvestmentStrategy.getStopSettings : null;
             const portfolio = state.portfolio || [];
             const activeStops = portfolio.filter(p => {
-              const s = window.SongInvestmentStrategy?.getStopSettings(p.stockId);
+              const s = (typeof SongInvestmentStrategy !== 'undefined')?.getStopSettings(p.stockId);
               return s && s.enabled;
             });
             if (activeStops.length === 0) {
@@ -18446,7 +18446,7 @@ const PageInvestment = (function () {
 
       <!-- 基金评级 -->
       ${(() => {
-        const rating = window.SongInvestmentStrategy ? SongInvestmentStrategy.calculateFundRating(fund) : null;
+        const rating = (typeof SongInvestmentStrategy !== 'undefined') ? SongInvestmentStrategy.calculateFundRating(fund) : null;
         if (!rating) return '';
         const stars = '★'.repeat(rating.stars) + '☆'.repeat(5 - rating.stars);
         return `
