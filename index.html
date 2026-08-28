@@ -7740,10 +7740,18 @@ const SongFinance = (function () {
     const inventory = Math.round(totalRevenue * 0.10);
     const currentAssets = cash + accountsReceivable + inventory;
 
-    const fixedAssets = Math.round(totalAssets * 0.35);
-    const intangibleAssets = Math.round(totalAssets * 0.10);
+    // 固定资产：原值 - 累计折旧 = 净值
+    const fixedAssetsNet = Math.round(totalAssets * 0.35);
+    const fixedAssetsGross = Math.round(fixedAssetsNet * 1.4); // 假设累计折旧占原值约28.6%
+    const accumulatedDepreciation = fixedAssetsGross - fixedAssetsNet;
+
+    // 无形资产：原值 - 累计摊销 = 净值
+    const intangibleAssetsNet = Math.round(totalAssets * 0.10);
+    const intangibleAssetsGross = Math.round(intangibleAssetsNet * 1.2);
+    const accumulatedAmortization = intangibleAssetsGross - intangibleAssetsNet;
+
     const longTermInvestment = Math.round(totalAssets * 0.25);
-    const nonCurrentAssets = fixedAssets + intangibleAssets + longTermInvestment;
+    const nonCurrentAssets = fixedAssetsNet + intangibleAssetsNet + longTermInvestment;
 
     const totalAssetsCalc = currentAssets + nonCurrentAssets;
 
@@ -7784,8 +7792,16 @@ const SongFinance = (function () {
       accountsReceivable,
       inventory,
       currentAssets: Math.round(currentAssets),
-      fixedAssets,
-      intangibleAssets,
+      // 固定资产（净值+原值+累计折旧）
+      fixedAssets: fixedAssetsNet, // 兼容旧字段
+      fixedAssetsNet,
+      fixedAssetsGross,
+      accumulatedDepreciation,
+      // 无形资产（净值+原值+累计摊销）
+      intangibleAssets: intangibleAssetsNet, // 兼容旧字段
+      intangibleAssetsNet,
+      intangibleAssetsGross,
+      accumulatedAmortization,
       longTermInvestment,
       nonCurrentAssets: Math.round(nonCurrentAssets),
       totalAssets: Math.round(totalAssetsCalc),
@@ -7881,6 +7897,7 @@ const SongFinance = (function () {
    */
   function calculateFinancialRatios(incomeStatement, balanceSheet, cashFlowStatement) {
     const revenue = incomeStatement?.revenue || 1;
+    const cost = incomeStatement?.cost || 1;
     const netProfit = incomeStatement?.netProfit || 0;
     const totalAssets = balanceSheet?.totalAssets || 1;
     const totalEquity = balanceSheet?.totalEquity || 1;
@@ -7888,6 +7905,17 @@ const SongFinance = (function () {
     const currentLiabilities = balanceSheet?.currentLiabilities || 1;
     const totalLiabilities = balanceSheet?.totalLiabilities || 0;
     const operatingCashFlow = cashFlowStatement?.operatingCashFlow || 0;
+    const accountsReceivable = balanceSheet?.accountsReceivable || 0;
+    const accountsPayable = balanceSheet?.accountsPayable || 0;
+    const inventory = balanceSheet?.inventory || 0;
+
+    // 营运资本周转指标
+    const dso = revenue > 0 ? parseFloat(((accountsReceivable / revenue) * 365).toFixed(1)) : 0; // 应收账款周转天数
+    const dpo = revenue > 0 ? parseFloat(((accountsPayable / revenue) * 365).toFixed(1)) : 0; // 应付账款周转天数
+    const inventoryDays = cost > 0 ? parseFloat(((inventory / cost) * 365).toFixed(1)) : 0; // 存货周转天数
+    const cashConversionCycle = parseFloat((dso + inventoryDays - dpo).toFixed(1)); // 现金转换周期
+    const workingCapital = currentAssets - currentLiabilities; // 营运资本
+    const workingCapitalTurnover = workingCapital > 0 ? parseFloat((revenue / workingCapital).toFixed(2)) : 0; // 营运资本周转率
 
     return {
       // 盈利能力
@@ -7898,9 +7926,18 @@ const SongFinance = (function () {
       // 偿债能力
       debtRatio: balanceSheet?.debtRatio || 0,
       currentRatio: balanceSheet?.currentRatio || 0,
+      quickRatio: currentLiabilities > 0 ? parseFloat(((currentAssets - inventory) / currentLiabilities).toFixed(2)) : 0, // 速动比率
       equityRatio: balanceSheet?.equityRatio || 0,
       // 营运能力
       assetTurnover: totalAssets > 0 ? parseFloat((revenue / totalAssets).toFixed(2)) : 0,
+      receivablesTurnover: accountsReceivable > 0 ? parseFloat((revenue / accountsReceivable).toFixed(2)) : 0, // 应收账款周转率
+      inventoryTurnover: inventory > 0 ? parseFloat((cost / inventory).toFixed(2)) : 0, // 存货周转率
+      dso,
+      dpo,
+      inventoryDays,
+      cashConversionCycle,
+      workingCapital,
+      workingCapitalTurnover,
       // 现金流
       cashToProfitRatio: cashFlowStatement?.cashToProfitRatio || 0,
       operatingCashFlow
@@ -14537,8 +14574,12 @@ const PageCompany = (function () {
             <td><strong>非流动资产</strong></td><td class="num"></td>
             <td><strong>非流动负债</strong></td><td class="num"></td>
           </tr>
-          <tr><td>固定资产</td><td class="num">${formatMoney(balance.fixedAssets)}</td><td>长期借款</td><td class="num">${formatMoney(balance.longTermLoan)}</td></tr>
-          <tr><td>无形资产</td><td class="num">${formatMoney(balance.intangibleAssets)}</td><td>应付债券</td><td class="num">${formatMoney(balance.bondsPayable)}</td></tr>
+          <tr><td>固定资产原值</td><td class="num">${formatMoney(balance.fixedAssetsGross || balance.fixedAssets)}</td><td>长期借款</td><td class="num">${formatMoney(balance.longTermLoan)}</td></tr>
+          <tr><td>减：累计折旧</td><td class="num negative">${formatMoney(balance.accumulatedDepreciation || 0)}</td><td>应付债券</td><td class="num">${formatMoney(balance.bondsPayable)}</td></tr>
+          <tr class="fin-subtotal"><td>固定资产净值</td><td class="num">${formatMoney(balance.fixedAssets)}</td><td></td><td class="num"></td></tr>
+          <tr><td>无形资产原值</td><td class="num">${formatMoney(balance.intangibleAssetsGross || balance.intangibleAssets)}</td><td></td><td class="num"></td></tr>
+          <tr><td>减：累计摊销</td><td class="num negative">${formatMoney(balance.accumulatedAmortization || 0)}</td><td></td><td class="num"></td></tr>
+          <tr class="fin-subtotal"><td>无形资产净值</td><td class="num">${formatMoney(balance.intangibleAssets)}</td><td></td><td class="num"></td></tr>
           <tr><td>长期投资</td><td class="num">${formatMoney(balance.longTermInvestment)}</td><td></td><td class="num"></td></tr>
           <tr class="fin-subtotal"><td>非流动资产合计</td><td class="num">${formatMoney(balance.nonCurrentAssets)}</td><td>非流动负债合计</td><td class="num">${formatMoney(balance.nonCurrentLiabilities)}</td></tr>
           <tr class="fin-total"><td><strong>资产总计</strong></td><td class="num gold">${formatMoney(balance.totalAssets)}</td><td><strong>负债总计</strong></td><td class="num negative">${formatMoney(balance.totalLiabilities)}</td></tr>
@@ -14595,13 +14636,22 @@ const PageCompany = (function () {
           <div class="ratio-card-title">偿债能力</div>
           <div class="ratio-card-item"><span>资产负债率</span><span class="${ratios.debtRatio <= 50 ? 'positive' : ratios.debtRatio <= 70 ? 'warning' : 'negative'}">${ratios.debtRatio}%</span><span class="ratio-rating">${ratios.debtRatio <= 50 ? '稳健' : ratios.debtRatio <= 70 ? '适中' : '偏高'}</span></div>
           <div class="ratio-card-item"><span>流动比率</span><span class="${ratios.currentRatio >= 2 ? 'positive' : ratios.currentRatio >= 1 ? 'warning' : 'negative'}">${ratios.currentRatio}</span><span class="ratio-rating">${ratios.currentRatio >= 2 ? '优秀' : ratios.currentRatio >= 1 ? '合格' : '风险'}</span></div>
+          <div class="ratio-card-item"><span>速动比率</span><span class="${ratios.quickRatio >= 1 ? 'positive' : ratios.quickRatio >= 0.8 ? 'warning' : 'negative'}">${ratios.quickRatio}</span><span class="ratio-rating">${ratios.quickRatio >= 1 ? '优秀' : ratios.quickRatio >= 0.8 ? '合格' : '风险'}</span></div>
           <div class="ratio-card-item"><span>权益比率</span><span class="gold">${ratios.equityRatio}%</span><span class="ratio-rating">${ratios.equityRatio >= 50 ? '稳健' : '偏低'}</span></div>
         </div>
         <div class="ratio-card">
-          <div class="ratio-card-title">营运与现金流</div>
+          <div class="ratio-card-title">营运能力</div>
           <div class="ratio-card-item"><span>总资产周转率</span><span class="gold">${ratios.assetTurnover}</span><span class="ratio-rating">${ratios.assetTurnover >= 1 ? '高效' : '一般'}</span></div>
+          <div class="ratio-card-item"><span>应收账款周转天数</span><span class="gold">${ratios.dso}天</span><span class="ratio-rating">${ratios.dso <= 30 ? '优秀' : ratios.dso <= 60 ? '良好' : '偏慢'}</span></div>
+          <div class="ratio-card-item"><span>存货周转天数</span><span class="gold">${ratios.inventoryDays}天</span><span class="ratio-rating">${ratios.inventoryDays <= 60 ? '优秀' : ratios.inventoryDays <= 90 ? '良好' : '偏慢'}</span></div>
+          <div class="ratio-card-item"><span>应付账款周转天数</span><span class="gold">${ratios.dpo}天</span><span class="ratio-rating">${ratios.dpo >= 60 ? '优秀' : ratios.dpo >= 30 ? '良好' : '偏快'}</span></div>
+          <div class="ratio-card-item"><span>现金转换周期</span><span class="${ratios.cashConversionCycle <= 30 ? 'positive' : ratios.cashConversionCycle <= 60 ? 'warning' : 'negative'}">${ratios.cashConversionCycle}天</span><span class="ratio-rating">${ratios.cashConversionCycle <= 30 ? '优秀' : ratios.cashConversionCycle <= 60 ? '良好' : '偏长'}</span></div>
+        </div>
+        <div class="ratio-card">
+          <div class="ratio-card-title">现金流</div>
           <div class="ratio-card-item"><span>经营现金流</span><span class="${ratios.operatingCashFlow >= 0 ? 'positive' : 'negative'}">${formatMoney(ratios.operatingCashFlow)}</span><span class="ratio-rating">${ratios.operatingCashFlow >= 0 ? '健康' : '承压'}</span></div>
           <div class="ratio-card-item"><span>盈利质量</span><span class="gold">${ratios.cashToProfitRatio}</span><span class="ratio-rating">${ratios.cashToProfitRatio >= 1 ? '优秀' : ratios.cashToProfitRatio >= 0.5 ? '良好' : '需关注'}</span></div>
+          <div class="ratio-card-item"><span>营运资本</span><span class="${ratios.workingCapital >= 0 ? 'positive' : 'negative'}">${formatMoney(ratios.workingCapital)}</span><span class="ratio-rating">${ratios.workingCapital >= 0 ? '充裕' : '缺口'}</span></div>
         </div>
       </div>
     `;
