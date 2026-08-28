@@ -11936,7 +11936,7 @@ const PageCompany = (function () {
     if (subsidiary.profit < 0 && subsidiary.history && subsidiary.history.length > 10) {
       const recentLosses = subsidiary.history.slice(0, 7).filter(h => h.profit < 0).length;
       if (recentLosses >= 5) {
-        const salePrice = Math.max(50000000, subsidiary.totalAssets * 0.6);
+        const salePrice = Math.max(50000000, (subsidiary.revenue || 100000000) * 2);
         actions.push({
           id: 'sell_divest',
           name: '出售剥离',
@@ -11952,6 +11952,22 @@ const PageCompany = (function () {
     }
 
     return actions;
+  }
+
+  /**
+   * 应用利润变化（正确处理亏损公司：利润提升=亏损减少）
+   * @param {number} profit - 当前利润（可为负）
+   * @param {number} bonus - 变化比例（0.15 = 15%）
+   * @returns {number} 变化后的利润
+   */
+  function applyProfitBonus(profit, bonus) {
+    if (profit >= 0) {
+      // 盈利公司：利润增加
+      return profit * (1 + bonus);
+    } else {
+      // 亏损公司：亏损减少（利润向0靠近）
+      return profit * (1 - bonus);
+    }
   }
 
   /**
@@ -12007,7 +12023,7 @@ const PageCompany = (function () {
       switch (actionId) {
         case 'inject_capital':
           company.cash -= action.cost;
-          newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.15);
+          newSubsidiary.profit = Math.round(applyProfitBonus(newSubsidiary.profit, 0.15));
           newSubsidiary.reputation = Math.min(100, newSubsidiary.reputation + 5);
           newSubsidiary.risk = newSubsidiary.risk === 'high' ? 'medium' : newSubsidiary.risk;
           break;
@@ -12025,7 +12041,7 @@ const PageCompany = (function () {
             });
           } else {
             // 降级：立即生效一半效果
-            newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.10);
+            newSubsidiary.profit = Math.round(applyProfitBonus(newSubsidiary.profit, 0.10));
             newSubsidiary.satisfaction = Math.min(100, newSubsidiary.satisfaction + 8);
           }
           break;
@@ -12034,7 +12050,7 @@ const PageCompany = (function () {
           const layoffCount = Math.round(newSubsidiary.employees * 0.1);
           newSubsidiary.employees = Math.max(1, newSubsidiary.employees - layoffCount);
           newSubsidiary.satisfaction = Math.max(0, newSubsidiary.satisfaction - 15);
-          newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.25);
+          newSubsidiary.profit = Math.round(applyProfitBonus(newSubsidiary.profit, 0.25));
           break;
 
         case 'marketing_investment':
@@ -12057,13 +12073,13 @@ const PageCompany = (function () {
           heir.abilities.familyTrust = Math.max(0, heir.abilities.familyTrust - 5);
           const success = Math.random() > 0.5;
           if (success) {
-            newSubsidiary.profit = Math.round(newSubsidiary.profit * 1.40);
+            newSubsidiary.profit = Math.round(applyProfitBonus(newSubsidiary.profit, 0.40));
             newSubsidiary.satisfaction = Math.min(100, newSubsidiary.satisfaction + 20);
             newSubsidiary.risk = 'low';
             newSubsidiary.reputation = Math.min(100, newSubsidiary.reputation + 10);
             if (window.showToast) window.showToast(`业务重组成功！${subsidiary.name}经营状况大幅改善！`);
           } else {
-            newSubsidiary.profit = Math.round(newSubsidiary.profit * 0.75);
+            newSubsidiary.profit = Math.round(applyProfitBonus(newSubsidiary.profit, -0.25));
             newSubsidiary.satisfaction = Math.max(0, newSubsidiary.satisfaction - 10);
             newSubsidiary.risk = 'high';
             if (window.showToast) window.showToast(`业务重组失败！${subsidiary.name}经营状况进一步恶化...`);
@@ -12071,7 +12087,7 @@ const PageCompany = (function () {
           break;
 
         case 'sell_divest':
-          const salePrice = Math.max(50000000, (subsidiary.totalAssets || 100000000) * 0.6);
+          const salePrice = Math.max(50000000, (subsidiary.revenue || 100000000) * 2);
           company.cash += salePrice;
           // 从子公司列表中移除
           subsidiaries.splice(subsidiaryIndex, 1);
