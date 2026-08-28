@@ -17126,6 +17126,8 @@ const PageMarket = (function () {
   let showFundMarketView = false;
   // 折叠区域展开状态
   let expandedSections = new Set(['macro']); // 默认展开宏观经济
+  // 基金类型展开状态
+  let expandedFundTypes = new Set(['股票型']); // 默认展开股票型
 
   /**
    * 渲染市场页面
@@ -18172,33 +18174,38 @@ const PageMarket = (function () {
   }
 
   /**
-   * 渲染基金市场视图（带返回按钮）
+   * 渲染基金市场视图（带返回按钮，按类型分组折叠）
    */
   function renderFundMarketView(container, funds, state) {
     const fundAvgReturn = funds.length > 0
-      ? (funds.reduce((sum, f) => sum + (f.annualReturn || 0), 0) / funds.length).toFixed(2)
+      ? (funds.reduce((sum, f) => sum + (f.return1y || f.annualReturn || 0), 0) / funds.length).toFixed(2)
       : 0;
-    const fundUpCount = funds.filter(f => (f.todayChange || 0) >= 0).length;
+    const fundUpCount = funds.filter(f => (f.return1d || f.todayChange || 0) >= 0).length;
+
+    // 按类型分组
+    const fundTypes = ['股票型', '债券型', '混合型', '货币型', '指数型'];
+    const fundsByType = {};
+    fundTypes.forEach(type => { fundsByType[type] = []; });
+    funds.forEach(fund => {
+      const type = fund.type || '混合型';
+      if (!fundsByType[type]) fundsByType[type] = [];
+      fundsByType[type].push(fund);
+    });
 
     container.innerHTML = `
       <div class="page-header">
-        <button class="btn btn-icon back-btn-icon" onclick="PageMarket.backFromFundMarket()" style="margin-right: 8px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5"/>
-            <path d="M12 19l-7-7 7-7"/>
-          </svg>
+        <button class="btn btn-secondary btn-small back-btn" onclick="PageMarket.backFromFundMarket()" style="margin-bottom: 8px;">
+          ← 返回
         </button>
-        <div>
-          <h1 class="page-title">基金市场</h1>
-          <p class="page-subtitle">${funds.length} 只基金 · 股票型/债券型/混合型/货币型</p>
-        </div>
+        <h1 class="page-title">基金市场</h1>
+        <p class="page-subtitle">${funds.length} 只基金 · 股票型/债券型/混合型/货币型</p>
       </div>
 
       <!-- 基金市场概览 -->
       <div class="card market-index-card">
         <div class="market-index-main">
           <div class="index-value-large ${fundAvgReturn >= 0 ? 'positive' : 'negative'}">${fundAvgReturn >= 0 ? '+' : ''}${fundAvgReturn}%</div>
-          <div class="index-label">年均收益</div>
+          <div class="index-label">平均近一年收益</div>
         </div>
         <div class="market-index-stats">
           <div class="index-stat">
@@ -18216,42 +18223,112 @@ const PageMarket = (function () {
         </div>
       </div>
 
-      <!-- 基金列表 -->
-      <div class="section">
-        <div class="section-header">
-          <span class="section-title">全部基金</span>
-        </div>
-        <div class="fund-list">
-          ${funds.map(fund => `
-            <div class="fund-item" onclick="PageInvestment.showFundDetail('${fund.id}')">
-              <div class="fund-item-header">
-                <div class="fund-item-info">
-                  <h4 class="fund-item-name">${fund.name}</h4>
-                  <span class="fund-item-type">${fund.type || '混合型'}</span>
-                </div>
-                <div class="fund-item-return ${(fund.todayChange || 0) >= 0 ? 'positive' : 'negative'}">
-                  ${(fund.todayChange || 0) >= 0 ? '+' : ''}${(fund.todayChange || 0).toFixed(2)}%
-                </div>
+      <!-- 基金列表（按类型分组折叠） -->
+      ${fundTypes.map(type => {
+        const typeFunds = fundsByType[type] || [];
+        if (typeFunds.length === 0) return '';
+        const isExpanded = expandedFundTypes.has(type);
+        return `
+          <div class="collapsible-section">
+            <div class="collapsible-section-header" onclick="PageMarket.toggleFundType('${type}')">
+              <div class="collapsible-section-title">
+                <span>${type}</span>
+                <span class="collapsible-section-count">${typeFunds.length} 只</span>
               </div>
-              <div class="fund-item-stats">
-                <div class="fund-stat">
-                  <span class="fund-stat-label">单位净值</span>
-                  <span class="fund-stat-value">${(fund.nav || 1).toFixed(4)}</span>
-                </div>
-                <div class="fund-stat">
-                  <span class="fund-stat-label">年化收益</span>
-                  <span class="fund-stat-value ${(fund.annualReturn || 0) >= 0 ? 'positive' : 'negative'}">${(fund.annualReturn || 0) >= 0 ? '+' : ''}${(fund.annualReturn || 0).toFixed(2)}%</span>
-                </div>
-                <div class="fund-stat">
-                  <span class="fund-stat-label">风险等级</span>
-                  <span class="fund-stat-value">${fund.riskLevel || '中风险'}</span>
-                </div>
+              <span class="expand-arrow ${isExpanded ? 'expanded' : ''}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </div>
+            ${isExpanded ? `
+            <div class="collapsible-section-content">
+              <div class="fund-list">
+                ${typeFunds.map(fund => renderFundCardMarket(fund)).join('')}
               </div>
             </div>
-          `).join('')}
+            ` : ''}
+          </div>
+        `;
+      }).join('')}
+    `;
+  }
+
+  /**
+   * 渲染基金卡片（市场页面用，复用投资页面的 fund-card 样式）
+   */
+  function renderFundCardMarket(fund) {
+    const return1d = fund.return1d || fund.todayChange || 0;
+    const return1m = fund.return1m || 0;
+    const return3m = fund.return3m || 0;
+    const return1y = fund.return1y || fund.annualReturn || 0;
+    const nav = fund.nav || 1;
+    const assets = fund.assets || 0;
+    const fundManager = fund.fundManager || '未知';
+    const risk = fund.risk || 'medium';
+
+    return `
+      <div class="fund-card" data-id="${fund.id}" onclick="PageInvestment.showFundDetail('${fund.id}')">
+        <div class="fund-header">
+          <div class="fund-info">
+            <h3 class="fund-name">${fund.name}</h3>
+            <div class="fund-meta">
+              <span class="fund-type tag tag-info">${fund.type || '混合型'}</span>
+              <span class="fund-risk tag tag-${risk === 'high' ? 'danger' : risk === 'medium' ? 'warning' : 'success'}">
+                ${risk === 'high' ? '高风险' : risk === 'medium' ? '中风险' : '低风险'}
+              </span>
+            </div>
+          </div>
+          <div class="fund-return-main">
+            <div class="fund-return-value ${return1y >= 0 ? 'positive' : 'negative'}">
+              ${return1y >= 0 ? '+' : ''}${return1y.toFixed(2)}%
+            </div>
+            <div class="fund-return-label">近一年</div>
+          </div>
+        </div>
+        <div class="fund-returns-row">
+          <div class="return-item">
+            <span class="return-label">日涨跌</span>
+            <span class="return-value ${return1d >= 0 ? 'positive' : 'negative'}">${return1d >= 0 ? '+' : ''}${return1d.toFixed(2)}%</span>
+          </div>
+          <div class="return-item">
+            <span class="return-label">近1月</span>
+            <span class="return-value ${return1m >= 0 ? 'positive' : 'negative'}">${return1m >= 0 ? '+' : ''}${return1m.toFixed(2)}%</span>
+          </div>
+          <div class="return-item">
+            <span class="return-label">近3月</span>
+            <span class="return-value ${return3m >= 0 ? 'positive' : 'negative'}">${return3m >= 0 ? '+' : ''}${return3m.toFixed(2)}%</span>
+          </div>
+          <div class="return-item">
+            <span class="return-label">基金规模</span>
+            <span class="return-value">${formatMoney(assets)}</span>
+          </div>
+        </div>
+        <div class="fund-manager-row">
+          <span class="manager-label">基金经理</span>
+          <span class="manager-name">${fundManager}</span>
+          <span class="fund-nav">净值 ${nav.toFixed(4)}</span>
         </div>
       </div>
     `;
+  }
+
+  /**
+   * 切换基金类型展开/折叠
+   */
+  function toggleFundType(type) {
+    if (expandedFundTypes.has(type)) {
+      expandedFundTypes.delete(type);
+    } else {
+      expandedFundTypes.add(type);
+    }
+    // 重新渲染基金市场视图
+    const container = document.getElementById('app-content');
+    if (container) {
+      const state = SongState.getState();
+      const funds = state.funds || [];
+      renderFundMarketView(container, funds, state);
+    }
   }
 
   /**
@@ -18324,7 +18401,8 @@ const PageMarket = (function () {
     confirmTrade,
     goToFundMarket,
     backFromFundMarket,
-    toggleSection
+    toggleSection,
+    toggleFundType
   };
 })();
 
