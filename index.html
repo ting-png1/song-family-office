@@ -10252,11 +10252,7 @@ const PageMarket = (function () {
       : (isUp ? 'rgba(74, 157, 122, 0.1)' : 'rgba(199, 92, 92, 0.1)');
 
     // 货币符号
-    const currencySymbol = stock.market === 'A股' ? '¥' : stock.market === '港股' ? 'HK
-</html>
- : '
-</html>
-;
+    const currencySymbol = stock.market === 'A股' ? '¥' : stock.market === '港股' ? 'HK$' : '$';
 
     // 市场标签
     const marketTag = stock.market || '';
