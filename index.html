@@ -4743,19 +4743,19 @@ body::before {
    第五阶段：继承人成长系统样式
    ═══════════════════════════════════════════════ */
 
-/* 等级徽章 */
+/* 等级徽章（已弃用，保留兼容） */
 .profile-level-badge {
-  position: absolute;
-  bottom: -5px;
-  right: -5px;
-  background: linear-gradient(135deg, #b8965a, #d4af37);
-  color: #0a0a0a;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 10px;
-  border: 2px solid var(--color-bg-card);
+  display: none;
+}
+
+/* 等级文字（名字旁边，低调显示） */
+.profile-level-text {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin-left: 8px;
   font-family: 'Cormorant Garamond', serif;
+  letter-spacing: 0.5px;
 }
 
 /* 经验条 */
@@ -15826,14 +15826,75 @@ const PageMarket = (function () {
   }
 
   /**
+   * 只更新交易弹窗内的数字显示（不重新渲染整个页面，避免闪屏）
+   */
+  function updateTradeModalDisplay() {
+    if (!tradeModal) return;
+
+    const state = SongState.getState();
+    const stock = state.stockMarket?.stocks?.find(s => s.id === tradeModal.stockId);
+    if (!stock) return;
+
+    const currency = SongStockMarket.getCurrencySymbol(stock.market);
+    const shares = tradeModal.shares || 100;
+    const cashFlow = state.company?.cashFlow || 0;
+
+    // 计算滑点和实际成交价
+    const slippage = SongStockMarket.calculateSlippage(stock, shares, tradeModal.type);
+    const actualPrice = slippage.actualPrice;
+    const tradeAmount = actualPrice * shares;
+
+    // 计算费用
+    const fees = SongStockMarket.calculateFees(stock, tradeAmount, tradeModal.type);
+    const totalAmount = tradeModal.type === 'buy' ? tradeAmount + fees.totalFee : tradeAmount - fees.totalFee;
+
+    // 更新输入框
+    const input = document.getElementById('trade-shares-input');
+    if (input) input.value = shares;
+
+    // 更新预估金额
+    const amountEl = document.querySelector('.trade-summary .trade-row:not(.total) .trade-value');
+    if (amountEl) amountEl.textContent = `${currency} ${tradeAmount.toFixed(2)}`;
+
+    // 更新佣金
+    const commissionEl = document.querySelectorAll('.trade-summary .trade-row')[1]?.querySelector('.trade-value');
+    if (commissionEl) commissionEl.textContent = `${currency} ${fees.commission.toFixed(2)}`;
+
+    // 更新印花税（如果存在）
+    const stampTaxRow = Array.from(document.querySelectorAll('.trade-summary .trade-row')).find(r => r.textContent.includes('印花税'));
+    if (stampTaxRow && fees.stampTax > 0) {
+      stampTaxRow.querySelector('.trade-value').textContent = `${currency} ${fees.stampTax.toFixed(2)}`;
+    }
+
+    // 更新过户费（如果存在）
+    const transferFeeRow = Array.from(document.querySelectorAll('.trade-summary .trade-row')).find(r => r.textContent.includes('过户费'));
+    if (transferFeeRow && fees.transferFee > 0) {
+      transferFeeRow.querySelector('.trade-value').textContent = `${currency} ${fees.transferFee.toFixed(2)}`;
+    }
+
+    // 更新预计支出/收入
+    const totalEl = document.querySelector('.trade-summary .trade-row.total .trade-value');
+    if (totalEl) {
+      totalEl.textContent = `${currency} ${totalAmount.toFixed(2)}`;
+      totalEl.className = `trade-value ${tradeModal.type === 'buy' ? 'negative' : 'positive'}`;
+    }
+
+    // 更新滑点显示（如果存在）
+    if (slippage.hasSlippage) {
+      const slippageEl = Array.from(document.querySelectorAll('.trade-info .trade-row')).find(r => r.textContent.includes('预估成交价'));
+      if (slippageEl) {
+        slippageEl.querySelector('.trade-value').innerHTML = `${currency} ${actualPrice.toFixed(2)} <small>(滑点${slippage.slippageRate}%)</small>`;
+      }
+    }
+  }
+
+  /**
    * 调整交易数量
    */
   function adjustShares(delta) {
     if (!tradeModal) return;
     tradeModal.shares = Math.max(1, (tradeModal.shares || 100) + delta);
-    const input = document.getElementById('trade-shares-input');
-    if (input) input.value = tradeModal.shares;
-    render(document.getElementById('app-content'));
+    updateTradeModalDisplay();
   }
 
   /**
@@ -15842,7 +15903,7 @@ const PageMarket = (function () {
   function setShares(shares) {
     if (!tradeModal) return;
     tradeModal.shares = shares;
-    render(document.getElementById('app-content'));
+    updateTradeModalDisplay();
   }
 
   /**
@@ -15851,7 +15912,7 @@ const PageMarket = (function () {
   function updateShares(value) {
     if (!tradeModal) return;
     tradeModal.shares = Math.max(1, parseInt(value) || 1);
-    render(document.getElementById('app-content'));
+    updateTradeModalDisplay();
   }
 
   /**
@@ -15860,63 +15921,119 @@ const PageMarket = (function () {
   async function confirmTrade() {
     if (!tradeModal) return;
 
-    const state = SongState.getState();
-    const stock = state.stockMarket?.stocks?.find(s => s.id === tradeModal.stockId);
-    const portfolio = state.portfolio || [];
-    const company = state.company || {};
-    const today = state.gameDate?.current || new Date().toISOString().split('T')[0];
-
-    if (!stock) {
-      SongApp.showToast('股票信息不存在');
-      return;
+    // 禁用按钮，显示处理中，防止重复点击
+    const confirmBtn = document.querySelector('.modal-footer .btn-primary, .modal-footer .btn-danger');
+    const cancelBtn = document.querySelector('.modal-footer .btn-secondary');
+    const originalText = confirmBtn?.textContent;
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = '处理中...';
+      confirmBtn.style.opacity = '0.6';
+      confirmBtn.style.cursor = 'not-allowed';
+    }
+    if (cancelBtn) {
+      cancelBtn.disabled = true;
+      cancelBtn.style.opacity = '0.6';
     }
 
-    let result;
-    if (tradeModal.type === 'buy') {
-      result = SongStockMarket.buyStock(stock, tradeModal.shares, portfolio, company, today);
-    } else {
-      result = SongStockMarket.sellStock(stock, tradeModal.shares, portfolio, company, today);
+    // 显示处理中提示
+    SongApp.showToast('正在处理交易...');
+
+    try {
+      const state = SongState.getState();
+      const stock = state.stockMarket?.stocks?.find(s => s.id === tradeModal.stockId);
+      const portfolio = state.portfolio || [];
+      const company = state.company || {};
+      const today = state.gameDate?.current || new Date().toISOString().split('T')[0];
+
+      if (!stock) {
+        SongApp.showToast('股票信息不存在');
+        // 恢复按钮
+        if (confirmBtn) {
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = originalText;
+          confirmBtn.style.opacity = '';
+          confirmBtn.style.cursor = '';
+        }
+        if (cancelBtn) {
+          cancelBtn.disabled = false;
+          cancelBtn.style.opacity = '';
+        }
+        return;
+      }
+
+      let result;
+      if (tradeModal.type === 'buy') {
+        result = SongStockMarket.buyStock(stock, tradeModal.shares, portfolio, company, today);
+      } else {
+        result = SongStockMarket.sellStock(stock, tradeModal.shares, portfolio, company, today);
+      }
+
+      if (!result.success) {
+        SongApp.showToast(`交易失败：${result.error}`);
+        // 恢复按钮
+        if (confirmBtn) {
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = originalText;
+          confirmBtn.style.opacity = '';
+          confirmBtn.style.cursor = '';
+        }
+        if (cancelBtn) {
+          cancelBtn.disabled = false;
+          cancelBtn.style.opacity = '';
+        }
+        return;
+      }
+
+      // 保存交易记录
+      const tradeRecords = state.stockMarket?.tradeRecords || [];
+      const updatedTradeRecords = result.tradeRecord ? [result.tradeRecord, ...tradeRecords].slice(0, 100) : tradeRecords;
+
+      // 更新状态
+      const updates = {
+        'portfolio': result.portfolio,
+        'company.cashFlow': result.cashFlow,
+        'stockMarket.tradeRecords': updatedTradeRecords
+      };
+
+      // 卖出时，已实现盈亏计入总资产
+      if (tradeModal.type === 'sell' && result.profit !== undefined) {
+        const currentTotalAssets = company.totalAssets || 0;
+        updates['company.totalAssets'] = currentTotalAssets + result.profit;
+      }
+
+      await SongState.batchUpdate(updates);
+
+      const action = tradeModal.type === 'buy' ? '买入' : '卖出';
+      const currency = SongStockMarket.getCurrencySymbol(stock.market);
+      let toastMsg = `${action}成功！${tradeModal.shares} 股 ${stock.name} @ ${currency}${result.actualPrice.toFixed(2)}`;
+      if (tradeModal.type === 'sell' && result.profit !== undefined) {
+        const profitText = result.profit >= 0 ? `盈利 ${formatMoney(result.profit)}` : `亏损 ${formatMoney(Math.abs(result.profit))}`;
+        toastMsg += `（${profitText}）`;
+      }
+      if (result.slippage && result.slippage.hasSlippage) {
+        toastMsg += ` 滑点${result.slippage.slippageRate}%`;
+      }
+      SongApp.showToast(toastMsg);
+
+      // 关闭弹窗
+      tradeModal = null;
+      render(document.getElementById('app-content'));
+    } catch (e) {
+      console.error('[Market] 交易异常:', e);
+      SongApp.showToast('交易异常，请重试');
+      // 恢复按钮
+      if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = originalText;
+        confirmBtn.style.opacity = '';
+        confirmBtn.style.cursor = '';
+      }
+      if (cancelBtn) {
+        cancelBtn.disabled = false;
+        cancelBtn.style.opacity = '';
+      }
     }
-
-    if (!result.success) {
-      SongApp.showToast(`交易失败：${result.error}`);
-      return;
-    }
-
-    // 保存交易记录
-    const tradeRecords = state.stockMarket?.tradeRecords || [];
-    const updatedTradeRecords = result.tradeRecord ? [result.tradeRecord, ...tradeRecords].slice(0, 100) : tradeRecords;
-
-    // 更新状态
-    const updates = {
-      'portfolio': result.portfolio,
-      'company.cashFlow': result.cashFlow,
-      'stockMarket.tradeRecords': updatedTradeRecords
-    };
-
-    // 卖出时，已实现盈亏计入总资产
-    if (tradeModal.type === 'sell' && result.profit !== undefined) {
-      const currentTotalAssets = company.totalAssets || 0;
-      updates['company.totalAssets'] = currentTotalAssets + result.profit;
-    }
-
-    await SongState.batchUpdate(updates);
-
-    const action = tradeModal.type === 'buy' ? '买入' : '卖出';
-    const currency = SongStockMarket.getCurrencySymbol(stock.market);
-    let toastMsg = `${action}成功！${tradeModal.shares} 股 ${stock.name} @ ${currency}${result.actualPrice.toFixed(2)}`;
-    if (tradeModal.type === 'sell' && result.profit !== undefined) {
-      const profitText = result.profit >= 0 ? `盈利 ${formatMoney(result.profit)}` : `亏损 ${formatMoney(Math.abs(result.profit))}`;
-      toastMsg += `（${profitText}）`;
-    }
-    if (result.slippage && result.slippage.hasSlippage) {
-      toastMsg += ` 滑点${result.slippage.slippageRate}%`;
-    }
-    SongApp.showToast(toastMsg);
-
-    // 关闭弹窗
-    tradeModal = null;
-    render(document.getElementById('app-content'));
   }
 
   /**
@@ -15950,6 +16067,7 @@ const PageMarket = (function () {
     adjustShares,
     setShares,
     updateShares,
+    updateTradeModalDisplay,
     confirmTrade,
     goToFundMarket
   };
@@ -16890,7 +17008,6 @@ const PageHeir = (function () {
           ` : `
             <div class="avatar-placeholder">${heir.name?.charAt(0) || '松'}</div>
           `}
-          <div class="profile-level-badge">Lv.${levelInfo.level}</div>
           <div class="avatar-edit-hint">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
@@ -16900,7 +17017,7 @@ const PageHeir = (function () {
         </div>
         <input type="file" id="avatar-input" accept="image/*" style="display: none;" />
         <div class="profile-info">
-          <h2 class="profile-name">${heir.name}</h2>
+          <h2 class="profile-name">${heir.name} <span class="profile-level-text">Lv.${levelInfo.level}</span></h2>
           <p class="profile-title">${heir.title}</p>
           <div class="profile-meta">
             <span class="meta-item"><span class="meta-label">家族：</span>松氏</span>
