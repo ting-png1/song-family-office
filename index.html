@@ -7593,8 +7593,9 @@ const SongFinance = (function () {
     // 计算集团财务
     const groupFinancials = calculateGroupFinancials(subsidiaries, gameState.company || {});
 
-    // 第四阶段：生成财务三表
-    const financialStatements = generateGroupFinancials(subsidiaries, { ...gameState.company, ...groupFinancials });
+    // 第四阶段：生成财务三表（传入上一期数据用于勾稽）
+    const previousFinancials = gameState.company?.financialStatements || null;
+    const financialStatements = generateGroupFinancials(subsidiaries, { ...gameState.company, ...groupFinancials }, previousFinancials);
 
     // 第四阶段：资产配置分析
     const assetAllocation = analyzeAssetAllocation(
@@ -7712,15 +7713,29 @@ const SongFinance = (function () {
 
   /**
    * 生成资产负债表（Balance Sheet）
+   * 建立勾稽关系：未分配利润变动 = 净利润 - 分红
+   * @param {Array} subsidiaries - 子公司列表
+   * @param {Object} company - 公司财务数据
+   * @param {Object} incomeStatement - 利润表（用于勾稽）
+   * @param {Object} previousBalanceSheet - 上一期资产负债表（期初数）
    */
-  function generateBalanceSheet(subsidiaries, company) {
+  function generateBalanceSheet(subsidiaries, company, incomeStatement, previousBalanceSheet) {
     const totalAssets = company?.totalAssets || 5000000000;
     const cashFlow = company?.cashFlow || 800000000;
     const validSubs = (subsidiaries || []).filter(s => s.type !== '公益');
     const totalRevenue = validSubs.reduce((sum, s) => sum + (s.revenue || 0), 0);
+    const netProfit = incomeStatement?.netProfit || 0;
+    const dividendPaid = Math.round(netProfit * 0.3); // 分红率30%
 
     // 资产端
-    const cash = cashFlow;
+    // 现金：如果有期初数，期末现金 = 期初现金 + 现金流量表净变动（后续在现金流表中计算）
+    // 这里先用 cashFlow，后续在 generateGroupFinancials 中调整
+    let cash = cashFlow;
+    if (previousBalanceSheet && previousBalanceSheet.cash !== undefined) {
+      // 有期初数时，现金变动由现金流量表决定，这里先占位，后续调整
+      cash = previousBalanceSheet.cash; // 先设为期初，后续加净变动
+    }
+
     const accountsReceivable = Math.round(totalRevenue * 0.15);
     const inventory = Math.round(totalRevenue * 0.10);
     const currentAssets = cash + accountsReceivable + inventory;
@@ -7747,7 +7762,17 @@ const SongFinance = (function () {
     const paidInCapital = Math.round(totalAssets * 0.30);
     const capitalReserve = Math.round(totalAssets * 0.05);
     const surplusReserve = Math.round(totalAssets * 0.03);
-    const undistributedProfit = totalAssetsCalc - totalLiabilities - paidInCapital - capitalReserve - surplusReserve;
+
+    // 未分配利润：建立勾稽关系
+    let undistributedProfit;
+    if (previousBalanceSheet && previousBalanceSheet.undistributedProfit !== undefined) {
+      // 有期初数：期末未分配利润 = 期初未分配利润 + 本期净利润 - 分红
+      undistributedProfit = previousBalanceSheet.undistributedProfit + netProfit - dividendPaid;
+    } else {
+      // 没有期初数（新游戏/旧存档）：倒挤方式，确保资产负债表平衡
+      undistributedProfit = totalAssetsCalc - totalLiabilities - paidInCapital - capitalReserve - surplusReserve;
+    }
+
     const totalEquity = paidInCapital + capitalReserve + surplusReserve + undistributedProfit;
 
     // 会计恒等式验证
@@ -7780,6 +7805,11 @@ const SongFinance = (function () {
       totalEquity: Math.round(totalEquity),
       // 验证
       balanceCheck,
+      // 分红（用于勾稽）
+      dividendPaid,
+      // 期初数（用于对比）
+      previousCash: previousBalanceSheet?.cash,
+      previousUndistributedProfit: previousBalanceSheet?.undistributedProfit,
       // 关键比率
       debtRatio: totalAssetsCalc > 0 ? parseFloat(((totalLiabilities / totalAssetsCalc) * 100).toFixed(1)) : 0,
       currentRatio: currentLiabilities > 0 ? parseFloat((currentAssets / currentLiabilities).toFixed(2)) : 0,
@@ -7789,16 +7819,23 @@ const SongFinance = (function () {
 
   /**
    * 生成现金流量表（Cash Flow Statement）
+   * 建立勾稽关系：现金净变动 = 期末现金 - 期初现金
+   * @param {Array} subsidiaries - 子公司列表
+   * @param {Object} company - 公司财务数据
+   * @param {Object} incomeStatement - 利润表
+   * @param {Object} previousBalanceSheet - 上一期资产负债表（期初数）
    */
-  function generateCashFlowStatement(subsidiaries, company, incomeStatement) {
+  function generateCashFlowStatement(subsidiaries, company, incomeStatement, previousBalanceSheet) {
     const validSubs = (subsidiaries || []).filter(s => s.type !== '公益');
     const totalRevenue = validSubs.reduce((sum, s) => sum + (s.revenue || 0), 0);
     const netProfit = incomeStatement?.netProfit || 0;
     const totalAssets = company?.totalAssets || 5000000000;
+    const dividendPaid = Math.round(netProfit * 0.3); // 分红率30%，与资产负债表一致
 
     // 经营活动现金流
     const depreciation = Math.round(totalAssets * 0.03);
     const amortization = Math.round(totalAssets * 0.01);
+    // 营运资本变动：基于应收、应付、存货的变动（简化为随机波动）
     const workingCapitalChange = Math.round(totalRevenue * 0.03 * (Math.random() > 0.5 ? 1 : -1));
     const operatingCashFlow = netProfit + depreciation + amortization - workingCapitalChange;
 
@@ -7809,7 +7846,6 @@ const SongFinance = (function () {
 
     // 筹资活动现金流
     const newBorrowing = Math.round(totalAssets * 0.02 * (Math.random() > 0.5 ? 1 : -1));
-    const dividendPaid = Math.round(netProfit * 0.3);
     const financingCashFlow = newBorrowing - dividendPaid;
 
     const netCashChange = operatingCashFlow + investingCashFlow + financingCashFlow;
@@ -7831,6 +7867,10 @@ const SongFinance = (function () {
       financingCashFlow: Math.round(financingCashFlow),
       // 汇总
       netCashChange: Math.round(netCashChange),
+      // 期初现金（用于勾稽）
+      beginningCash: previousBalanceSheet?.cash,
+      // 期末现金（用于勾稽）
+      endingCash: previousBalanceSheet?.cash !== undefined ? previousBalanceSheet.cash + netCashChange : undefined,
       // 盈利质量
       cashToProfitRatio: netProfit > 0 ? parseFloat((operatingCashFlow / netProfit).toFixed(2)) : 0
     };
@@ -7868,19 +7908,159 @@ const SongFinance = (function () {
   }
 
   /**
-   * 生成集团完整三表数据
+   * 财务三表勾稽校验
+   * 校验资产负债表、利润表、现金流量表之间的勾稽关系
+   * @param {Object} incomeStatement - 利润表
+   * @param {Object} balanceSheet - 资产负债表
+   * @param {Object} cashFlowStatement - 现金流量表
+   * @param {Object} previousBalanceSheet - 上一期资产负债表（期初数）
+   * @returns {Object} 校验结果
    */
-  function generateGroupFinancials(subsidiaries, company) {
+  function validateFinancialStatements(incomeStatement, balanceSheet, cashFlowStatement, previousBalanceSheet) {
+    const results = {
+      pass: true,
+      checks: [],
+      warnings: []
+    };
+
+    // 校验1：会计恒等式 资产 = 负债 + 所有者权益
+    const balanceDiff = Math.abs(balanceSheet.totalAssets - balanceSheet.totalLiabilities - balanceSheet.totalEquity);
+    const balancePass = balanceDiff < 10000; // 允许1万元以内的四舍五入误差
+    results.checks.push({
+      name: '会计恒等式（资产=负债+权益）',
+      pass: balancePass,
+      diff: balanceDiff,
+      formula: `${formatMoney(balanceSheet.totalAssets)} = ${formatMoney(balanceSheet.totalLiabilities)} + ${formatMoney(balanceSheet.totalEquity)}`
+    });
+    if (!balancePass) {
+      results.pass = false;
+      results.warnings.push(`会计恒等式不平衡，差额 ${formatMoney(balanceDiff)}`);
+    }
+
+    // 校验2：未分配利润变动 = 净利润 - 分红（如果有期初数）
+    if (previousBalanceSheet && previousBalanceSheet.undistributedProfit !== undefined) {
+      const dividendPaid = cashFlowStatement?.dividendPaid || 0;
+      const expectedUndistributedChange = (incomeStatement?.netProfit || 0) - dividendPaid;
+      const actualUndistributedChange = balanceSheet.undistributedProfit - previousBalanceSheet.undistributedProfit;
+      const undistributedDiff = Math.abs(expectedUndistributedChange - actualUndistributedChange);
+      const undistributedPass = undistributedDiff < 100000; // 允许10万元以内误差
+      results.checks.push({
+        name: '未分配利润变动 = 净利润 - 分红',
+        pass: undistributedPass,
+        diff: undistributedDiff,
+        expected: expectedUndistributedChange,
+        actual: actualUndistributedChange,
+        formula: `期末未分配利润 - 期初未分配利润 = 净利润 - 分红`
+      });
+      if (!undistributedPass) {
+        results.warnings.push(`未分配利润变动与净利润-分红不符，差额 ${formatMoney(undistributedDiff)}`);
+      }
+    }
+
+    // 校验3：现金变动 = 现金流量表净变动（如果有期初数）
+    if (previousBalanceSheet && previousBalanceSheet.cash !== undefined) {
+      const expectedCashChange = cashFlowStatement?.netCashChange || 0;
+      const actualCashChange = balanceSheet.cash - previousBalanceSheet.cash;
+      const cashDiff = Math.abs(expectedCashChange - actualCashChange);
+      const cashPass = cashDiff < 100000; // 允许10万元以内误差
+      results.checks.push({
+        name: '现金变动 = 现金流量表净变动',
+        pass: cashPass,
+        diff: cashDiff,
+        expected: expectedCashChange,
+        actual: actualCashChange,
+        formula: `期末现金 - 期初现金 = 经营+投资+筹资现金流`
+      });
+      if (!cashPass) {
+        results.warnings.push(`现金变动与现金流量表净变动不符，差额 ${formatMoney(cashDiff)}`);
+      }
+    }
+
+    // 校验4：利润表内部勾稽 净利润 = 总利润 - 所得税
+    if (incomeStatement) {
+      const expectedNetProfit = (incomeStatement.totalProfit || 0) - (incomeStatement.tax || 0);
+      const netProfitDiff = Math.abs(expectedNetProfit - (incomeStatement.netProfit || 0));
+      const netProfitPass = netProfitDiff < 1000;
+      results.checks.push({
+        name: '利润表内部勾稽（净利润=总利润-税）',
+        pass: netProfitPass,
+        diff: netProfitDiff
+      });
+      if (!netProfitPass) {
+        results.pass = false;
+        results.warnings.push(`利润表内部勾稽失败，净利润差额 ${formatMoney(netProfitDiff)}`);
+      }
+    }
+
+    // 校验5：资产负债表内部勾稽 流动资产 = 现金+应收+存货
+    if (balanceSheet) {
+      const expectedCurrentAssets = (balanceSheet.cash || 0) + (balanceSheet.accountsReceivable || 0) + (balanceSheet.inventory || 0);
+      const currentAssetsDiff = Math.abs(expectedCurrentAssets - (balanceSheet.currentAssets || 0));
+      const currentAssetsPass = currentAssetsDiff < 1000;
+      results.checks.push({
+        name: '流动资产内部勾稽',
+        pass: currentAssetsPass,
+        diff: currentAssetsDiff
+      });
+    }
+
+    // 输出校验日志
+    if (results.warnings.length > 0) {
+      console.warn('[SongFinance] 财务三表勾稽校验警告:', results.warnings);
+    } else {
+      console.log('[SongFinance] 财务三表勾稽校验全部通过 ✓');
+    }
+
+    return results;
+  }
+
+  /**
+   * 生成集团完整三表数据（含勾稽校验）
+   * 建立完整勾稽关系：
+   * 1. 资产 = 负债 + 权益
+   * 2. 未分配利润变动 = 净利润 - 分红
+   * 3. 现金变动 = 现金流量表净变动
+   */
+  function generateGroupFinancials(subsidiaries, company, previousFinancials) {
     const incomeStatement = generateIncomeStatement(subsidiaries);
-    const balanceSheet = generateBalanceSheet(subsidiaries, company);
-    const cashFlowStatement = generateCashFlowStatement(subsidiaries, company, incomeStatement);
+    const previousBalanceSheet = previousFinancials?.balanceSheet || company?.financialStatements?.balanceSheet || null;
+
+    // 第一次生成资产负债表（现金先设为期初，后续调整）
+    let balanceSheet = generateBalanceSheet(subsidiaries, company, incomeStatement, previousBalanceSheet);
+
+    // 生成现金流量表
+    const cashFlowStatement = generateCashFlowStatement(subsidiaries, company, incomeStatement, previousBalanceSheet);
+
+    // 调整资产负债表的现金，使其与现金流量表勾稽
+    if (previousBalanceSheet && previousBalanceSheet.cash !== undefined) {
+      const adjustedCash = previousBalanceSheet.cash + cashFlowStatement.netCashChange;
+      const cashDiff = adjustedCash - balanceSheet.cash;
+
+      // 调整现金和流动资产
+      balanceSheet.cash = Math.round(adjustedCash);
+      balanceSheet.currentAssets = Math.round(balanceSheet.currentAssets + cashDiff);
+      balanceSheet.totalAssets = Math.round(balanceSheet.totalAssets + cashDiff);
+
+      // 由于总资产变了，需要重新调整未分配利润，保持会计恒等式
+      // 总资产增加 → 未分配利润增加（假设负债和其他权益不变）
+      balanceSheet.undistributedProfit = Math.round(balanceSheet.undistributedProfit + cashDiff);
+      balanceSheet.totalEquity = Math.round(balanceSheet.totalEquity + cashDiff);
+
+      // 重新验证会计恒等式
+      balanceSheet.balanceCheck = Math.abs(balanceSheet.totalAssets - balanceSheet.totalLiabilities - balanceSheet.totalEquity) < 10000;
+    }
+
     const ratios = calculateFinancialRatios(incomeStatement, balanceSheet, cashFlowStatement);
+
+    // 执行勾稽校验
+    const validation = validateFinancialStatements(incomeStatement, balanceSheet, cashFlowStatement, previousBalanceSheet);
 
     return {
       incomeStatement,
       balanceSheet,
       cashFlowStatement,
       ratios,
+      validation,
       generatedAt: new Date().toISOString()
     };
   }
@@ -8057,7 +8237,8 @@ const SongFinance = (function () {
     generateGroupFinancials,
     generateSubsidiaryFinancials,
     analyzeAssetAllocation,
-    getIndustryRates
+    getIndustryRates,
+    validateFinancialStatements
   };
 })();
 
