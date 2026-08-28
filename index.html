@@ -16615,6 +16615,13 @@ const PageCompany = (function () {
   }
 
   /**
+   * 重置详情状态（不重新渲染，用于外部容器切换Tab时调用）
+   */
+  function resetDetail() {
+    currentDetailId = null;
+  }
+
+  /**
    * 返回列表
    */
   function backToList() {
@@ -16916,6 +16923,7 @@ const PageCompany = (function () {
     render,
     showDetail,
     backToList,
+    resetDetail,
     showMetricDetail,
     backToOverview,
     handleCrisisAction,
@@ -17687,6 +17695,13 @@ const PageMarket = (function () {
   /**
    * 返回列表
    */
+  /**
+   * 重置详情状态（不重新渲染，用于外部容器切换Tab时调用）
+   */
+  function resetDetail() {
+    currentStockId = null;
+  }
+
   function backToList() {
     // 优先使用全局导航历史栈返回（从哪来回哪去）
     if (typeof SongApp !== 'undefined' && typeof SongApp.goBack === 'function') {
@@ -17973,6 +17988,7 @@ const PageMarket = (function () {
     render,
     showStockDetail,
     backToList,
+    resetDetail,
     switchChart,
     openTradeModal,
     closeTradeModal,
@@ -18864,6 +18880,13 @@ const PageInvestment = (function () {
     if (content) content.scrollTop = 0;
   }
 
+  /**
+   * 重置详情状态（不重新渲染，用于外部容器切换Tab时调用）
+   */
+  function resetDetail() {
+    currentFundId = null;
+  }
+
   function backToList() {
     // 优先使用全局导航历史栈返回（从哪来回哪去）
     if (typeof SongApp !== 'undefined' && typeof SongApp.goBack === 'function') {
@@ -19017,6 +19040,7 @@ const PageInvestment = (function () {
     switchTab,
     showFundDetail,
     backToList,
+    resetDetail,
     goToStock,
     switchFundChart,
     openFundTradeModal,
@@ -19151,8 +19175,8 @@ const PageAssets = (function () {
       case 'company':
         if (typeof PageCompany !== 'undefined' && PageCompany.render) {
           // 重置公司页面的详情状态，确保从列表开始
-          if (PageCompany.backToList) {
-            PageCompany.backToList();
+          if (PageCompany.resetDetail) {
+            PageCompany.resetDetail();
           }
           PageCompany.render(subContainer);
         }
@@ -19160,8 +19184,8 @@ const PageAssets = (function () {
       case 'investment':
         if (typeof PageInvestment !== 'undefined' && PageInvestment.render) {
           // 重置投资页面的详情状态
-          if (PageInvestment.backToList) {
-            PageInvestment.backToList();
+          if (PageInvestment.resetDetail) {
+            PageInvestment.resetDetail();
           }
           PageInvestment.render(subContainer);
         }
@@ -19169,8 +19193,8 @@ const PageAssets = (function () {
       case 'market':
         if (typeof PageMarket !== 'undefined' && PageMarket.render) {
           // 重置市场页面的详情状态
-          if (PageMarket.backToList) {
-            PageMarket.backToList();
+          if (PageMarket.resetDetail) {
+            PageMarket.resetDetail();
           }
           PageMarket.render(subContainer);
         }
