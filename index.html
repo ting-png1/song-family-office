@@ -6395,6 +6395,105 @@ body::before {
   font-size: 14px;
 }
 
+/* ═══════════════════════════════════════
+   资产页面 - 二级Tab导航
+   ═══════════════════════════════════════ */
+.assets-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: var(--spacing-md);
+  padding: 4px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.assets-tab {
+  flex: 1;
+  min-width: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.assets-tab:hover {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+}
+
+.assets-tab.active {
+  background: var(--color-bg-card);
+  color: var(--color-accent-gold);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.assets-tab .tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.assets-tab .tab-label {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.assets-sub-content {
+  min-height: 400px;
+}
+
+/* ═══════════════════════════════════════
+   页面头部 - 带操作按钮
+   ═══════════════════════════════════════ */
+.page-header-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+}
+
+.page-header-with-action > div:first-child {
+  flex: 1;
+}
+
+.header-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.header-action-btn:hover {
+  color: var(--color-accent-gold);
+  border-color: var(--color-accent-gold);
+  background: rgba(184, 150, 90, 0.1);
+}
+
+.header-action-btn:active {
+  transform: scale(0.95);
+}
+
 
 </style>
 </head>
@@ -6425,7 +6524,7 @@ body::before {
           <rect width="7" height="5" x="3" y="16" rx="1"/>
         </svg>
       </span>
-      <span class="nav-label">控制中心</span>
+      <span class="nav-label">首页</span>
     </button>
     <button class="nav-item" data-page="tasks">
       <span class="nav-icon">
@@ -6434,57 +6533,30 @@ body::before {
           <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
         </svg>
       </span>
-      <span class="nav-label">待办</span>
+      <span class="nav-label">事务</span>
     </button>
-    <button class="nav-item" data-page="company">
+    <button class="nav-item" data-page="assets">
       <span class="nav-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
-          <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
-          <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/>
-          <path d="M10 6h4"/>
-          <path d="M10 10h4"/>
-          <path d="M10 14h4"/>
-          <path d="M10 18h4"/>
+          <path d="M3 21h18"/>
+          <path d="M5 21V7l8-4v18"/>
+          <path d="M19 21V11l-6-4"/>
+          <path d="M9 9v.01"/>
+          <path d="M9 12v.01"/>
+          <path d="M9 15v.01"/>
+          <path d="M9 18v.01"/>
         </svg>
       </span>
-      <span class="nav-label">公司</span>
+      <span class="nav-label">资产</span>
     </button>
-    <button class="nav-item" data-page="market">
-      <span class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-          <polyline points="16 7 22 7 22 13"/>
-        </svg>
-      </span>
-      <span class="nav-label">市场</span>
-    </button>
-    <button class="nav-item" data-page="investment">
-      <span class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/>
-          <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>
-        </svg>
-      </span>
-      <span class="nav-label">投资</span>
-    </button>
-    <button class="nav-item" data-page="heir">
+    <button class="nav-item" data-page="mine">
       <span class="nav-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
           <circle cx="12" cy="7" r="4"/>
         </svg>
       </span>
-      <span class="nav-label">档案</span>
-    </button>
-    <button class="nav-item" data-page="settings">
-      <span class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-          <circle cx="12" cy="12" r="3"/>
-        </svg>
-      </span>
-      <span class="nav-label">设置</span>
+      <span class="nav-label">我的</span>
     </button>
   </nav>
 
@@ -15033,6 +15105,13 @@ const PageTasks = (function () {
    * 返回列表
    */
   function backToList() {
+    // 优先使用全局导航历史栈返回（从哪来回哪去）
+    if (typeof SongApp !== 'undefined' && typeof SongApp.goBack === 'function') {
+      if (SongApp.goBack()) {
+        return;
+      }
+    }
+    // 回退：历史栈为空时，重置详情并重新渲染
     currentDetailEvent = null;
     render(document.getElementById('app-content'));
   }
@@ -16539,6 +16618,13 @@ const PageCompany = (function () {
    * 返回列表
    */
   function backToList() {
+    // 优先使用全局导航历史栈返回（从哪来回哪去）
+    if (typeof SongApp !== 'undefined' && typeof SongApp.goBack === 'function') {
+      if (SongApp.goBack()) {
+        return;
+      }
+    }
+    // 回退：历史栈为空时，重置详情并重新渲染
     currentDetailId = null;
     render(document.getElementById('app-content'));
   }
@@ -17602,6 +17688,13 @@ const PageMarket = (function () {
    * 返回列表
    */
   function backToList() {
+    // 优先使用全局导航历史栈返回（从哪来回哪去）
+    if (typeof SongApp !== 'undefined' && typeof SongApp.goBack === 'function') {
+      if (SongApp.goBack()) {
+        return;
+      }
+    }
+    // 回退：历史栈为空时，重置详情并重新渲染
     currentStockId = null;
     render(document.getElementById('app-content'));
   }
@@ -18772,6 +18865,13 @@ const PageInvestment = (function () {
   }
 
   function backToList() {
+    // 优先使用全局导航历史栈返回（从哪来回哪去）
+    if (typeof SongApp !== 'undefined' && typeof SongApp.goBack === 'function') {
+      if (SongApp.goBack()) {
+        return;
+      }
+    }
+    // 回退：历史栈为空时，重置详情并重新渲染
     currentFundId = null;
     render(document.getElementById('app-content'));
   }
@@ -18936,6 +19036,173 @@ if (typeof window !== 'undefined') {
 }
 
 
+/* ===== js/pages/assets.js ===== */
+/**
+ * 松氏家族办公室 - 资产页面
+ * 统一入口：公司经营 / 投资组合 / 市场行情
+ * 作为二级导航容器，内部调用现有 PageCompany / PageInvestment / PageMarket
+ */
+
+const PageAssets = (function () {
+  'use strict';
+
+  // 当前选中的二级Tab
+  let currentTab = 'company'; // company / investment / market
+
+  // 子容器引用
+  let subContainer = null;
+
+  /**
+   * 渲染资产页面
+   */
+  function render(container) {
+    container.innerHTML = `
+      <div class="assets-page">
+        <!-- 页面标题 -->
+        <div class="page-header">
+          <h1 class="page-title">资产</h1>
+          <p class="page-subtitle">松氏集团商业资产统一管理</p>
+        </div>
+
+        <!-- 二级Tab导航 -->
+        <div class="assets-tabs">
+          <button class="assets-tab ${currentTab === 'company' ? 'active' : ''}" data-tab="company">
+            <span class="tab-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 21h18"/>
+                <path d="M5 21V7l8-4v18"/>
+                <path d="M19 21V11l-6-4"/>
+              </svg>
+            </span>
+            <span class="tab-label">公司经营</span>
+          </button>
+          <button class="assets-tab ${currentTab === 'investment' ? 'active' : ''}" data-tab="investment">
+            <span class="tab-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/>
+                <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>
+              </svg>
+            </span>
+            <span class="tab-label">投资组合</span>
+          </button>
+          <button class="assets-tab ${currentTab === 'market' ? 'active' : ''}" data-tab="market">
+            <span class="tab-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                <polyline points="16 7 22 7 22 13"/>
+              </svg>
+            </span>
+            <span class="tab-label">市场行情</span>
+          </button>
+        </div>
+
+        <!-- 子页面内容容器 -->
+        <div class="assets-sub-content" id="assets-sub-content"></div>
+      </div>
+    `;
+
+    // 绑定Tab点击事件
+    const tabs = container.querySelectorAll('.assets-tab');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabName = tab.dataset.tab;
+        switchTab(tabName);
+      });
+    });
+
+    // 获取子容器并渲染当前Tab
+    subContainer = document.getElementById('assets-sub-content');
+    renderCurrentTab();
+  }
+
+  /**
+   * 切换Tab
+   */
+  function switchTab(tabName) {
+    if (currentTab === tabName) return;
+
+    currentTab = tabName;
+
+    // 更新Tab高亮状态
+    const tabs = document.querySelectorAll('.assets-tab');
+    tabs.forEach(tab => {
+      if (tab.dataset.tab === tabName) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
+    });
+
+    // 渲染新Tab内容
+    renderCurrentTab();
+  }
+
+  /**
+   * 渲染当前Tab对应的子页面
+   */
+  function renderCurrentTab() {
+    if (!subContainer) return;
+
+    // 清空子容器
+    subContainer.innerHTML = '';
+
+    // 根据当前Tab调用对应页面的render函数
+    switch (currentTab) {
+      case 'company':
+        if (typeof PageCompany !== 'undefined' && PageCompany.render) {
+          // 重置公司页面的详情状态，确保从列表开始
+          if (PageCompany.backToList) {
+            PageCompany.backToList();
+          }
+          PageCompany.render(subContainer);
+        }
+        break;
+      case 'investment':
+        if (typeof PageInvestment !== 'undefined' && PageInvestment.render) {
+          // 重置投资页面的详情状态
+          if (PageInvestment.backToList) {
+            PageInvestment.backToList();
+          }
+          PageInvestment.render(subContainer);
+        }
+        break;
+      case 'market':
+        if (typeof PageMarket !== 'undefined' && PageMarket.render) {
+          // 重置市场页面的详情状态
+          if (PageMarket.backToList) {
+            PageMarket.backToList();
+          }
+          PageMarket.render(subContainer);
+        }
+        break;
+    }
+  }
+
+  /**
+   * 获取当前Tab名称
+   */
+  function getCurrentTab() {
+    return currentTab;
+  }
+
+  /**
+   * 设置当前Tab（用于外部调用，比如从首页跳转后直接打开某个Tab）
+   */
+  function setCurrentTab(tabName) {
+    if (['company', 'investment', 'market'].includes(tabName)) {
+      currentTab = tabName;
+    }
+  }
+
+  return {
+    render,
+    switchTab,
+    getCurrentTab,
+    setCurrentTab
+  };
+})();
+
+
 /* ===== js/pages/heir.js ===== */
 /**
  * 松氏家族办公室 - 继承人档案页面
@@ -18974,9 +19241,17 @@ const PageHeir = (function () {
     const completedGoals = goalProgress.filter(g => g.completed);
 
     container.innerHTML = `
-      <div class="page-header">
-        <h1 class="page-title">继承人档案</h1>
-        <p class="page-subtitle">松家长女 · 松氏家族未来继承人</p>
+      <div class="page-header page-header-with-action">
+        <div>
+          <h1 class="page-title">我的</h1>
+          <p class="page-subtitle">继承人档案 · 成长记录 · 私人管家</p>
+        </div>
+        <button class="header-action-btn" id="mine-settings-btn" title="设置">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
       </div>
 
       <!-- 个人信息卡片 -->
@@ -19313,6 +19588,16 @@ const PageHeir = (function () {
 
         // 清空 input，允许重复选择同一文件
         avatarInput.value = '';
+      });
+    }
+
+    // 设置按钮事件绑定
+    const settingsBtn = document.getElementById('mine-settings-btn');
+    if (settingsBtn) {
+      settingsBtn.addEventListener('click', () => {
+        if (window.SongApp && window.SongApp.navigateTo) {
+          window.SongApp.navigateTo('settings');
+        }
       });
     }
   }
@@ -20307,10 +20592,17 @@ const SongApp = (function () {
   let currentPage = 'dashboard';
   let initialized = false;
 
-  // 页面映射
+  // 导航历史栈（用于详情页返回）
+  const navigationStack = [];
+
+  // 页面映射（一级底部导航页面 + 内部页面）
   const pages = {
+    // 一级底部导航页面
     dashboard: PageDashboard,
     tasks: PageTasks,
+    assets: PageAssets,
+    mine: PageHeir, // "我的"页面复用继承人档案
+    // 内部页面（通过资产页Tab或其他入口进入）
     company: PageCompany,
     market: PageMarket,
     investment: PageInvestment,
@@ -20506,6 +20798,12 @@ const SongApp = (function () {
       return;
     }
 
+    // 如果是一级底部导航页面，清空导航历史栈
+    const primaryPages = ['dashboard', 'tasks', 'assets', 'mine'];
+    if (primaryPages.includes(page)) {
+      navigationStack.length = 0;
+    }
+
     currentPage = page;
     renderCurrentPage();
     updateNavigation();
@@ -20516,26 +20814,57 @@ const SongApp = (function () {
   }
 
   /**
+   * 返回上一个页面（导航历史栈）
+   */
+  function goBack() {
+    if (navigationStack.length > 0) {
+      const prevPage = navigationStack.pop();
+      console.log('[SongApp] 返回上一页:', prevPage);
+      currentPage = prevPage;
+      renderCurrentPage();
+      updateNavigation();
+      // 滚动到顶部
+      const content = document.getElementById('app-content');
+      if (content) content.scrollTop = 0;
+      return true;
+    }
+    console.log('[SongApp] 导航历史栈为空，无法返回');
+    return false;
+  }
+
+  /**
+   * 获取导航历史栈长度
+   */
+  function getNavigationStackLength() {
+    return navigationStack.length;
+  }
+
+  /**
    * 直接打开子公司详情页（从首页风险预警/子公司概览点击跳转）
    * @param {string} subsidiaryId - 子公司 ID
    */
   function openSubsidiaryDetail(subsidiaryId) {
     console.log('[SongApp] 打开子公司详情:', subsidiaryId);
+
+    // 把当前页面压入导航历史栈（用于返回）
+    navigationStack.push(currentPage);
+    console.log('[SongApp] 导航历史栈:', navigationStack);
+
     // 切换到公司页面并先渲染（确保页面存在）
     currentPage = 'company';
     renderCurrentPage();
     updateNavigation();
 
     // 设置子公司详情 ID 并渲染详情
-    if (window.PageCompany && typeof window.PageCompany.showDetail === 'function') {
+    if (typeof PageCompany !== 'undefined' && typeof PageCompany.showDetail === 'function') {
       // 延迟一帧执行，确保页面切换完成
       requestAnimationFrame(() => {
-        window.PageCompany.showDetail(subsidiaryId);
+        PageCompany.showDetail(subsidiaryId);
       });
       // 兜底：如果 requestAnimationFrame 没执行，50ms后再执行一次
       setTimeout(() => {
-        if (window.PageCompany && typeof window.PageCompany.showDetail === 'function') {
-          window.PageCompany.showDetail(subsidiaryId);
+        if (typeof PageCompany !== 'undefined' && typeof PageCompany.showDetail === 'function') {
+          PageCompany.showDetail(subsidiaryId);
         }
       }, 50);
     }
@@ -21119,6 +21448,8 @@ const SongApp = (function () {
   return {
     init,
     navigateTo,
+    goBack,
+    getNavigationStackLength,
     openSubsidiaryDetail,
     getCurrentPage,
     isInitialized,
