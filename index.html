@@ -868,6 +868,95 @@ body::before {
   color: var(--color-text-primary);
 }
 
+/* 3列概览网格 */
+.overview-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 480px) {
+  .overview-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 可点击的概览项 */
+.overview-item.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.overview-item.clickable:hover {
+  border-color: var(--color-gold);
+  background: var(--color-bg-hover);
+  transform: translateY(-2px);
+}
+
+/* 指标详情页 */
+.metric-detail-card {
+  margin-bottom: var(--spacing-md);
+}
+
+.metric-detail-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.metric-detail-icon {
+  font-size: 36px;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+}
+
+.metric-detail-value {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-gold);
+  line-height: 1.2;
+}
+
+.metric-detail-label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+  font-family: var(--font-serif);
+}
+
+/* 空白框架占位 */
+.metric-detail-placeholder {
+  text-align: center;
+  padding: var(--spacing-xl) var(--spacing-md);
+}
+
+.placeholder-icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-md);
+  opacity: 0.5;
+}
+
+.placeholder-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+  font-family: var(--font-serif);
+}
+
+.placeholder-desc {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
 /* 业务板块入口 */
 .business-sections {
   margin-top: var(--spacing-md);
@@ -14114,6 +14203,7 @@ const PageCompany = (function () {
     const avgReputation = subsidiaries.length > 0
       ? Math.round(subsidiaries.reduce((sum, s) => sum + (s.reputation || 0), 0) / subsidiaries.length)
       : 0;
+    const totalAssets = company.totalAssets || 0;
 
     // 风险预警统计
     const highRiskCount = subsidiaries.filter(s => s.risk === 'high').length;
@@ -14129,40 +14219,32 @@ const PageCompany = (function () {
       <div class="card">
         <div class="card-header">
           <span class="card-title">集团概览</span>
-          <span class="tag tag-gold">${subsidiaries.length} 个板块</span>
+          <span class="tag tag-gold">6 个核心指标</span>
         </div>
-        <div class="overview-grid">
-          <div class="overview-item">
+        <div class="overview-grid overview-grid-3">
+          <div class="overview-item clickable" onclick="PageCompany.showMetricDetail('revenue')">
             <div class="overview-value">${formatMoney(totalRevenue)}</div>
             <div class="overview-label">年营收</div>
           </div>
-          <div class="overview-item">
+          <div class="overview-item clickable" onclick="PageCompany.showMetricDetail('profit')">
             <div class="overview-value ${totalProfit >= 0 ? 'positive' : 'negative'}">${formatMoney(totalProfit)}</div>
             <div class="overview-label">年利润</div>
           </div>
-          <div class="overview-item">
+          <div class="overview-item clickable" onclick="PageCompany.showMetricDetail('assets')">
+            <div class="overview-value">${formatMoney(totalAssets)}</div>
+            <div class="overview-label">总资产</div>
+          </div>
+          <div class="overview-item clickable" onclick="PageCompany.showMetricDetail('employees')">
             <div class="overview-value">${totalEmployees}</div>
             <div class="overview-label">员工总数</div>
           </div>
-          <div class="overview-item">
+          <div class="overview-item clickable" onclick="PageCompany.showMetricDetail('satisfaction')">
             <div class="overview-value">${avgSatisfaction}%</div>
             <div class="overview-label">平均满意度</div>
           </div>
-        </div>
-
-        <!-- 业务板块入口（6个板块） -->
-        <div class="business-sections">
-          <div class="business-sections-title">业务板块</div>
-          <div class="business-sections-grid">
-            ${subsidiaries.map(sub => `
-              <div class="business-section-card ${sub.risk === 'high' ? 'risk' : ''}" onclick="PageCompany.showDetail('${sub.id}')">
-                <div class="business-section-name">${sub.name.replace('松氏', '')}</div>
-                <div class="business-section-type">${sub.type}</div>
-                <div class="business-section-profit ${(sub.profit || 0) >= 0 ? 'positive' : 'negative'}">
-                  ${(sub.profit || 0) >= 0 ? '+' : ''}${formatMoney(sub.profit || 0)}
-                </div>
-              </div>
-            `).join('')}
+          <div class="overview-item clickable" onclick="PageCompany.showMetricDetail('reputation')">
+            <div class="overview-value">${avgReputation}%</div>
+            <div class="overview-label">平均声誉</div>
           </div>
         </div>
       </div>
@@ -14292,7 +14374,7 @@ const PageCompany = (function () {
 
     container.innerHTML = `
       <div class="page-header">
-        <button class="btn btn-icon back-btn-icon" onclick="PageCompany.backToList()" title="返回列表">
+        <button class="btn-icon back-btn-icon" onclick="PageCompany.backToList()" title="返回列表">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 12H5"/>
             <path d="M12 19l-7-7 7-7"/>
@@ -15215,6 +15297,109 @@ const PageCompany = (function () {
   }
 
   /**
+   * 显示集团指标详情（空白框架，后续填充详细内容）
+   * @param {string} metricType - 指标类型：revenue/profit/assets/employees/satisfaction/reputation
+   */
+  function showMetricDetail(metricType) {
+    const state = SongState.getState();
+    const subsidiaries = state.subsidiaries || [];
+    const company = state.company || {};
+
+    const metricConfig = {
+      revenue: { name: '年营收', icon: '📊', unit: '元', description: '集团所有子公司年度营业收入总和' },
+      profit: { name: '年利润', icon: '💰', unit: '元', description: '集团所有子公司年度净利润总和' },
+      assets: { name: '总资产', icon: '🏦', unit: '元', description: '集团合并报表总资产规模' },
+      employees: { name: '员工总数', icon: '👥', unit: '人', description: '集团所有子公司员工人数总和' },
+      satisfaction: { name: '平均满意度', icon: '😊', unit: '%', description: '各子公司员工满意度平均值' },
+      reputation: { name: '平均声誉', icon: '⭐', unit: '%', description: '各子公司市场声誉评分平均值' }
+    };
+
+    const config = metricConfig[metricType] || { name: '未知指标', icon: '📈', unit: '', description: '' };
+
+    // 计算当前指标数值
+    let currentValue = 0;
+    if (metricType === 'revenue') {
+      currentValue = subsidiaries.reduce((sum, s) => sum + (s.revenue || 0), 0);
+    } else if (metricType === 'profit') {
+      currentValue = subsidiaries.reduce((sum, s) => sum + (s.profit || 0), 0);
+    } else if (metricType === 'assets') {
+      currentValue = company.totalAssets || 0;
+    } else if (metricType === 'employees') {
+      currentValue = subsidiaries.reduce((sum, s) => sum + (s.employees || 0), 0);
+    } else if (metricType === 'satisfaction') {
+      currentValue = subsidiaries.length > 0
+        ? Math.round(subsidiaries.reduce((sum, s) => sum + (s.satisfaction || 0), 0) / subsidiaries.length)
+        : 0;
+    } else if (metricType === 'reputation') {
+      currentValue = subsidiaries.length > 0
+        ? Math.round(subsidiaries.reduce((sum, s) => sum + (s.reputation || 0), 0) / subsidiaries.length)
+        : 0;
+    }
+
+    const container = document.getElementById('app-content');
+    container.innerHTML = `
+      <div class="page-header">
+        <button class="btn-icon back-btn-icon" onclick="PageCompany.backToOverview()" title="返回集团概览">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"/>
+            <path d="M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h1 class="page-title" style="margin-top: var(--spacing-md);">${config.name}详情</h1>
+        <p class="page-subtitle">${config.description}</p>
+      </div>
+
+      <!-- 当前数值卡片 -->
+      <div class="card metric-detail-card">
+        <div class="metric-detail-header">
+          <span class="metric-detail-icon">${config.icon}</span>
+          <div>
+            <div class="metric-detail-value">${metricType === 'satisfaction' || metricType === 'reputation' ? currentValue + '%' : formatMoney(currentValue)}</div>
+            <div class="metric-detail-label">当前${config.name}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 空白框架：后续填充内容 -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">详细分析</span>
+          <span class="tag tag-muted">待完善</span>
+        </div>
+        <div class="metric-detail-placeholder">
+          <div class="placeholder-icon">📋</div>
+          <div class="placeholder-text">此模块为空白框架</div>
+          <div class="placeholder-desc">后续将在此处展示：${config.name}的历史趋势、各子公司占比、同比变化、行业对比等详细分析</div>
+        </div>
+      </div>
+
+      <!-- 各子公司数据（空白框架） -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">各子公司数据</span>
+          <span class="tag tag-muted">待完善</span>
+        </div>
+        <div class="metric-detail-placeholder">
+          <div class="placeholder-icon">🏢</div>
+          <div class="placeholder-text">子公司明细待完善</div>
+          <div class="placeholder-desc">后续将在此处展示各子公司的${config.name}数据、排名、占比等</div>
+        </div>
+      </div>
+    `;
+
+    // 滚动到顶部
+    if (container) container.scrollTop = 0;
+  }
+
+  /**
+   * 返回集团概览
+   */
+  function backToOverview() {
+    currentDetailId = null;
+    render(document.getElementById('app-content'));
+  }
+
+  /**
    * 格式化金额
    */
   function formatMoney(amount) {
@@ -15228,6 +15413,8 @@ const PageCompany = (function () {
     render,
     showDetail,
     backToList,
+    showMetricDetail,
+    backToOverview,
     handleCrisisAction,
     // 第四阶段新API
     showFinancialStatements,
