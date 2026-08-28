@@ -12331,6 +12331,10 @@ const SongMacroEconomy = (function() {
    * 获取宏观经济数据
    */
   function getMacroData() {
+    // 如果还没初始化，自动初始化
+    if (!macroData) {
+      init();
+    }
     return macroData;
   }
 
