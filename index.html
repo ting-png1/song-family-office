@@ -12227,6 +12227,674 @@ if (typeof window !== 'undefined') {
 }
 
 
+/* ===== js/modules/macroeconomy.js ===== */
+/**
+ * 松氏家族办公室 - 宏观经济模块
+ * 核心宏观指标：GDP、CPI、PMI、利率
+ * 央行货币政策：加息/降息/降准
+ */
+
+const SongMacroEconomy = (function() {
+  'use strict';
+
+  // 宏观经济数据
+  let macroData = null;
+
+  /**
+   * 初始化宏观经济数据
+   */
+  function init() {
+    const state = SongState.getState();
+    if (state.macroEconomy) {
+      macroData = state.macroEconomy;
+    } else {
+      macroData = generateInitialData();
+      saveToState();
+    }
+    console.log('[SongMacroEconomy] 宏观经济模块初始化完成');
+  }
+
+  /**
+   * 生成初始宏观经济数据
+   */
+  function generateInitialData() {
+    return {
+      // 核心经济指标
+      gdp: {
+        current: 5.2, // GDP同比增长率%
+        previous: 5.0,
+        trend: 'up', // up/down/stable
+        history: generateHistory(5.0, 0.3, 12)
+      },
+      cpi: {
+        current: 2.1, // CPI同比%
+        previous: 2.3,
+        trend: 'down',
+        history: generateHistory(2.5, 0.2, 12)
+      },
+      pmi: {
+        current: 51.2, // PMI指数
+        previous: 50.8,
+        trend: 'up',
+        history: generateHistory(50.5, 0.5, 12)
+      },
+      interestRate: {
+        current: 3.45, // 基准利率%
+        previous: 3.45,
+        trend: 'stable',
+        history: generateHistory(3.5, 0.1, 12)
+      },
+      // 货币政策
+      monetaryPolicy: {
+        currentStance: '稳健', // 宽松/稳健/紧缩
+        lastAction: null, // 最近一次政策动作
+        lastActionDate: null,
+        rateCutCount: 0, // 降息次数
+        rateHikeCount: 0, // 加息次数
+        rrrCutCount: 0, // 降准次数
+        actions: [] // 政策动作历史
+      },
+      // 市场影响系数
+      marketImpact: {
+        interestRateSensitivity: 0.8, // 利率对市场影响系数
+        gdpSensitivity: 0.6,
+        cpiSensitivity: 0.4,
+        pmiSensitivity: 0.5
+      }
+    };
+  }
+
+  /**
+   * 生成历史数据
+   */
+  function generateHistory(base, volatility, months) {
+    const history = [];
+    let value = base;
+    for (let i = 0; i < months; i++) {
+      value = value + (Math.random() - 0.5) * volatility;
+      history.push({
+        month: `${i + 1}月`,
+        value: parseFloat(value.toFixed(2))
+      });
+    }
+    return history;
+  }
+
+  /**
+   * 保存到全局状态
+   */
+  function saveToState() {
+    SongState.update('macroEconomy', macroData);
+  }
+
+  /**
+   * 获取宏观经济数据
+   */
+  function getMacroData() {
+    return macroData;
+  }
+
+  /**
+   * 每日更新宏观经济数据
+   */
+  function dailyUpdate(gameDate) {
+    if (!macroData) return;
+
+    // 每月更新一次宏观数据（模拟真实经济数据发布频率）
+    const dayOfMonth = parseInt(gameDate.split('-')[2]);
+    if (dayOfMonth !== 1) return;
+
+    // 更新GDP
+    updateIndicator('gdp', 0.1);
+    // 更新CPI
+    updateIndicator('cpi', 0.15);
+    // 更新PMI
+    updateIndicator('pmi', 0.3);
+    // 更新利率（央行决定，不随机变动）
+    // interestRate 保持不变，由货币政策动作改变
+
+    saveToState();
+    console.log('[SongMacroEconomy] 宏观经济数据已更新');
+  }
+
+  /**
+   * 更新单个指标
+   */
+  function updateIndicator(key, volatility) {
+    const indicator = macroData[key];
+    indicator.previous = indicator.current;
+    const change = (Math.random() - 0.5) * volatility;
+    indicator.current = parseFloat((indicator.current + change).toFixed(2));
+    
+    // 限制合理范围
+    if (key === 'gdp') indicator.current = Math.max(0, Math.min(10, indicator.current));
+    if (key === 'cpi') indicator.current = Math.max(-1, Math.min(8, indicator.current));
+    if (key === 'pmi') indicator.current = Math.max(40, Math.min(60, indicator.current));
+    
+    // 判断趋势
+    if (indicator.current > indicator.previous + 0.05) {
+      indicator.trend = 'up';
+    } else if (indicator.current < indicator.previous - 0.05) {
+      indicator.trend = 'down';
+    } else {
+      indicator.trend = 'stable';
+    }
+    
+    // 更新历史
+    indicator.history.push({
+      month: '最新',
+      value: indicator.current
+    });
+    if (indicator.history.length > 12) {
+      indicator.history.shift();
+    }
+  }
+
+  /**
+   * 央行货币政策动作
+   * @param {string} action - rate_cut/rate_hike/rrr_cut
+   */
+  function monetaryPolicyAction(action, gameDate) {
+    const policy = macroData.monetaryPolicy;
+    let description = '';
+    let marketImpact = 0;
+
+    switch (action) {
+      case 'rate_cut':
+        macroData.interestRate.previous = macroData.interestRate.current;
+        macroData.interestRate.current = parseFloat((macroData.interestRate.current - 0.25).toFixed(2));
+        macroData.interestRate.trend = 'down';
+        policy.rateCutCount++;
+        policy.currentStance = '宽松';
+        description = `央行降息0.25个百分点，基准利率降至${macroData.interestRate.current}%`;
+        marketImpact = 2.5; // 利好市场
+        break;
+
+      case 'rate_hike':
+        macroData.interestRate.previous = macroData.interestRate.current;
+        macroData.interestRate.current = parseFloat((macroData.interestRate.current + 0.25).toFixed(2));
+        macroData.interestRate.trend = 'up';
+        policy.rateHikeCount++;
+        policy.currentStance = '紧缩';
+        description = `央行加息0.25个百分点，基准利率升至${macroData.interestRate.current}%`;
+        marketImpact = -2.5; // 利空市场
+        break;
+
+      case 'rrr_cut':
+        policy.rrrCutCount++;
+        policy.currentStance = '宽松';
+        description = '央行降准0.5个百分点，释放长期资金约1万亿元';
+        marketImpact = 1.5; // 利好市场
+        break;
+    }
+
+    // 记录政策动作
+    const actionRecord = {
+      action,
+      description,
+      date: gameDate,
+      marketImpact
+    };
+    policy.actions.unshift(actionRecord);
+    if (policy.actions.length > 20) policy.actions.pop();
+
+    policy.lastAction = description;
+    policy.lastActionDate = gameDate;
+
+    saveToState();
+
+    // 触发市场影响
+    applyMarketImpact(marketImpact, description);
+
+    return actionRecord;
+  }
+
+  /**
+   * 应用货币政策对市场的影响
+   */
+  function applyMarketImpact(impact, description) {
+    // 影响股票市场
+    if (window.SongStockMarket) {
+      const stocks = SongStockMarket.getStocks();
+      stocks.forEach(stock => {
+        // 利率敏感型股票（金融、地产）波动更大
+        let sensitivity = 1.0;
+        if (stock.sector === '金融' || stock.sector === '地产') sensitivity = 1.5;
+        if (stock.sector === '科技') sensitivity = 1.2;
+        
+        const change = impact * sensitivity * (0.8 + Math.random() * 0.4);
+        stock.price = stock.price * (1 + change / 100);
+        stock.change = parseFloat((change).toFixed(2));
+        stock.changePercent = parseFloat((change).toFixed(2));
+      });
+      SongStockMarket.saveStocks();
+    }
+
+    // 添加市场新闻
+    if (window.SongStockMarket) {
+      SongStockMarket.addNews({
+        title: '央行货币政策',
+        content: description,
+        type: impact > 0 ? 'positive' : 'negative',
+        impact: Math.abs(impact)
+      });
+    }
+
+    console.log('[SongMacroEconomy] 货币政策市场影响已应用:', impact);
+  }
+
+  /**
+   * 获取经济周期判断
+   */
+  function getEconomicCycle() {
+    const { gdp, cpi, pmi } = macroData;
+    
+    // 复苏：GDP上行，CPI低位，PMI>50
+    if (gdp.trend === 'up' && cpi.current < 3 && pmi.current > 50) {
+      return { phase: '复苏', description: '经济温和复苏，通胀可控，企业盈利改善', color: 'success' };
+    }
+    
+    // 过热：GDP高位，CPI上行，PMI高位
+    if (gdp.current > 6 && cpi.trend === 'up' && pmi.current > 53) {
+      return { phase: '过热', description: '经济增长强劲，通胀压力上升，需关注政策收紧', color: 'warning' };
+    }
+    
+    // 滞胀：GDP下行，CPI高位
+    if (gdp.trend === 'down' && cpi.current > 3) {
+      return { phase: '滞胀', description: '经济增长放缓，通胀居高不下，政策两难', color: 'danger' };
+    }
+    
+    // 衰退：GDP下行，CPI低位，PMI<50
+    if (gdp.trend === 'down' && cpi.current < 2 && pmi.current < 50) {
+      return { phase: '衰退', description: '经济增长乏力，需求不足，政策有望宽松', color: 'info' };
+    }
+    
+    // 稳健
+    return { phase: '稳健', description: '经济平稳运行，各项指标处于合理区间', color: 'gold' };
+  }
+
+  // 公开API
+  return {
+    init,
+    getMacroData,
+    dailyUpdate,
+    monetaryPolicyAction,
+    getEconomicCycle
+  };
+})();
+
+
+/* ===== js/modules/investmentStrategy.js ===== */
+/**
+ * 松氏家族办公室 - 投资策略与高级功能模块
+ * 包含：定投计划、资产再平衡、止损止盈、基金评级、高管薪酬
+ */
+
+const SongInvestmentStrategy = (function() {
+  'use strict';
+
+  // 定投计划
+  let sipPlans = [];
+  // 止损止盈设置
+  let stopSettings = {};
+  // 基金评级缓存
+  let fundRatings = {};
+
+  /**
+   * 初始化
+   */
+  function init() {
+    const state = SongState.getState();
+    sipPlans = state.sipPlans || [];
+    stopSettings = state.stopSettings || {};
+    fundRatings = state.fundRatings || {};
+    console.log('[SongInvestmentStrategy] 投资策略模块初始化完成');
+  }
+
+  /**
+   * 保存到状态
+   */
+  function saveToState() {
+    SongState.update('sipPlans', sipPlans);
+    SongState.update('stopSettings', stopSettings);
+    SongState.update('fundRatings', fundRatings);
+  }
+
+  // ═══════════════════════════════════════════════
+  // 定投计划
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 创建定投计划
+   */
+  function createSIPPlan(plan) {
+    const newPlan = {
+      id: 'sip_' + Date.now(),
+      name: plan.name || '定投计划',
+      type: plan.type || 'stock', // stock/fund
+      targetId: plan.targetId,
+      targetName: plan.targetName,
+      amount: plan.amount, // 每期金额
+      frequency: plan.frequency || 'monthly', // weekly/monthly
+      dayOfPeriod: plan.dayOfPeriod || 1, // 每周几或每月几号
+      startDate: plan.startDate || new Date().toISOString().split('T')[0],
+      status: 'active', // active/paused/completed
+      totalInvested: 0,
+      totalShares: 0,
+      history: []
+    };
+    sipPlans.push(newPlan);
+    saveToState();
+    return newPlan;
+  }
+
+  /**
+   * 获取定投计划列表
+   */
+  function getSIPPlans() {
+    return sipPlans;
+  }
+
+  /**
+   * 暂停/恢复定投计划
+   */
+  function toggleSIPPlan(planId) {
+    const plan = sipPlans.find(p => p.id === planId);
+    if (plan) {
+      plan.status = plan.status === 'active' ? 'paused' : 'active';
+      saveToState();
+    }
+    return plan;
+  }
+
+  /**
+   * 终止定投计划
+   */
+  function terminateSIPPlan(planId) {
+    const index = sipPlans.findIndex(p => p.id === planId);
+    if (index > -1) {
+      sipPlans.splice(index, 1);
+      saveToState();
+    }
+  }
+
+  /**
+   * 每日执行定投检查
+   */
+  function dailySIPCheck(gameDate) {
+    const dayOfMonth = parseInt(gameDate.split('-')[2]);
+    const dayOfWeek = new Date(gameDate).getDay();
+    
+    sipPlans.forEach(plan => {
+      if (plan.status !== 'active') return;
+      
+      let shouldExecute = false;
+      if (plan.frequency === 'monthly' && dayOfMonth === plan.dayOfPeriod) {
+        shouldExecute = true;
+      } else if (plan.frequency === 'weekly' && dayOfWeek === plan.dayOfPeriod) {
+        shouldExecute = true;
+      }
+      
+      if (shouldExecute) {
+        executeSIP(plan, gameDate);
+      }
+    });
+  }
+
+  /**
+   * 执行定投
+   */
+  function executeSIP(plan, gameDate) {
+    const state = SongState.getState();
+    
+    if (plan.type === 'stock') {
+      const stock = (state.stockMarket?.stocks || []).find(s => s.id === plan.targetId);
+      if (!stock) return;
+      
+      const shares = Math.floor(plan.amount / stock.price / 100) * 100; // 整手买入
+      if (shares <= 0) return;
+      
+      const cost = shares * stock.price;
+      
+      // 更新持仓
+      const portfolio = state.portfolio || [];
+      const existing = portfolio.find(p => p.stockId === plan.targetId);
+      if (existing) {
+        const totalCost = existing.avgCost * existing.shares + cost;
+        existing.shares += shares;
+        existing.avgCost = totalCost / existing.shares;
+      } else {
+        portfolio.push({
+          stockId: plan.targetId,
+          stockName: plan.targetName,
+          shares: shares,
+          avgCost: stock.price
+        });
+      }
+      SongState.update('portfolio', portfolio);
+      
+      plan.totalInvested += cost;
+      plan.totalShares += shares;
+      plan.history.push({ date: gameDate, shares, price: stock.price, amount: cost });
+    }
+    
+    saveToState();
+    console.log('[SIP] 定投执行:', plan.name, plan.amount);
+  }
+
+  // ═══════════════════════════════════════════════
+  // 止损止盈
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 设置止损止盈
+   */
+  function setStopLossTakeProfit(stockId, settings) {
+    stopSettings[stockId] = {
+      stopLossPercent: settings.stopLossPercent || -10, // 止损百分比
+      takeProfitPercent: settings.takeProfitPercent || 20, // 止盈百分比
+      enabled: settings.enabled !== false,
+      lastCheck: null
+    };
+    saveToState();
+  }
+
+  /**
+   * 获取止损止盈设置
+   */
+  function getStopSettings(stockId) {
+    return stopSettings[stockId] || null;
+  }
+
+  /**
+   * 每日检查止损止盈
+   */
+  function dailyStopCheck(gameDate) {
+    const state = SongState.getState();
+    const portfolio = state.portfolio || [];
+    const stocks = state.stockMarket?.stocks || [];
+    
+    portfolio.forEach(position => {
+      const setting = stopSettings[position.stockId];
+      if (!setting || !setting.enabled) return;
+      
+      const stock = stocks.find(s => s.id === position.stockId);
+      if (!stock) return;
+      
+      const profitPercent = ((stock.price - position.avgCost) / position.avgCost) * 100;
+      
+      // 触发止损
+      if (profitPercent <= setting.stopLossPercent) {
+        executeStopAction(position, stock, 'stop_loss', gameDate);
+      }
+      // 触发止盈
+      else if (profitPercent >= setting.takeProfitPercent) {
+        executeStopAction(position, stock, 'take_profit', gameDate);
+      }
+    });
+  }
+
+  /**
+   * 执行止损止盈操作
+   */
+  function executeStopAction(position, stock, type, gameDate) {
+    const state = SongState.getState();
+    const portfolio = state.portfolio || [];
+    
+    // 记录交易
+    const tradeRecords = state.stockMarket?.tradeRecords || [];
+    tradeRecords.unshift({
+      id: 'trade_' + Date.now(),
+      stockId: position.stockId,
+      stockName: position.stockName,
+      type: 'sell',
+      shares: position.shares,
+      price: stock.price,
+      amount: position.shares * stock.price,
+      date: gameDate,
+      reason: type === 'stop_loss' ? '自动止损' : '自动止盈'
+    });
+    
+    // 移除持仓
+    const index = portfolio.findIndex(p => p.stockId === position.stockId);
+    if (index > -1) {
+      portfolio.splice(index, 1);
+    }
+    
+    SongState.update('portfolio', portfolio);
+    SongState.update('stockMarket.tradeRecords', tradeRecords);
+    
+    // 禁用该股票的止损止盈
+    if (stopSettings[position.stockId]) {
+      stopSettings[position.stockId].enabled = false;
+    }
+    saveToState();
+    
+    console.log('[Stop]', type === 'stop_loss' ? '止损' : '止盈', '触发:', position.stockName);
+  }
+
+  // ═══════════════════════════════════════════════
+  // 资产再平衡
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 计算资产配置偏离度
+   */
+  function calculateAllocationDrift() {
+    const state = SongState.getState();
+    const portfolio = state.portfolio || [];
+    const fundPortfolio = state.fundPortfolio || [];
+    const stocks = state.stockMarket?.stocks || [];
+    const funds = state.funds || [];
+    
+    const stockValue = portfolio.reduce((sum, p) => {
+      const stock = stocks.find(s => s.id === p.stockId);
+      return sum + (stock ? stock.price * p.shares : 0);
+    }, 0);
+    
+    const fundValue = fundPortfolio.reduce((sum, p) => {
+      const fund = funds.find(f => f.id === p.fundId);
+      return sum + (fund ? (p.fundType === '货币型' ? p.shares : fund.nav * p.shares) : 0);
+    }, 0);
+    
+    const totalValue = stockValue + fundValue;
+    const targetStockRatio = 0.6; // 目标股票占比60%
+    const currentStockRatio = totalValue > 0 ? (stockValue / totalValue) * 100 : 0;
+    const drift = currentStockRatio - targetStockRatio * 100;
+    
+    return {
+      stockValue,
+      fundValue,
+      totalValue,
+      currentStockRatio,
+      targetStockRatio: targetStockRatio * 100,
+      drift,
+      needRebalance: Math.abs(drift) > 10 // 偏离超过10%需要再平衡
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  // 基金评级
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 计算基金评级
+   */
+  function calculateFundRating(fund) {
+    if (fundRatings[fund.id]) return fundRatings[fund.id];
+    
+    // 基于历史收益、波动率、最大回撤计算星级（1-5星）
+    const return1y = fund.return1y || 0;
+    const return3y = fund.return3y || 0;
+    const volatility = fund.volatility || 15;
+    const maxDrawdown = fund.maxDrawdown || 20;
+    
+    let score = 0;
+    // 收益评分（40%）
+    score += Math.min(40, Math.max(0, (return1y + 5) * 2));
+    // 波动率评分（30%）
+    score += Math.min(30, Math.max(0, (30 - volatility) * 1.5));
+    // 回撤评分（30%）
+    score += Math.min(30, Math.max(0, (30 - maxDrawdown) * 1.5));
+    
+    const stars = score >= 80 ? 5 : score >= 65 ? 4 : score >= 50 ? 3 : score >= 35 ? 2 : 1;
+    
+    const rating = {
+      stars,
+      score: Math.round(score),
+      riskLevel: volatility < 10 ? '低风险' : volatility < 20 ? '中风险' : '高风险',
+      managerAbility: stars >= 4 ? '优秀' : stars >= 3 ? '良好' : '一般',
+      recommendation: stars >= 4 ? '推荐' : stars >= 3 ? '谨慎推荐' : '不推荐'
+    };
+    
+    fundRatings[fund.id] = rating;
+    return rating;
+  }
+
+  // ═══════════════════════════════════════════════
+  // 高管薪酬
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 计算子公司高管薪酬
+   */
+  function calculateExecutiveCompensation(subsidiary) {
+    const baseSalary = subsidiary.revenue * 0.001; // 基本工资为营收的0.1%
+    const performanceBonus = subsidiary.profit > 0 ? subsidiary.profit * 0.02 : 0; // 绩效奖金为利润的2%
+    const equityIncentive = subsidiary.growthRate > 10 ? subsidiary.revenue * 0.0005 : 0; // 股权激励
+    
+    return {
+      baseSalary: Math.round(baseSalary),
+      performanceBonus: Math.round(performanceBonus),
+      equityIncentive: Math.round(equityIncentive),
+      totalCompensation: Math.round(baseSalary + performanceBonus + equityIncentive),
+      compensationRatio: subsidiary.revenue > 0 ? ((baseSalary + performanceBonus + equityIncentive) / subsidiary.revenue * 100).toFixed(2) : '0'
+    };
+  }
+
+  // 公开API
+  return {
+    init,
+    // 定投
+    createSIPPlan,
+    getSIPPlans,
+    toggleSIPPlan,
+    terminateSIPPlan,
+    dailySIPCheck,
+    // 止损止盈
+    setStopLossTakeProfit,
+    getStopSettings,
+    dailyStopCheck,
+    // 资产再平衡
+    calculateAllocationDrift,
+    // 基金评级
+    calculateFundRating,
+    // 高管薪酬
+    calculateExecutiveCompensation
+  };
+})();
+
+
 /* ===== js/modules/growth.js ===== */
 /**
  * 松氏家族办公室 - 成长与结局系统
