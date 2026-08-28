@@ -18275,7 +18275,18 @@ const PageMarket = (function () {
    */
   function backFromFundMarket() {
     showFundMarketView = false;
-    render(document.getElementById('app-content'));
+    const container = document.getElementById('app-content');
+    if (container) {
+      // 检查是否在资产页的子容器中渲染
+      const assetsSubContent = container.querySelector('.assets-sub-content');
+      if (assetsSubContent && typeof PageAssets !== 'undefined' && typeof PageAssets.switchTab === 'function') {
+        // 在资产页中，重新渲染资产页并激活市场行情Tab
+        PageAssets.switchTab('market');
+      } else {
+        // 独立页面，直接渲染市场页面
+        render(container);
+      }
+    }
   }
 
   /**
