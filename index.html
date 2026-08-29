@@ -16716,7 +16716,10 @@ const PageCompany = (function () {
       </div>
 
       <!-- 集团协同效应 -->
-      <div class="card" style="border: 2px solid red;"><div class="card-header"><span class="card-title">=== 测试位置 ===</span></div><div style="padding:16px;">renderSynergyOverview 调用结果：${typeof renderSynergyOverview === 'function' ? renderSynergyOverview(subsidiaries) : '函数未定义'}</div></div>
+      <div class="card" style="border: 3px solid red; background: #ff000020;">
+        <div class="card-header"><span class="card-title">=== 测试位置 ===</span></div>
+        <div style="padding:16px; color: red; font-weight: bold;">如果看到这段文字，说明模板字符串解析正常</div>
+      </div>
 
       <!-- 第四阶段：财务总览 -->
       ${renderFinancialOverview(state.company)}
