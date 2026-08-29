@@ -6829,6 +6829,128 @@ const SongStorage = (function () {
   let initialized = false;
   let storageMode = 'memory'; // 'supabase' | 'host' | 'localStorage' | 'memory'
 
+  // ═══════════════════════════════════════════════
+  // 自动备份与数据完整性校验
+  // ═══════════════════════════════════════════════
+
+  const BACKUP_KEY_PREFIX = KEY_PREFIX + 'backup_';
+  const MAX_BACKUPS = 3;
+  const BACKUP_INTERVAL = 10; // 每10次写入操作自动备份一次
+  let writeOperationCount = 0;
+  let memoryModeWarningShown = false;
+
+  /**
+   * 创建自动备份（存储在 localStorage，作为额外保障）
+   */
+  function createBackup() {
+    try {
+      if (!hasLocalStorage()) return false;
+
+      const backupData = {
+        timestamp: new Date().toISOString(),
+        storageMode: storageMode,
+        data: {}
+      };
+
+      // 从缓存中复制所有数据
+      for (const key of Object.values(KEYS)) {
+        if (cache[key] !== undefined) {
+          backupData.data[key] = deepClone(cache[key]);
+        }
+      }
+
+      // 轮换备份：backup_1 → backup_2 → backup_3
+      for (let i = MAX_BACKUPS; i > 1; i--) {
+        const oldKey = BACKUP_KEY_PREFIX + (i - 1);
+        const newKey = BACKUP_KEY_PREFIX + i;
+        const oldData = localStorage.getItem(oldKey);
+        if (oldData) {
+          localStorage.setItem(newKey, oldData);
+        }
+      }
+
+      // 写入最新备份
+      localStorage.setItem(BACKUP_KEY_PREFIX + '1', JSON.stringify(backupData));
+      console.log('[SongStorage] 自动备份已创建，当前缓存数据量:', Object.keys(cache).length);
+      return true;
+    } catch (e) {
+      console.warn('[SongStorage] 自动备份失败:', e.message);
+      return false;
+    }
+  }
+
+  /**
+   * 从最近的备份恢复数据
+   * @returns {boolean} 是否恢复成功
+   */
+  function restoreFromBackup() {
+    try {
+      if (!hasLocalStorage()) return false;
+
+      for (let i = 1; i <= MAX_BACKUPS; i++) {
+        const backupKey = BACKUP_KEY_PREFIX + i;
+        const raw = localStorage.getItem(backupKey);
+        if (!raw) continue;
+
+        try {
+          const backupData = JSON.parse(raw);
+          if (backupData && backupData.data && typeof backupData.data === 'object') {
+            // 恢复缓存
+            for (const [key, value] of Object.entries(backupData.data)) {
+              cache[key] = deepClone(value);
+            }
+            console.log('[SongStorage] 从备份恢复成功，备份时间:', backupData.timestamp);
+            return true;
+          }
+        } catch (parseError) {
+          console.warn('[SongStorage] 备份解析失败，尝试下一个:', parseError.message);
+        }
+      }
+      return false;
+    } catch (e) {
+      console.warn('[SongStorage] 从备份恢复失败:', e.message);
+      return false;
+    }
+  }
+
+  /**
+   * 校验数据完整性
+   * @param {*} data - 待校验的数据
+   * @returns {boolean} 是否完整
+   */
+  function validateDataIntegrity(data) {
+    if (data === null || data === undefined) return true; // 空数据视为有效（新游戏）
+    if (typeof data !== 'object') return true; // 非对象数据不校验
+    if (data instanceof Date) return true;
+    if (Array.isArray(data)) return true;
+
+    // 检查是否有循环引用或异常结构
+    try {
+      JSON.stringify(data);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * 显示内存模式数据导出提示
+   */
+  function showMemoryModeWarning() {
+    if (memoryModeWarningShown) return;
+    memoryModeWarningShown = true;
+
+    // 延迟5秒显示，避免影响启动
+    setTimeout(() => {
+      if (typeof SongUIFeedback !== 'undefined' && typeof SongUIFeedback.toastWarning === 'function') {
+        SongUIFeedback.toastWarning('当前使用内存模式，刷新页面数据会丢失，建议在设置中导出数据备份', 6000);
+      } else if (typeof SongApp !== 'undefined' && typeof SongApp.showToast === 'function') {
+        SongApp.showToast('当前使用内存模式，刷新页面数据会丢失，建议导出数据备份');
+      }
+      console.warn('[SongStorage] 内存模式提示：数据仅在内存中，刷新后丢失');
+    }, 5000);
+  }
+
   /**
    * 检查宿主 API 是否可用
    */
@@ -6925,6 +7047,8 @@ const SongStorage = (function () {
     storageMode = 'memory';
     initialized = true;
     console.warn('[SongStorage] 存储层初始化完成（纯内存模式，刷新页面数据会丢失）');
+    // 显示内存模式数据导出提示
+    showMemoryModeWarning();
   }
 
   /**
@@ -6936,7 +7060,17 @@ const SongStorage = (function () {
   async function get(key, defaultValue = null) {
     // 先查缓存
     if (cache[key] !== undefined) {
-      return deepClone(cache[key]);
+      // 校验缓存数据完整性
+      if (!validateDataIntegrity(cache[key])) {
+        console.warn('[SongStorage] 缓存数据损坏，尝试从备份恢复:', key);
+        delete cache[key];
+        restoreFromBackup();
+        if (cache[key] !== undefined) {
+          return deepClone(cache[key]);
+        }
+      } else {
+        return deepClone(cache[key]);
+      }
     }
 
     // 纯内存模式：直接返回默认值
@@ -6995,8 +7129,22 @@ const SongStorage = (function () {
    * @returns {Promise<boolean>} 是否成功
    */
   async function set(key, value) {
+    // 数据完整性校验
+    if (!validateDataIntegrity(value)) {
+      console.warn('[SongStorage] 数据完整性校验失败，拒绝写入:', key);
+      return false;
+    }
+
     // 更新缓存
     cache[key] = deepClone(value);
+
+    // 增加写入操作计数，达到阈值时自动备份
+    writeOperationCount++;
+    if (writeOperationCount >= BACKUP_INTERVAL) {
+      writeOperationCount = 0;
+      // 异步执行备份，不阻塞写入
+      setTimeout(() => createBackup(), 0);
+    }
 
     // 纯内存模式：只更新缓存
     if (storageMode === 'memory') {
@@ -7142,7 +7290,11 @@ const SongStorage = (function () {
     importAll,
     clearAll,
     getStorageMode,
-    isInitialized: () => initialized
+    isInitialized: () => initialized,
+    // 备份与恢复
+    createBackup,
+    restoreFromBackup,
+    validateDataIntegrity
   };
 })();
 
@@ -18248,8 +18400,10 @@ const PageMarket = (function () {
       cancelBtn.style.opacity = '0.6';
     }
 
-    // 显示处理中提示
-    SongApp.showToast('正在处理交易...');
+    // 显示全局处理中状态
+    if (typeof SongUIFeedback !== 'undefined') {
+      SongUIFeedback.showLoading('交易处理中...');
+    }
 
     try {
       const state = SongState.getState();
@@ -18259,18 +18413,7 @@ const PageMarket = (function () {
       const today = state.gameDate?.current || new Date().toISOString().split('T')[0];
 
       if (!stock) {
-        SongApp.showToast('股票信息不存在');
-        // 恢复按钮
-        if (confirmBtn) {
-          confirmBtn.disabled = false;
-          confirmBtn.textContent = originalText;
-          confirmBtn.style.opacity = '';
-          confirmBtn.style.cursor = '';
-        }
-        if (cancelBtn) {
-          cancelBtn.disabled = false;
-          cancelBtn.style.opacity = '';
-        }
+        if (typeof SongUIFeedback !== 'undefined') SongUIFeedback.toastError('股票信息不存在');
         return;
       }
 
@@ -18282,18 +18425,7 @@ const PageMarket = (function () {
       }
 
       if (!result.success) {
-        SongApp.showToast(`交易失败：${result.error}`);
-        // 恢复按钮
-        if (confirmBtn) {
-          confirmBtn.disabled = false;
-          confirmBtn.textContent = originalText;
-          confirmBtn.style.opacity = '';
-          confirmBtn.style.cursor = '';
-        }
-        if (cancelBtn) {
-          cancelBtn.disabled = false;
-          cancelBtn.style.opacity = '';
-        }
+        if (typeof SongUIFeedback !== 'undefined') SongUIFeedback.toastError(`交易失败：${result.error}`);
         return;
       }
 
@@ -18326,15 +18458,27 @@ const PageMarket = (function () {
       if (result.slippage && result.slippage.hasSlippage) {
         toastMsg += ` 滑点${result.slippage.slippageRate}%`;
       }
-      SongApp.showToast(toastMsg);
+      if (typeof SongUIFeedback !== 'undefined') {
+        SongUIFeedback.toastSuccess(toastMsg);
+      } else {
+        SongApp.showToast(toastMsg);
+      }
 
       // 关闭弹窗
       tradeModal = null;
       if (lastContainer) render(lastContainer);
     } catch (e) {
       console.error('[Market] 交易异常:', e);
-      SongApp.showToast('交易异常，请重试');
-      // 恢复按钮
+      if (typeof SongUIFeedback !== 'undefined') {
+        SongUIFeedback.toastError('交易异常，请重试');
+      } else {
+        SongApp.showToast('交易异常，请重试');
+      }
+    } finally {
+      // 隐藏 loading 并恢复按钮
+      if (typeof SongUIFeedback !== 'undefined') {
+        SongUIFeedback.hideLoading();
+      }
       if (confirmBtn) {
         confirmBtn.disabled = false;
         confirmBtn.textContent = originalText;
@@ -21375,7 +21519,12 @@ const SongApp = (function () {
     }
 
     try {
-      // 0. 先绑定导航事件（确保即使后续初始化出错，导航也能工作）
+      // 0. 先初始化 UI 反馈系统（确保后续错误都能被捕获和提示）
+      if (typeof SongUIFeedback !== 'undefined') {
+        SongUIFeedback.init();
+      }
+
+      // 0.5. 先绑定导航事件（确保即使后续初始化出错，导航也能工作）
       bindNavigation();
 
       // 1. 初始化存储层
