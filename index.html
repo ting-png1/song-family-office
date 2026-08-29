@@ -15368,6 +15368,24 @@ const PageDashboard = (function () {
         <p class="page-subtitle">${SongDate.formatDateChinese(gameDate.current)}</p>
       </div>
 
+      <!-- ═══════ 紧急风险预警条 ═══════ -->
+      ${alerts.filter(a => a.level === 'high').length > 0 ? `
+        <div class="emergency-alert-bar">
+          <div class="emergency-alert-icon">${getIcon('alert-triangle', 20)}</div>
+          <div class="emergency-alert-content">
+            <div class="emergency-alert-title">紧急风险预警</div>
+            <div class="emergency-alert-list">
+              ${alerts.filter(a => a.level === 'high').slice(0, 2).map(a => `
+                <div class="emergency-alert-item" onclick="SongApp.navigateTo('${a.actionPage}')">
+                  <span class="emergency-alert-text">${a.title}</span>
+                  <span class="emergency-alert-action">${a.action} →</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      ` : ''}
+
       <!-- ═══════ 核心指标区 ═══════ -->
       <div class="dashboard-core-metrics">
         <div class="core-metric-card primary">
