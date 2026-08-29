@@ -16769,7 +16769,7 @@ const PageCompany = (function () {
       return html;
     } catch (e) {
       console.warn('[Synergy] renderSynergyOverview 出错:', e);
-      return '';
+      return '<div class="card" style="border:2px solid red;padding:16px;"><div style="color:red;font-weight:bold;">协同效应渲染出错</div><div style="font-size:12px;margin-top:8px;">' + e.message + '</div></div>';
     }
   }
 
