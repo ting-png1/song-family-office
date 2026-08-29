@@ -5703,6 +5703,69 @@ body::before {
   gap: 8px;
 }
 
+/* 同比环比标签 */
+.yoy-tag, .qoq-tag {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: 4px;
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+.yoy-tag {
+  background: rgba(184, 150, 90, 0.15);
+  color: #b8965a;
+  border: 1px solid rgba(184, 150, 90, 0.3);
+}
+
+.qoq-tag {
+  background: rgba(107, 117, 136, 0.15);
+  color: #8b95a8;
+  border: 1px solid rgba(107, 117, 136, 0.3);
+}
+
+.yoy-tag.positive, .qoq-tag.positive {
+  color: #4a9d7a;
+  border-color: rgba(74, 157, 122, 0.3);
+  background: rgba(74, 157, 122, 0.1);
+}
+
+.yoy-tag.negative, .qoq-tag.negative {
+  color: #c75c5c;
+  border-color: rgba(199, 92, 92, 0.3);
+  background: rgba(199, 92, 92, 0.1);
+}
+
+/* 图表图例 */
+.chart-legend {
+  display: flex;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 11px;
+  color: #8b95a8;
+  flex-wrap: wrap;
+}
+
+.chart-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chart-legend .legend-line {
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.chart-legend .legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
 .crisis-action-name {
   font-size: 14px;
   font-weight: 600;
@@ -7507,6 +7570,13 @@ const SongState = (function () {
       quietHoursStart: 19,            // 静默时段开始（小时，24小时制）
       quietHoursEnd: 10,              // 静默时段结束（小时，24小时制）
       lastEventGenerationAt: null     // 上次生成待办的时间戳
+    },
+    // UI状态（折叠式列表展开状态等，不影响游戏数据）
+    uiState: {
+      expandedCompanies: [],      // 子公司列表中展开的公司ID
+      expandedFundTypes: [],      // 基金市场中展开的基金类型
+      expandedMarketSections: ['macroeconomy'],  // 市场页面中展开的区域（默认展开宏观经济）
+      assetsTab: 'company'        // 资产页当前激活的Tab
     }
   };
 
@@ -14763,30 +14833,6 @@ const PageDashboard = (function () {
         </div>
       </div>
 
-      <!-- ═══════ 风险预警（有预警才显示）═══════ -->
-      ${alerts.length > 0 ? `
-      <div class="card dashboard-section risk-alerts-section">
-        <div class="card-header">
-          <span class="card-title">风险预警</span>
-          <span class="tag tag-danger">${alerts.length} 项预警</span>
-        </div>
-        <div class="risk-alerts-list">
-          ${alerts.map(alert => `
-            <div class="risk-alert-item alert-${alert.level}" onclick="${alert.subsidiaryId ? `SongApp.openSubsidiaryDetail('${alert.subsidiaryId}')` : `SongApp.navigateTo('${alert.actionPage}')`}">
-              <div class="alert-icon">${getIcon(alert.icon, 18)}</div>
-              <div class="alert-content">
-                <div class="alert-title">${alert.title}</div>
-                <div class="alert-desc">${alert.description}</div>
-              </div>
-              <div class="alert-action">
-                ${getIcon('arrow-right', 14)}
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-      ` : ''}
-
       <!-- ═══════ 子公司经营概览 ═══════ -->
       <div class="card dashboard-section" onclick="SongApp.navigateTo('company')">
         <div class="card-header">
@@ -14814,7 +14860,7 @@ const PageDashboard = (function () {
         </div>
       </div>
 
-      <!-- ═══════ 投资组合概览 ═══════ -->
+      <!-- ═══════ 投资组合概览（简化版） ═══════ -->
       <div class="card dashboard-section" onclick="SongApp.navigateTo('investment')">
         <div class="card-header">
           <span class="card-title">投资组合</span>
@@ -14831,36 +14877,15 @@ const PageDashboard = (function () {
               (${investmentOverview.profitPercent >= 0 ? '+' : ''}${investmentOverview.profitPercent.toFixed(2)}%)
             </div>
           </div>
-          <div class="inv-allocation">
-            <div class="allocation-bar">
-              <div class="alloc-segment stock" style="width: ${investmentOverview.allocation.stock}%"></div>
-              <div class="alloc-segment fund" style="width: ${investmentOverview.allocation.fund}%"></div>
-              <div class="alloc-segment cash" style="width: ${investmentOverview.allocation.cash}%"></div>
-              <div class="alloc-segment other" style="width: ${investmentOverview.allocation.other}%"></div>
+          <div class="inv-quick-stats">
+            <div class="inv-stat">
+              <span class="inv-stat-label">股票</span>
+              <span class="inv-stat-value">${investmentOverview.stockCount} 只</span>
             </div>
-            <div class="allocation-legend">
-              <span class="legend-item"><span class="legend-dot stock"></span>股票 ${investmentOverview.allocation.stock.toFixed(1)}%</span>
-              <span class="legend-item"><span class="legend-dot fund"></span>基金 ${investmentOverview.allocation.fund.toFixed(1)}%</span>
-              <span class="legend-item"><span class="legend-dot cash"></span>现金 ${investmentOverview.allocation.cash.toFixed(1)}%</span>
+            <div class="inv-stat">
+              <span class="inv-stat-label">基金</span>
+              <span class="inv-stat-value">${investmentOverview.fundCount} 只</span>
             </div>
-          </div>
-        </div>
-        <div class="inv-stats-row">
-          <div class="inv-stat">
-            <span class="inv-stat-label">股票持仓</span>
-            <span class="inv-stat-value">${investmentOverview.stockCount} 只</span>
-          </div>
-          <div class="inv-stat">
-            <span class="inv-stat-label">基金持仓</span>
-            <span class="inv-stat-value">${investmentOverview.fundCount} 只</span>
-          </div>
-          <div class="inv-stat">
-            <span class="inv-stat-label">股票市值</span>
-            <span class="inv-stat-value">${formatMoney(investmentOverview.stockValue)}</span>
-          </div>
-          <div class="inv-stat">
-            <span class="inv-stat-label">基金市值</span>
-            <span class="inv-stat-value">${formatMoney(investmentOverview.fundValue)}</span>
           </div>
         </div>
       </div>
@@ -14918,36 +14943,6 @@ const PageDashboard = (function () {
               <span class="news-text">市场平稳运行，暂无重大消息</span>
             </div>
           `}
-        </div>
-      </div>
-
-      <!-- ═══════ 继承人状态 ═══════ -->
-      <div class="card dashboard-section" onclick="SongApp.navigateTo('heir')">
-        <div class="card-header">
-          <span class="card-title">继承人状态</span>
-          <span class="tag tag-gold">松庭</span>
-        </div>
-        <div class="heir-abilities-mini">
-          <div class="ability-mini">
-            <span class="ability-label">商业能力</span>
-            <div class="ability-bar"><div class="ability-fill" style="width: ${state.heir.abilities.business}%"></div></div>
-            <span class="ability-value">${state.heir.abilities.business}</span>
-          </div>
-          <div class="ability-mini">
-            <span class="ability-label">家族信任</span>
-            <div class="ability-bar"><div class="ability-fill" style="width: ${state.heir.abilities.familyTrust}%"></div></div>
-            <span class="ability-value">${state.heir.abilities.familyTrust}</span>
-          </div>
-          <div class="ability-mini">
-            <span class="ability-label">市场声誉</span>
-            <div class="ability-bar"><div class="ability-fill" style="width: ${state.heir.abilities.reputation}%"></div></div>
-            <span class="ability-value">${state.heir.abilities.reputation}</span>
-          </div>
-          <div class="ability-mini">
-            <span class="ability-label">风险判断</span>
-            <div class="ability-bar"><div class="ability-fill" style="width: ${state.heir.abilities.riskJudgment}%"></div></div>
-            <span class="ability-value">${state.heir.abilities.riskJudgment}</span>
-          </div>
         </div>
       </div>
     `;
@@ -15119,7 +15114,7 @@ const PageTasks = (function () {
           <span class="task-department">${event.department || '综合事务'}</span>
           <span class="task-options-count">${event.options?.length || 0} 个方案</span>
         </div>
-        <button class="btn btn-primary task-action" onclick="PageTasks.showDetail('${event.id}')">
+        <button class="btn btn-primary task-action" onclick="SongApp.openDetail('tasks', '${event.id}', 'task')">
           查看详情并处理
         </button>
       </div>
@@ -15537,8 +15532,18 @@ const PageCompany = (function () {
   // 危机处理冷却状态（防止反复点击）
   let crisisActionCooldown = false;
 
-  // 子公司卡片展开状态（折叠式列表）
-  let expandedCompanyIds = new Set();
+  // 子公司卡片展开状态（折叠式列表）- 从 SongState 读取，页面切换后保持
+  function getExpandedCompanyIds() {
+    const state = SongState.getState();
+    return new Set(state.uiState?.expandedCompanies || []);
+  }
+
+  function saveExpandedCompanyIds(set) {
+    const state = SongState.getState();
+    if (!state.uiState) state.uiState = {};
+    state.uiState.expandedCompanies = Array.from(set);
+    SongState.setState(state);
+  }
 
   /**
    * 显示危机处理成功提示（全屏模态弹窗，2秒后自动消失）
@@ -15763,7 +15768,7 @@ const PageCompany = (function () {
   function renderCompanyCard(company) {
     const profitMargin = company.revenue > 0 ? ((company.profit / company.revenue) * 100).toFixed(1) : '0';
     const growthRate = company.growthRate || 0;
-    const isExpanded = expandedCompanyIds.has(company.id);
+    const isExpanded = getExpandedCompanyIds().has(company.id);
 
     return `
       <div class="company-card company-card-collapsible ${isExpanded ? 'expanded' : ''}" data-id="${company.id}">
@@ -15849,11 +15854,13 @@ const PageCompany = (function () {
    * 切换子公司卡片展开/折叠状态
    */
   function toggleCompanyExpand(companyId) {
-    if (expandedCompanyIds.has(companyId)) {
-      expandedCompanyIds.delete(companyId);
+    const expanded = getExpandedCompanyIds();
+    if (expanded.has(companyId)) {
+      expanded.delete(companyId);
     } else {
-      expandedCompanyIds.add(companyId);
+      expanded.add(companyId);
     }
+    saveExpandedCompanyIds(expanded);
     // 重新渲染当前页面
     const container = document.getElementById('app-content');
     if (container) {
@@ -15868,6 +15875,16 @@ const PageCompany = (function () {
     const history = subsidiary.history || [];
     const recentHistory = history.slice(0, 7).reverse();
     const profitMargin = subsidiary.revenue > 0 ? ((subsidiary.profit / subsidiary.revenue) * 100).toFixed(1) : '0';
+
+    // 计算同比环比（基于历史数据）
+    const historyLen = history.length;
+    const yoyRevenue = historyLen >= 30 ? ((subsidiary.revenue - (history[29]?.revenue || subsidiary.revenue)) / (history[29]?.revenue || 1)) * 100 : null;
+    const yoyProfit = historyLen >= 30 ? ((subsidiary.profit - (history[29]?.profit || subsidiary.profit)) / (Math.abs(history[29]?.profit) || 1)) * 100 : null;
+    const qoqRevenue = historyLen >= 7 ? ((subsidiary.revenue - (history[6]?.revenue || subsidiary.revenue)) / (history[6]?.revenue || 1)) * 100 : null;
+    const qoqProfit = historyLen >= 7 ? ((subsidiary.profit - (history[6]?.profit || subsidiary.profit)) / (Math.abs(history[6]?.profit) || 1)) * 100 : null;
+
+    const formatYoY = (val) => val === null ? '' : `<span class="yoy-tag ${val >= 0 ? 'positive' : 'negative'}">同比 ${val >= 0 ? '+' : ''}${val.toFixed(1)}%</span>`;
+    const formatQoQ = (val) => val === null ? '' : `<span class="qoq-tag ${val >= 0 ? 'positive' : 'negative'}">环比 ${val >= 0 ? '+' : ''}${val.toFixed(1)}%</span>`;
 
     container.innerHTML = `
       <div class="page-header">
@@ -15885,10 +15902,10 @@ const PageCompany = (function () {
       <div class="card metric-card">
         <div class="metric-large">
           <div class="metric-value">${formatMoney(subsidiary.revenue || 0)}</div>
-          <div class="metric-label">年营收</div>
+          <div class="metric-label">年营收 ${formatYoY(yoyRevenue)} ${formatQoQ(qoqRevenue)}</div>
         </div>
         <div class="data-row">
-          <span class="data-label">年利润</span>
+          <span class="data-label">年利润 ${formatYoY(yoyProfit)} ${formatQoQ(qoqProfit)}</span>
           <span class="data-value ${(subsidiary.profit || 0) >= 0 ? 'positive' : 'negative'}">${formatMoney(subsidiary.profit || 0)}</span>
         </div>
         <div class="data-row">
@@ -17165,10 +17182,31 @@ const PageMarket = (function () {
   let tradeModal = null;
   // 是否显示基金市场视图
   let showFundMarketView = false;
-  // 折叠区域展开状态
-  let expandedSections = new Set(['macro']); // 默认展开宏观经济
-  // 基金类型展开状态
-  let expandedFundTypes = new Set(['股票型']); // 默认展开股票型
+  // 折叠区域展开状态 - 从 SongState 读取，页面切换后保持
+  function getExpandedSections() {
+    const state = SongState.getState();
+    return new Set(state.uiState?.expandedMarketSections || ['macroeconomy']);
+  }
+
+  function saveExpandedSections(set) {
+    const state = SongState.getState();
+    if (!state.uiState) state.uiState = {};
+    state.uiState.expandedMarketSections = Array.from(set);
+    SongState.setState(state);
+  }
+
+  // 基金类型展开状态 - 从 SongState 读取
+  function getExpandedFundTypes() {
+    const state = SongState.getState();
+    return new Set(state.uiState?.expandedFundTypes || []);
+  }
+
+  function saveExpandedFundTypes(set) {
+    const state = SongState.getState();
+    if (!state.uiState) state.uiState = {};
+    state.uiState.expandedFundTypes = Array.from(set);
+    SongState.setState(state);
+  }
 
   /**
    * 渲染市场页面
@@ -17346,13 +17384,13 @@ const PageMarket = (function () {
             <span>市场新闻</span>
             <span class="collapsible-section-count">${news.length} 条</span>
           </div>
-          <span class="expand-arrow ${expandedSections.has('news') ? 'expanded' : ''}">
+          <span class="expand-arrow ${getExpandedSections().has('news') ? 'expanded' : ''}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </span>
         </div>
-        ${expandedSections.has('news') ? `
+        ${getExpandedSections().has('news') ? `
         <div class="collapsible-section-content">
           <div id="ai-news-content" style="display: none;" class="ai-generated-content">
             <div class="ai-content-header">
@@ -17388,13 +17426,13 @@ const PageMarket = (function () {
             <span>股票行情</span>
             <span class="collapsible-section-count">${stocks.length} 只</span>
           </div>
-          <span class="expand-arrow ${expandedSections.has('stocks') ? 'expanded' : ''}">
+          <span class="expand-arrow ${getExpandedSections().has('stocks') ? 'expanded' : ''}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </span>
         </div>
-        ${expandedSections.has('stocks') ? `
+        ${getExpandedSections().has('stocks') ? `
         <div class="collapsible-section-content">
           <div class="stock-list">
             ${stocks.map(stock => renderStockCard(stock)).join('')}
@@ -17479,7 +17517,7 @@ const PageMarket = (function () {
     const marketTag = stock.market || '';
 
     return `
-      <div class="stock-card" data-id="${stock.id}" onclick="PageMarket.showStockDetail('${stock.id}')">
+      <div class="stock-card" data-id="${stock.id}" onclick="SongApp.openDetail('market', '${stock.id}', 'stock')">
         <div class="stock-info">
           <div class="stock-name">
             ${stock.name}
@@ -17738,22 +17776,51 @@ const PageMarket = (function () {
     }
 
     const closes = history.map(h => h.close);
+    const volumes = history.map(h => h.volume || 0);
     const min = Math.min(...closes);
     const max = Math.max(...closes);
     const range = max - min || 1;
     const padding = 10;
     const width = 100;
-    const height = 100;
+    const priceHeight = 75; // 价格走势占75%高度
+    const volumeHeight = 20; // 成交量占20%高度
+    const gap = 5;
+
+    // 计算5日均线
+    const ma5 = closes.map((_, i) => {
+      if (i < 4) return null;
+      const sum = closes.slice(i - 4, i + 1).reduce((a, b) => a + b, 0);
+      return sum / 5;
+    });
 
     const points = closes.map((close, i) => {
       const x = padding + (i / (closes.length - 1)) * (width - 2 * padding);
-      const y = padding + (1 - (close - min) / range) * (height - 2 * padding);
+      const y = padding + (1 - (close - min) / range) * (priceHeight - 2 * padding);
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     }).join(' ');
 
+    // 5日均线点
+    const ma5Points = ma5.map((v, i) => {
+      if (v === null) return null;
+      const x = padding + (i / (closes.length - 1)) * (width - 2 * padding);
+      const y = padding + (1 - (v - min) / range) * (priceHeight - 2 * padding);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).filter(p => p !== null).join(' ');
+
+    // 成交量柱状图
+    const maxVolume = Math.max(...volumes) || 1;
+    const volumeBars = volumes.map((vol, i) => {
+      const x = padding + (i / (volumes.length - 1)) * (width - 2 * padding);
+      const barHeight = (vol / maxVolume) * volumeHeight;
+      const y = priceHeight + gap + (volumeHeight - barHeight);
+      const barWidth = Math.max(1, (width - 2 * padding) / volumes.length * 0.6);
+      const isUp = i > 0 ? closes[i] >= closes[i - 1] : true;
+      const color = isUp ? 'rgba(199, 92, 92, 0.5)' : 'rgba(74, 157, 122, 0.5)';
+      return `<rect x="${(x - barWidth / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${barHeight.toFixed(1)}" fill="${color}"/>`;
+    }).join('');
+
     const isPositive = stock.change >= 0;
     const isA = SongStockMarket.isAStock(stock.market);
-    // A股红涨绿跌，港股美股绿涨红跌
     const color = isA
       ? (isPositive ? '#c75c5c' : '#4a9d7a')
       : (isPositive ? '#4a9d7a' : '#c75c5c');
@@ -17763,7 +17830,7 @@ const PageMarket = (function () {
 
     // 生成网格线
     const gridLines = [0.25, 0.5, 0.75].map(ratio => {
-      const y = padding + ratio * (height - 2 * padding);
+      const y = padding + ratio * (priceHeight - 2 * padding);
       const price = (max - ratio * range).toFixed(2);
       return `
         <line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" stroke="rgba(184,150,90,0.1)" stroke-width="0.5"/>
@@ -17773,11 +17840,20 @@ const PageMarket = (function () {
 
     return `
       <div class="price-chart-wrapper">
-        <svg class="price-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
+        <svg class="price-chart" viewBox="0 0 ${width} ${priceHeight + gap + volumeHeight + 5}" preserveAspectRatio="none">
           ${gridLines}
-          <polygon points="${padding},${height - padding} ${points} ${width - padding},${height - padding}" fill="${fillColor}"/>
+          <polygon points="${padding},${priceHeight - padding} ${points} ${width - padding},${priceHeight - padding}" fill="${fillColor}"/>
           <polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          ${ma5Points ? `<polyline points="${ma5Points}" fill="none" stroke="#d4af37" stroke-width="1" stroke-dasharray="2,1" opacity="0.8"/>` : ''}
+          <!-- 成交量分隔线 -->
+          <line x1="${padding}" y1="${priceHeight + gap / 2}" x2="${width - padding}" y2="${priceHeight + gap / 2}" stroke="rgba(184,150,90,0.2)" stroke-width="0.5"/>
+          ${volumeBars}
         </svg>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-line" style="background:${color}"></span>收盘价</span>
+          <span class="legend-item"><span class="legend-line" style="background:#d4af37"></span>MA5</span>
+          <span class="legend-item"><span class="legend-dot" style="background:rgba(199,92,92,0.5)"></span>放量</span>
+        </div>
         <div class="chart-dates">
           ${history.map((h, i) => (i % Math.ceil(history.length / 5) === 0 || i === history.length - 1) ? `<span class="chart-date">${h.date?.slice(5) || ''}</span>` : '').join('')}
         </div>
@@ -18273,7 +18349,7 @@ const PageMarket = (function () {
       ${fundTypes.map(type => {
         const typeFunds = fundsByType[type] || [];
         if (typeFunds.length === 0) return '';
-        const isExpanded = expandedFundTypes.has(type);
+        const isExpanded = getExpandedFundTypes().has(type);
         return `
           <div class="collapsible-section">
             <div class="collapsible-section-header" onclick="PageMarket.toggleFundType('${type}')">
@@ -18314,7 +18390,7 @@ const PageMarket = (function () {
     const risk = fund.risk || 'medium';
 
     return `
-      <div class="fund-card" data-id="${fund.id}" onclick="PageInvestment.showFundDetail('${fund.id}')">
+      <div class="fund-card" data-id="${fund.id}" onclick="SongApp.openDetail('investment', '${fund.id}', 'fund')">
         <div class="fund-header">
           <div class="fund-info">
             <h3 class="fund-name">${fund.name}</h3>
@@ -18363,11 +18439,13 @@ const PageMarket = (function () {
    * 切换基金类型展开/折叠
    */
   function toggleFundType(type) {
-    if (expandedFundTypes.has(type)) {
-      expandedFundTypes.delete(type);
+    const expanded = getExpandedFundTypes();
+    if (expanded.has(type)) {
+      expanded.delete(type);
     } else {
-      expandedFundTypes.add(type);
+      expanded.add(type);
     }
+    saveExpandedFundTypes(expanded);
     // 重新渲染基金市场视图
     const container = document.getElementById('app-content');
     if (container) {
@@ -18381,11 +18459,13 @@ const PageMarket = (function () {
    * 切换折叠区域展开/折叠状态
    */
   function toggleSection(sectionId) {
-    if (expandedSections.has(sectionId)) {
-      expandedSections.delete(sectionId);
+    const expanded = getExpandedSections();
+    if (expanded.has(sectionId)) {
+      expanded.delete(sectionId);
     } else {
-      expandedSections.add(sectionId);
+      expanded.add(sectionId);
     }
+    saveExpandedSections(expanded);
     // 重新渲染当前页面
     const container = document.getElementById('app-content');
     if (container) {
@@ -18913,7 +18993,7 @@ const PageInvestment = (function () {
     const isHolding = fundPortfolio.some(p => p.fundId === fund.id);
 
     return `
-      <div class="fund-card" data-id="${fund.id}" onclick="PageInvestment.showFundDetail('${fund.id}')">
+      <div class="fund-card" data-id="${fund.id}" onclick="SongApp.openDetail('investment', '${fund.id}', 'fund')">
         <div class="fund-header">
           <div class="fund-info">
             <h3 class="fund-name">${fund.name}</h3>
@@ -19184,6 +19264,25 @@ const PageInvestment = (function () {
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     }).join(' ');
 
+    // 模拟同类平均净值（在基金净值基础上小幅波动）
+    const peerAvgPoints = navs.map((nav, i) => {
+      const x = padding + (i / (navs.length - 1)) * (width - 2 * padding);
+      // 同类平均比基金略低或略高，根据基金表现
+      const peerOffset = fund.return1y >= 0 ? 0.98 : 1.02;
+      const peerNav = nav * peerOffset + (Math.sin(i * 0.5) * range * 0.02);
+      const y = padding + (1 - (peerNav - min) / range) * (height - 2 * padding);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+
+    // 模拟沪深300指数走势（更大波动）
+    const hs300Points = navs.map((nav, i) => {
+      const x = padding + (i / (navs.length - 1)) * (width - 2 * padding);
+      const hsOffset = 1 + Math.sin(i * 0.3) * 0.05 + (i / navs.length) * 0.03;
+      const hsNav = (min + range * 0.5) * hsOffset;
+      const y = padding + (1 - (hsNav - min) / range) * (height - 2 * padding);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+
     const isPositive = fund.return1d >= 0;
     const color = isPositive ? '#4a9d7a' : '#c75c5c';
     const fillColor = isPositive ? 'rgba(74, 157, 122, 0.15)' : 'rgba(199, 92, 92, 0.15)';
@@ -19193,7 +19292,14 @@ const PageInvestment = (function () {
         <svg class="price-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
           <polygon points="${padding},${height - padding} ${points} ${width - padding},${height - padding}" fill="${fillColor}"/>
           <polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          <polyline points="${peerAvgPoints}" fill="none" stroke="#8b8b8b" stroke-width="1" stroke-dasharray="3,2" opacity="0.7"/>
+          <polyline points="${hs300Points}" fill="none" stroke="#5b8def" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>
         </svg>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-line" style="background:${color}"></span>本基金</span>
+          <span class="legend-item"><span class="legend-line" style="background:#8b8b8b"></span>同类平均</span>
+          <span class="legend-item"><span class="legend-line" style="background:#5b8def"></span>沪深300</span>
+        </div>
         <div class="chart-dates">
           ${history.map((h, i) => (i % Math.ceil(history.length / 5) === 0 || i === history.length - 1) ? `<span class="chart-date">${h.date?.slice(5) || ''}</span>` : '').join('')}
         </div>
@@ -21067,8 +21173,38 @@ const SongApp = (function () {
   let currentPage = 'dashboard';
   let initialized = false;
 
-  // 导航历史栈（用于详情页返回）
+  // 导航历史栈（用于详情页返回，保存页面状态：页面、Tab、滚动位置）
   const navigationStack = [];
+
+  // 保存当前页面状态
+  function saveCurrentPageState() {
+    const content = document.getElementById('app-content');
+    const state = {
+      page: currentPage,
+      scrollTop: content ? content.scrollTop : 0
+    };
+    // 如果是资产页，保存当前激活的Tab
+    if (currentPage === 'assets' && typeof PageAssets !== 'undefined' && typeof PageAssets.getCurrentTab === 'function') {
+      state.tab = PageAssets.getCurrentTab();
+    }
+    return state;
+  }
+
+  // 恢复页面状态
+  function restorePageState(state) {
+    if (!state) return;
+    // 如果是资产页且有Tab状态，恢复Tab
+    if (state.page === 'assets' && state.tab && typeof PageAssets !== 'undefined' && typeof PageAssets.switchTab === 'function') {
+      PageAssets.switchTab(state.tab);
+    }
+    // 恢复滚动位置（延迟一帧，确保页面渲染完成）
+    if (state.scrollTop) {
+      requestAnimationFrame(() => {
+        const content = document.getElementById('app-content');
+        if (content) content.scrollTop = state.scrollTop;
+      });
+    }
+  }
 
   // 页面映射（一级底部导航页面 + 内部页面）
   const pages = {
@@ -21293,14 +21429,19 @@ const SongApp = (function () {
    */
   function goBack() {
     if (navigationStack.length > 0) {
-      const prevPage = navigationStack.pop();
-      console.log('[SongApp] 返回上一页:', prevPage);
-      currentPage = prevPage;
+      const prevState = navigationStack.pop();
+      console.log('[SongApp] 返回上一页:', prevState);
+      
+      // 如果prevState是字符串（旧格式），转换成对象
+      const state = typeof prevState === 'string' ? { page: prevState } : prevState;
+      
+      currentPage = state.page;
       renderCurrentPage();
       updateNavigation();
-      // 滚动到顶部
-      const content = document.getElementById('app-content');
-      if (content) content.scrollTop = 0;
+      
+      // 恢复页面状态（Tab、滚动位置）
+      restorePageState(state);
+      
       return true;
     }
     console.log('[SongApp] 导航历史栈为空，无法返回');
@@ -21315,38 +21456,55 @@ const SongApp = (function () {
   }
 
   /**
-   * 直接打开子公司详情页（从首页风险预警/子公司概览点击跳转）
-   * @param {string} subsidiaryId - 子公司 ID
+   * 统一打开详情页方法（股票、基金、事务、子公司等详情页都走这个入口）
+   * @param {string} targetPage - 目标页面（market/investment/tasks/company）
+   * @param {string} detailId - 详情ID
+   * @param {string} detailType - 详情类型（stock/fund/task/subsidiary）
    */
-  function openSubsidiaryDetail(subsidiaryId) {
-    console.log('[SongApp] 打开子公司详情:', subsidiaryId);
+  function openDetail(targetPage, detailId, detailType) {
+    console.log('[SongApp] 打开详情页:', targetPage, detailId, detailType);
 
-    // 把当前页面压入导航历史栈（用于返回）
-    navigationStack.push(currentPage);
+    // 保存当前页面完整状态（页面、Tab、滚动位置）
+    const currentState = saveCurrentPageState();
+    navigationStack.push(currentState);
     console.log('[SongApp] 导航历史栈:', navigationStack);
 
-    // 切换到公司页面并先渲染（确保页面存在）
-    currentPage = 'company';
+    // 切换到目标页面并先渲染（确保页面存在）
+    currentPage = targetPage;
     renderCurrentPage();
     updateNavigation();
 
-    // 设置子公司详情 ID 并渲染详情
-    if (typeof PageCompany !== 'undefined' && typeof PageCompany.showDetail === 'function') {
+    // 根据详情类型调用对应的showDetail方法
+    const showDetailMethods = {
+      stock: () => PageMarket && PageMarket.showStockDetail && PageMarket.showStockDetail(detailId),
+      fund: () => PageInvestment && PageInvestment.showFundDetail && PageInvestment.showFundDetail(detailId),
+      task: () => PageTasks && PageTasks.showDetail && PageTasks.showDetail(detailId),
+      subsidiary: () => PageCompany && PageCompany.showDetail && PageCompany.showDetail(detailId)
+    };
+
+    const showDetail = showDetailMethods[detailType];
+    if (showDetail) {
       // 延迟一帧执行，确保页面切换完成
       requestAnimationFrame(() => {
-        PageCompany.showDetail(subsidiaryId);
+        showDetail();
       });
       // 兜底：如果 requestAnimationFrame 没执行，50ms后再执行一次
       setTimeout(() => {
-        if (typeof PageCompany !== 'undefined' && typeof PageCompany.showDetail === 'function') {
-          PageCompany.showDetail(subsidiaryId);
-        }
+        showDetail();
       }, 50);
     }
 
     // 滚动到顶部
     const content = document.getElementById('app-content');
     if (content) content.scrollTop = 0;
+  }
+
+  /**
+   * 直接打开子公司详情页（从首页风险预警/子公司概览点击跳转）
+   * @param {string} subsidiaryId - 子公司 ID
+   */
+  function openSubsidiaryDetail(subsidiaryId) {
+    openDetail('company', subsidiaryId, 'subsidiary');
   }
 
   /**
@@ -21926,6 +22084,7 @@ const SongApp = (function () {
     goBack,
     getNavigationStackLength,
     openSubsidiaryDetail,
+    openDetail,
     getCurrentPage,
     isInitialized,
     showToast,
