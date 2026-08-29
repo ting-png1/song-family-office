@@ -9856,6 +9856,442 @@ if (typeof window !== 'undefined') {
 }
 
 
+/* ===== js/modules/subsidiary-synergy.js ===== */
+/**
+ * 松氏家族办公室 - 子公司联动与集团协同效应模块
+ * 建立子公司之间的业务往来、资源共享、风险传染机制
+ * 实现"集团整体 > 各子公司简单相加"的协同效应
+ */
+
+const SongSynergy = (function () {
+  'use strict';
+
+  // ═══════════════════════════════════════════════
+  // 子公司关联矩阵定义
+  // ═══════════════════════════════════════════════
+
+  // 子公司类型ID映射
+  const SUBSIDIARY_TYPES = {
+    FINANCE: 'finance',        // 金融投资
+    TECH: 'tech',              // 科技产业
+    REALESTATE: 'realestate',  // 地产与酒店
+    LUXURY: 'luxury',          // 艺术与奢侈品
+    CHARITY: 'charity',        // 慈善基金
+    INCUBATION: 'incubation'   // 新兴企业孵化
+  };
+
+  // 关联关系定义：source 对 target 的影响
+  // type: 'revenue' | 'profit' | 'satisfaction' | 'reputation' | 'risk'
+  // value: 基础影响值（百分比或点数）
+  // condition: 影响生效的条件
+  const SYNERGY_MATRIX = [
+    // ─── 金融投资 → 其他子公司：提供融资，降低资金成本 ───
+    {
+      source: SUBSIDIARY_TYPES.FINANCE,
+      target: 'all',
+      effects: [
+        { type: 'profit', value: 0.3, condition: 'finance_healthy', description: '金融子公司健康运营，为集团提供低成本融资，提升其他子公司利润率0.3%' }
+      ]
+    },
+    {
+      source: SUBSIDIARY_TYPES.FINANCE,
+      target: SUBSIDIARY_TYPES.INCUBATION,
+      effects: [
+        { type: 'revenue', value: 0.5, condition: 'finance_healthy', description: '金融子公司为孵化项目提供资金支持，提升孵化板块营收0.5%' }
+      ]
+    },
+
+    // ─── 科技产业 → 地产酒店：提供智能化解决方案 ───
+    {
+      source: SUBSIDIARY_TYPES.TECH,
+      target: SUBSIDIARY_TYPES.REALESTATE,
+      effects: [
+        { type: 'revenue', value: 0.4, condition: 'tech_healthy', description: '科技子公司为地产酒店提供智能化解决方案，提升运营效率和营收0.4%' },
+        { type: 'satisfaction', value: 0.5, condition: 'tech_healthy', description: '科技赋能提升酒店客户体验，员工满意度提升0.5点' }
+      ]
+    },
+
+    // ─── 地产酒店 → 艺术奢侈品：提供展示空间，品牌协同 ───
+    {
+      source: SUBSIDIARY_TYPES.REALESTATE,
+      target: SUBSIDIARY_TYPES.LUXURY,
+      effects: [
+        { type: 'revenue', value: 0.3, condition: 'realestate_healthy', description: '地产酒店为奢侈品提供高端展示空间和客户渠道，提升营收0.3%' },
+        { type: 'reputation', value: 0.3, condition: 'realestate_healthy', description: '高端物业提升奢侈品品牌形象，声誉提升0.3点' }
+      ]
+    },
+
+    // ─── 艺术奢侈品 → 全集团：提升品牌价值，降低融资成本 ───
+    {
+      source: SUBSIDIARY_TYPES.LUXURY,
+      target: 'all',
+      effects: [
+        { type: 'reputation', value: 0.2, condition: 'luxury_healthy', description: '奢侈品业务提升集团整体品牌价值，所有子公司声誉提升0.2点' },
+        { type: 'profit', value: 0.2, condition: 'luxury_healthy', description: '高端品牌形象降低集团融资成本和营销费用，提升整体利润率0.2%' }
+      ]
+    },
+
+    // ─── 慈善基金 → 全集团：提升声誉，影响政策风险 ───
+    {
+      source: SUBSIDIARY_TYPES.CHARITY,
+      target: 'all',
+      effects: [
+        { type: 'reputation', value: 0.3, condition: 'charity_active', description: '慈善基金积极运作提升集团社会形象，所有子公司声誉提升0.3点' },
+        { type: 'risk', value: -0.2, condition: 'charity_active', description: '良好社会形象降低政策风险和监管压力' }
+      ]
+    },
+
+    // ─── 新兴企业孵化 → 科技产业：成功项目反哺技术 ───
+    {
+      source: SUBSIDIARY_TYPES.INCUBATION,
+      target: SUBSIDIARY_TYPES.TECH,
+      effects: [
+        { type: 'revenue', value: 0.3, condition: 'incubation_success', description: '孵化成功项目为科技子公司带来新技术和新业务，提升营收0.3%' },
+        { type: 'profit', value: 0.2, condition: 'incubation_success', description: '孵化项目退出收益提升科技子公司利润率0.2%' }
+      ]
+    }
+  ];
+
+  // ═══════════════════════════════════════════════
+  // 风险传染矩阵
+  // ═══════════════════════════════════════════════
+
+  // 一个子公司危机对其他子公司的影响
+  const RISK_CONTAGION = [
+    {
+      source: SUBSIDIARY_TYPES.FINANCE,
+      target: 'all',
+      effects: [
+        { type: 'profit', value: -0.5, description: '金融子公司危机导致集团融资成本上升，所有子公司利润率下降0.5%' },
+        { type: 'reputation', value: -1.0, description: '金融危机严重影响集团声誉，所有子公司声誉下降1点' }
+      ]
+    },
+    {
+      source: SUBSIDIARY_TYPES.REALESTATE,
+      target: SUBSIDIARY_TYPES.LUXURY,
+      effects: [
+        { type: 'revenue', value: -0.8, description: '地产危机导致奢侈品失去高端展示空间，营收下降0.8%' }
+      ]
+    },
+    {
+      source: SUBSIDIARY_TYPES.INCUBATION,
+      target: SUBSIDIARY_TYPES.TECH,
+      effects: [
+        { type: 'profit', value: -0.3, description: '孵化项目大面积亏损拖累科技子公司利润，利润率下降0.3%' }
+      ]
+    },
+    {
+      source: SUBSIDIARY_TYPES.LUXURY,
+      target: 'all',
+      effects: [
+        { type: 'reputation', value: -0.5, description: '奢侈品负面新闻影响集团高端形象，所有子公司声誉下降0.5点' }
+      ]
+    }
+  ];
+
+  // ═══════════════════════════════════════════════
+  // 工具函数
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 根据子公司名称推断类型ID
+   */
+  function getSubsidiaryTypeId(sub) {
+    if (!sub) return null;
+    const name = sub.name || '';
+    const type = sub.type || '';
+
+    if (type === '金融' || name.includes('金融') || name.includes('投资')) return SUBSIDIARY_TYPES.FINANCE;
+    if (type === '科技' || name.includes('科技') || name.includes('技术')) return SUBSIDIARY_TYPES.TECH;
+    if (type === '地产' || name.includes('地产') || name.includes('酒店')) return SUBSIDIARY_TYPES.REALESTATE;
+    if (type === '奢侈品' || name.includes('艺术') || name.includes('奢侈品')) return SUBSIDIARY_TYPES.LUXURY;
+    if (type === '公益' || name.includes('慈善') || name.includes('基金')) return SUBSIDIARY_TYPES.CHARITY;
+    if (type === '孵化' || name.includes('孵化') || name.includes('新兴')) return SUBSIDIARY_TYPES.INCUBATION;
+
+    return null;
+  }
+
+  /**
+   * 检查子公司是否健康（满足协同效应条件）
+   */
+  function isSubsidiaryHealthy(sub) {
+    if (!sub) return false;
+    // 慈善基金只要有资金就算active
+    if (getSubsidiaryTypeId(sub) === SUBSIDIARY_TYPES.CHARITY) {
+      return (sub.revenue || 0) >= 0;
+    }
+    // 其他子公司：利润>0 且 满意度>50 且 声誉>50
+    return (sub.profit || 0) > 0 &&
+           (sub.satisfaction || 0) > 50 &&
+           (sub.reputation || 0) > 50;
+  }
+
+  /**
+   * 检查子公司是否处于危机状态（触发风险传染）
+   */
+  function isSubsidiaryInCrisis(sub) {
+    if (!sub) return false;
+    if (getSubsidiaryTypeId(sub) === SUBSIDIARY_TYPES.CHARITY) return false;
+    // 危机条件：利润<0 或 满意度<40 或 声誉<40
+    return (sub.profit || 0) < 0 ||
+           (sub.satisfaction || 0) < 40 ||
+           (sub.reputation || 0) < 40;
+  }
+
+  /**
+   * 检查协同效应条件是否满足
+   */
+  function checkCondition(condition, sourceSub) {
+    if (!condition) return true;
+    switch (condition) {
+      case 'finance_healthy':
+        return getSubsidiaryTypeId(sourceSub) === SUBSIDIARY_TYPES.FINANCE && isSubsidiaryHealthy(sourceSub);
+      case 'tech_healthy':
+        return getSubsidiaryTypeId(sourceSub) === SUBSIDIARY_TYPES.TECH && isSubsidiaryHealthy(sourceSub);
+      case 'realestate_healthy':
+        return getSubsidiaryTypeId(sourceSub) === SUBSIDIARY_TYPES.REALESTATE && isSubsidiaryHealthy(sourceSub);
+      case 'luxury_healthy':
+        return getSubsidiaryTypeId(sourceSub) === SUBSIDIARY_TYPES.LUXURY && isSubsidiaryHealthy(sourceSub);
+      case 'charity_active':
+        return getSubsidiaryTypeId(sourceSub) === SUBSIDIARY_TYPES.CHARITY;
+      case 'incubation_success':
+        return getSubsidiaryTypeId(sourceSub) === SUBSIDIARY_TYPES.INCUBATION && isSubsidiaryHealthy(sourceSub);
+      default:
+        return true;
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  // 核心计算函数
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 计算某个子公司受到的所有协同效应影响
+   * @param {Object} targetSub - 目标子公司
+   * @param {Array} allSubsidiaries - 所有子公司
+   * @returns {Object} 协同效应修正值 { revenue, profit, satisfaction, reputation, risk }
+   */
+  function calculateSynergyEffects(targetSub, allSubsidiaries) {
+    const effects = { revenue: 0, profit: 0, satisfaction: 0, reputation: 0, risk: 0 };
+    const targetTypeId = getSubsidiaryTypeId(targetSub);
+    if (!targetTypeId) return effects;
+
+    for (const synergy of SYNERGY_MATRIX) {
+      // 找到源子公司
+      const sourceSub = allSubsidiaries.find(s => getSubsidiaryTypeId(s) === synergy.source);
+      if (!sourceSub) continue;
+      // 源子公司和目标子公司不能是同一个
+      if (sourceSub.id === targetSub.id) continue;
+      // 检查目标是否匹配
+      if (synergy.target !== 'all' && synergy.target !== targetTypeId) continue;
+      // 检查条件
+      for (const effect of synergy.effects) {
+        if (checkCondition(effect.condition, sourceSub)) {
+          if (effects[effect.type] !== undefined) {
+            effects[effect.type] += effect.value;
+          }
+        }
+      }
+    }
+
+    return effects;
+  }
+
+  /**
+   * 计算某个子公司受到的风险传染影响
+   * @param {Object} targetSub - 目标子公司
+   * @param {Array} allSubsidiaries - 所有子公司
+   * @returns {Object} 风险传染修正值 { revenue, profit, satisfaction, reputation, risk }
+   */
+  function calculateRiskContagion(targetSub, allSubsidiaries) {
+    const effects = { revenue: 0, profit: 0, satisfaction: 0, reputation: 0, risk: 0 };
+    const targetTypeId = getSubsidiaryTypeId(targetSub);
+    if (!targetTypeId) return effects;
+
+    for (const contagion of RISK_CONTAGION) {
+      // 找到源子公司（处于危机中的）
+      const sourceSub = allSubsidiaries.find(s =>
+        getSubsidiaryTypeId(s) === contagion.source && isSubsidiaryInCrisis(s)
+      );
+      if (!sourceSub) continue;
+      // 源子公司和目标子公司不能是同一个
+      if (sourceSub.id === targetSub.id) continue;
+      // 检查目标是否匹配
+      if (contagion.target !== 'all' && contagion.target !== targetTypeId) continue;
+      // 应用影响
+      for (const effect of contagion.effects) {
+        if (effects[effect.type] !== undefined) {
+          effects[effect.type] += effect.value;
+        }
+      }
+    }
+
+    return effects;
+  }
+
+  /**
+   * 计算子公司受到的总联动影响（协同效应 + 风险传染）
+   * @param {Object} targetSub - 目标子公司
+   * @param {Array} allSubsidiaries - 所有子公司
+   * @returns {Object} 总修正值 { revenue, profit, satisfaction, reputation, risk, synergyDetail, contagionDetail }
+   */
+  function calculateTotalSynergy(targetSub, allSubsidiaries) {
+    const synergy = calculateSynergyEffects(targetSub, allSubsidiaries);
+    const contagion = calculateRiskContagion(targetSub, allSubsidiaries);
+
+    return {
+      revenue: synergy.revenue + contagion.revenue,
+      profit: synergy.profit + contagion.profit,
+      satisfaction: synergy.satisfaction + contagion.satisfaction,
+      reputation: synergy.reputation + contagion.reputation,
+      risk: synergy.risk + contagion.risk,
+      synergyDetail: synergy,
+      contagionDetail: contagion
+    };
+  }
+
+  /**
+   * 计算集团整体协同效应指标
+   * @param {Array} subsidiaries - 所有子公司
+   * @returns {Object} 集团协同效应概览
+   */
+  function calculateGroupSynergyOverview(subsidiaries) {
+    if (!subsidiaries || subsidiaries.length === 0) {
+      return {
+        totalSynergyRevenue: 0,
+        totalSynergyProfit: 0,
+        healthyCount: 0,
+        crisisCount: 0,
+        activeSynergies: [],
+        activeContagions: [],
+        synergyScore: 0
+      };
+    }
+
+    let totalSynergyRevenue = 0;
+    let totalSynergyProfit = 0;
+    let healthyCount = 0;
+    let crisisCount = 0;
+    const activeSynergies = [];
+    const activeContagions = [];
+
+    // 统计健康/危机子公司
+    for (const sub of subsidiaries) {
+      if (isSubsidiaryHealthy(sub)) healthyCount++;
+      if (isSubsidiaryInCrisis(sub)) crisisCount++;
+    }
+
+    // 计算每个子公司受到的协同效应
+    for (const targetSub of subsidiaries) {
+      const synergy = calculateTotalSynergy(targetSub, subsidiaries);
+      totalSynergyRevenue += synergy.revenue;
+      totalSynergyProfit += synergy.profit;
+
+      // 记录活跃的协同效应
+      if (synergy.synergyDetail.revenue > 0 || synergy.synergyDetail.profit > 0) {
+        activeSynergies.push({
+          target: targetSub.name,
+          revenueBoost: synergy.synergyDetail.revenue,
+          profitBoost: synergy.synergyDetail.profit
+        });
+      }
+
+      // 记录活跃的风险传染
+      if (synergy.contagionDetail.revenue < 0 || synergy.contagionDetail.profit < 0) {
+        activeContagions.push({
+          target: targetSub.name,
+          revenueLoss: synergy.contagionDetail.revenue,
+          profitLoss: synergy.contagionDetail.profit
+        });
+      }
+    }
+
+    // 协同效应评分（0-100）：健康子公司越多，协同效应越强
+    const healthRatio = healthyCount / subsidiaries.length;
+    const crisisPenalty = crisisCount * 10;
+    const synergyScore = Math.max(0, Math.min(100,
+      Math.round(healthRatio * 70 + totalSynergyRevenue * 5 - crisisPenalty)
+    ));
+
+    return {
+      totalSynergyRevenue: parseFloat(totalSynergyRevenue.toFixed(2)),
+      totalSynergyProfit: parseFloat(totalSynergyProfit.toFixed(2)),
+      healthyCount,
+      crisisCount,
+      activeSynergies,
+      activeContagions,
+      synergyScore
+    };
+  }
+
+  /**
+   * 获取子公司关联关系描述（用于UI展示）
+   * @param {Object} sub - 子公司
+   * @returns {Array} 关联关系描述列表
+   */
+  function getSubsidiaryRelations(sub) {
+    const typeId = getSubsidiaryTypeId(sub);
+    if (!typeId) return [];
+
+    const relations = [];
+
+    // 查找该子公司作为源的关联
+    for (const synergy of SYNERGY_MATRIX) {
+      if (synergy.source === typeId) {
+        const targetName = synergy.target === 'all' ? '全集团' :
+          Object.values(SUBSIDIARY_TYPES).find(t => t === synergy.target) || synergy.target;
+        for (const effect of synergy.effects) {
+          relations.push({
+            direction: 'output',
+            target: targetName,
+            effect: effect.description,
+            value: effect.value
+          });
+        }
+      }
+    }
+
+    // 查找该子公司作为目标的关联
+    for (const synergy of SYNERGY_MATRIX) {
+      if (synergy.target === typeId || synergy.target === 'all') {
+        const sourceName = Object.values(SUBSIDIARY_TYPES).find(t => t === synergy.source) || synergy.source;
+        for (const effect of synergy.effects) {
+          relations.push({
+            direction: 'input',
+            source: sourceName,
+            effect: effect.description,
+            value: effect.value
+          });
+        }
+      }
+    }
+
+    return relations;
+  }
+
+  // ═══════════════════════════════════════════════
+  // 公开 API
+  // ═══════════════════════════════════════════════
+
+  return {
+    SUBSIDIARY_TYPES,
+    getSubsidiaryTypeId,
+    isSubsidiaryHealthy,
+    isSubsidiaryInCrisis,
+    calculateSynergyEffects,
+    calculateRiskContagion,
+    calculateTotalSynergy,
+    calculateGroupSynergyOverview,
+    getSubsidiaryRelations
+  };
+})();
+
+// 挂载到全局
+if (typeof window !== 'undefined') {
+  window.SongSynergy = SongSynergy;
+}
+
+
 /* ===== js/modules/events.js ===== */
 /**
  * 松氏家族办公室 - 事件生成系统
@@ -14591,6 +15027,411 @@ ${year}年度关键数据：
 // 挂载到全局
 if (typeof window !== 'undefined') {
   window.SongAI = SongAI;
+}
+
+
+/* ===== js/modules/ui-feedback.js ===== */
+/**
+ * 松氏家族办公室 - UI 反馈与全局错误处理模块
+ * 提供 Toast 提示、Modal 弹窗、处理中状态、全局错误捕获
+ */
+
+const SongUIFeedback = (function () {
+  'use strict';
+
+  // ═══════════════════════════════════════════════
+  // 内部状态
+  // ═══════════════════════════════════════════════
+
+  let toastContainer = null;
+  let modalOverlay = null;
+  let loadingOverlay = null;
+  let initialized = false;
+  let loadingCount = 0; // 支持嵌套 loading
+
+  // ═══════════════════════════════════════════════
+  // 初始化
+  // ═══════════════════════════════════════════════
+
+  function init() {
+    if (initialized) return;
+
+    // 创建 Toast 容器
+    toastContainer = document.createElement('div');
+    toastContainer.id = 'song-toast-container';
+    toastContainer.style.cssText = `
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      z-index: 99999; display: flex; flex-direction: column; align-items: center; gap: 8px;
+      pointer-events: none; max-width: 90%;
+    `;
+    document.body.appendChild(toastContainer);
+
+    // 创建 Modal 容器
+    modalOverlay = document.createElement('div');
+    modalOverlay.id = 'song-modal-overlay';
+    modalOverlay.style.cssText = `
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6); z-index: 99998;
+      display: none; align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+    `;
+    document.body.appendChild(modalOverlay);
+
+    // 创建 Loading 容器
+    loadingOverlay = document.createElement('div');
+    loadingOverlay.id = 'song-loading-overlay';
+    loadingOverlay.style.cssText = `
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.3); z-index: 99997;
+      display: none; align-items: center; justify-content: center;
+      backdrop-filter: blur(2px);
+    `;
+    document.body.appendChild(loadingOverlay);
+
+    // 注入样式
+    injectStyles();
+
+    // 启动全局错误捕获
+    setupGlobalErrorHandling();
+
+    initialized = true;
+    console.log('[SongUIFeedback] UI反馈系统初始化完成');
+  }
+
+  // ═══════════════════════════════════════════════
+  // 样式注入
+  // ═══════════════════════════════════════════════
+
+  function injectStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+      .song-toast {
+        background: rgba(30, 30, 35, 0.95);
+        color: #e8e8e8;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        border-left: 3px solid #d4af37;
+        animation: song-toast-in 0.3s ease-out;
+        max-width: 320px;
+        text-align: center;
+        line-height: 1.5;
+        pointer-events: auto;
+      }
+      .song-toast.success { border-left-color: #4ade80; }
+      .song-toast.error { border-left-color: #f87171; }
+      .song-toast.warning { border-left-color: #fbbf24; }
+      .song-toast.info { border-left-color: #60a5fa; }
+      .song-toast.out { animation: song-toast-out 0.3s ease-in forwards; }
+
+      @keyframes song-toast-in {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes song-toast-out {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(-10px); }
+      }
+
+      .song-modal-box {
+        background: #1e1e23;
+        border: 1px solid rgba(212,175,55,0.3);
+        border-radius: 14px;
+        padding: 24px;
+        max-width: 380px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        animation: song-modal-in 0.25s ease-out;
+      }
+      .song-modal-title {
+        font-size: 17px; font-weight: 600; color: #f0f0f0;
+        margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+      }
+      .song-modal-content {
+        font-size: 14px; color: #b0b0b0; line-height: 1.6;
+        margin-bottom: 20px; word-break: break-word;
+      }
+      .song-modal-detail {
+        background: rgba(255,255,255,0.05); border-radius: 8px;
+        padding: 10px 12px; margin-top: 10px; font-size: 12px;
+        color: #888; max-height: 120px; overflow-y: auto;
+        font-family: monospace; white-space: pre-wrap;
+      }
+      .song-modal-buttons {
+        display: flex; gap: 10px; justify-content: flex-end;
+      }
+      .song-modal-btn {
+        padding: 8px 18px; border-radius: 8px; border: none;
+        font-size: 14px; cursor: pointer; transition: all 0.2s;
+        font-family: inherit;
+      }
+      .song-modal-btn.primary {
+        background: linear-gradient(135deg, #d4af37, #b8941f);
+        color: #1a1a1a; font-weight: 600;
+      }
+      .song-modal-btn.primary:hover { opacity: 0.9; }
+      .song-modal-btn.secondary {
+        background: rgba(255,255,255,0.1); color: #ccc;
+      }
+      .song-modal-btn.secondary:hover { background: rgba(255,255,255,0.15); }
+
+      @keyframes song-modal-in {
+        from { opacity: 0; transform: scale(0.92) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+      }
+
+      .song-loading-box {
+        background: rgba(30,30,35,0.95);
+        border: 1px solid rgba(212,175,55,0.3);
+        border-radius: 12px;
+        padding: 20px 28px;
+        display: flex; flex-direction: column; align-items: center; gap: 12px;
+        animation: song-modal-in 0.2s ease-out;
+      }
+      .song-loading-spinner {
+        width: 32px; height: 32px;
+        border: 3px solid rgba(212,175,55,0.2);
+        border-top-color: #d4af37;
+        border-radius: 50%;
+        animation: song-spin 0.8s linear infinite;
+      }
+      .song-loading-text {
+        color: #ccc; font-size: 14px;
+      }
+      @keyframes song-spin { to { transform: rotate(360deg); } }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // ═══════════════════════════════════════════════
+  // Toast 提示
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 显示 Toast 提示
+   * @param {string} message - 提示内容
+   * @param {string} type - 类型: success/error/warning/info
+   * @param {number} duration - 持续时间（毫秒），默认2500
+   */
+  function toast(message, type = 'info', duration = 2500) {
+    if (!initialized) init();
+    if (!toastContainer) return;
+
+    const el = document.createElement('div');
+    el.className = `song-toast ${type}`;
+    el.textContent = message;
+    toastContainer.appendChild(el);
+
+    // 自动消失
+    setTimeout(() => {
+      el.classList.add('out');
+      setTimeout(() => {
+        if (el.parentNode) el.parentNode.removeChild(el);
+      }, 300);
+    }, duration);
+
+    return el;
+  }
+
+  // 快捷方法
+  const toastSuccess = (msg, d) => toast(msg, 'success', d || 2000);
+  const toastError = (msg, d) => toast(msg, 'error', d || 3500);
+  const toastWarning = (msg, d) => toast(msg, 'warning', d || 3000);
+  const toastInfo = (msg, d) => toast(msg, 'info', d || 2500);
+
+  // ═══════════════════════════════════════════════
+  // Modal 弹窗
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 显示 Modal 弹窗
+   * @param {Object} options - 配置
+   * @param {string} options.title - 标题
+   * @param {string} options.content - 内容
+   * @param {string} [options.detail] - 详细信息（可展开）
+   * @param {string} [options.type] - 类型: error/warning/info
+   * @param {Array} [options.buttons] - 按钮数组 [{text, type, onClick}]
+   */
+  function showModal(options) {
+    if (!initialized) init();
+    if (!modalOverlay) return;
+
+    const {
+      title = '提示',
+      content = '',
+      detail = null,
+      type = 'info',
+      buttons = [{ text: '确定', type: 'primary', onClick: () => hideModal() }]
+    } = options;
+
+    const iconMap = { error: '⚠️', warning: '⚡', info: 'ℹ️', success: '✅' };
+
+    modalOverlay.innerHTML = `
+      <div class="song-modal-box">
+        <div class="song-modal-title">${iconMap[type] || ''} ${title}</div>
+        <div class="song-modal-content">
+          ${content}
+          ${detail ? `<div class="song-modal-detail">${detail}</div>` : ''}
+        </div>
+        <div class="song-modal-buttons">
+          ${buttons.map((btn, i) =>
+            `<button class="song-modal-btn ${btn.type || 'secondary'}" data-index="${i}">${btn.text}</button>`
+          ).join('')}
+        </div>
+      </div>
+    `;
+
+    modalOverlay.style.display = 'flex';
+
+    // 绑定按钮事件
+    const btnEls = modalOverlay.querySelectorAll('.song-modal-btn');
+    btnEls.forEach((btnEl, i) => {
+      btnEl.addEventListener('click', () => {
+        if (buttons[i] && typeof buttons[i].onClick === 'function') {
+          buttons[i].onClick();
+        } else {
+          hideModal();
+        }
+      });
+    });
+
+    // 点击遮罩不关闭（防止误操作），只有按钮可以关闭
+  }
+
+  function hideModal() {
+    if (modalOverlay) {
+      modalOverlay.style.display = 'none';
+      modalOverlay.innerHTML = '';
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  // Loading 处理中状态
+  // ═══════════════════════════════════════════════
+
+  /**
+   * 显示处理中状态
+   * @param {string} text - 提示文字
+   */
+  function showLoading(text = '处理中...') {
+    if (!initialized) init();
+    if (!loadingOverlay) return;
+
+    loadingCount++;
+    loadingOverlay.innerHTML = `
+      <div class="song-loading-box">
+        <div class="song-loading-spinner"></div>
+        <div class="song-loading-text">${text}</div>
+      </div>
+    `;
+    loadingOverlay.style.display = 'flex';
+  }
+
+  /**
+   * 隐藏处理中状态
+   */
+  function hideLoading() {
+    loadingCount = Math.max(0, loadingCount - 1);
+    if (loadingCount === 0 && loadingOverlay) {
+      loadingOverlay.style.display = 'none';
+      loadingOverlay.innerHTML = '';
+    }
+  }
+
+  /**
+   * 强制隐藏所有 loading
+   */
+  function forceHideLoading() {
+    loadingCount = 0;
+    if (loadingOverlay) {
+      loadingOverlay.style.display = 'none';
+      loadingOverlay.innerHTML = '';
+    }
+  }
+
+  /**
+   * 包裹异步操作，自动显示/隐藏 loading
+   * @param {Promise} promise - 异步操作
+   * @param {string} loadingText - loading 文字
+   * @param {string} successText - 成功提示（null则不提示）
+   * @param {string} errorText - 失败提示前缀
+   */
+  async function withLoading(promise, loadingText = '处理中...', successText = null, errorText = '操作失败') {
+    showLoading(loadingText);
+    try {
+      const result = await promise;
+      if (successText) toastSuccess(successText);
+      return result;
+    } catch (e) {
+      console.error('[SongUIFeedback] 操作失败:', e);
+      toastError(`${errorText}: ${e.message || e}`);
+      throw e;
+    } finally {
+      hideLoading();
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  // 全局错误捕获
+  // ═══════════════════════════════════════════════
+
+  function setupGlobalErrorHandling() {
+    // JS 运行时错误
+    window.addEventListener('error', (event) => {
+      console.error('[SongUIFeedback] 全局错误:', event.error || event.message);
+      // 忽略资源加载错误（如图片404）
+      if (event.target && (event.target.tagName === 'IMG' || event.target.tagName === 'LINK' || event.target.tagName === 'SCRIPT')) {
+        return;
+      }
+      // 不弹窗打扰用户，只在控制台记录，严重错误才提示
+      // toastError('页面出现异常，部分功能可能受影响');
+    });
+
+    // Promise 未处理异常
+    window.addEventListener('unhandledrejection', (event) => {
+      console.error('[SongUIFeedback] 未处理的Promise异常:', event.reason);
+      // 存储相关的异常不弹窗（可能是网络波动）
+      if (event.reason && event.reason.message &&
+          (event.reason.message.includes('Supabase') ||
+           event.reason.message.includes('fetch') ||
+           event.reason.message.includes('Network'))) {
+        return;
+      }
+      // toastWarning('异步操作出现异常，数据可能未保存');
+    });
+
+    console.log('[SongUIFeedback] 全局错误捕获已启动');
+  }
+
+  // ═══════════════════════════════════════════════
+  // 公开 API
+  // ═══════════════════════════════════════════════
+
+  return {
+    init,
+    // Toast
+    toast,
+    toastSuccess,
+    toastError,
+    toastWarning,
+    toastInfo,
+    // Modal
+    showModal,
+    hideModal,
+    // Loading
+    showLoading,
+    hideLoading,
+    forceHideLoading,
+    withLoading,
+    // 状态
+    isInitialized: () => initialized
+  };
+})();
+
+// 挂载到全局
+if (typeof window !== 'undefined') {
+  window.SongUIFeedback = SongUIFeedback;
 }
 
 
