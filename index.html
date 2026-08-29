@@ -8558,15 +8558,15 @@ const SongFinance = (function () {
       }
 
       // ═══════════════════════════════════════════
-      // 集团协同效应与风险传染（子公司联动）
+      // 集团协同效应与风险传染（子公司联动）- 临时注释测试
       // ═══════════════════════════════════════════
-      if (typeof SongSynergy !== 'undefined') {
-        const synergy = SongSynergy.calculateTotalSynergy(sub, subsidiaries);
-        revenueChange += synergy.revenue;
-        profitChange += synergy.profit;
-        satisfactionChange += synergy.satisfaction;
-        reputationChange += synergy.reputation;
-      }
+      // if (typeof SongSynergy !== 'undefined') {
+      //   const synergy = SongSynergy.calculateTotalSynergy(sub, subsidiaries);
+      //   revenueChange += synergy.revenue;
+      //   profitChange += synergy.profit;
+      //   satisfactionChange += synergy.satisfaction;
+      //   reputationChange += synergy.reputation;
+      // }
 
       // 计算新值
       const newRevenue = Math.max(0, sub.revenue * (1 + revenueChange / 100));
