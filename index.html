@@ -10292,6 +10292,247 @@ if (typeof window !== 'undefined') {
 }
 
 
+/* ===== js/modules/decision-log.js ===== */
+/**
+ * 松氏家族办公室 - 经营日志与决策记录模块
+ * 负责记录用户决策、生成时间线、周期性复盘报告
+ */
+
+const SongDecisionLog = (function () {
+  'use strict';
+
+  const STORAGE_KEY = 'song_family_office_decision_log';
+
+  // ═══════════════════════════════════════════════
+  // 决策类型定义
+  // ═══════════════════════════════════════════════
+
+  const DECISION_TYPES = {
+    TASK_APPROVE: { label: '批准事务', category: '事务处理', impact: 'medium' },
+    TASK_REJECT: { label: '拒绝事务', category: '事务处理', impact: 'medium' },
+    TASK_DELAY: { label: '暂缓事务', category: '事务处理', impact: 'low' },
+    TASK_INVESTIGATE: { label: '亲自调查', category: '事务处理', impact: 'medium' },
+    STOCK_BUY: { label: '买入股票', category: '投资交易', impact: 'high' },
+    STOCK_SELL: { label: '卖出股票', category: '投资交易', impact: 'high' },
+    FUND_BUY: { label: '申购基金', category: '投资交易', impact: 'medium' },
+    FUND_SELL: { label: '赎回基金', category: '投资交易', impact: 'medium' },
+    SUBSIDIARY_MANAGE: { label: '子公司管理', category: '公司经营', impact: 'high' },
+    CRISIS_HANDLE: { label: '危机处理', category: '风险管理', impact: 'high' },
+    BUDGET_APPROVE: { label: '预算审批', category: '财务管理', impact: 'medium' },
+    OTHER: { label: '其他决策', category: '其他', impact: 'low' }
+  };
+
+  // ═══════════════════════════════════════════════
+  // 内部状态
+  // ═══════════════════════════════════════════════
+
+  let decisions = [];
+
+  // ═══════════════════════════════════════════════
+  // 初始化
+  // ═══════════════════════════════════════════════
+
+  function init() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        decisions = JSON.parse(saved);
+      }
+    } catch (e) {
+      console.warn('[DecisionLog] 读取失败:', e);
+      decisions = [];
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  // 保存
+  // ═══════════════════════════════════════════════
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(decisions));
+    } catch (e) {
+      console.warn('[DecisionLog] 保存失败:', e);
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  // 记录决策
+  // ═══════════════════════════════════════════════
+
+  function recordDecision(type, title, description, effects) {
+    const typeInfo = DECISION_TYPES[type] || DECISION_TYPES.OTHER;
+    const state = window.SongState ? SongState.getState() : null;
+    const gameDate = state?.gameDate?.current || new Date().toISOString().split('T')[0];
+
+    const decision = {
+      id: 'dec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+      type: type,
+      typeLabel: typeInfo.label,
+      category: typeInfo.category,
+      impact: typeInfo.impact,
+      title: title,
+      description: description || '',
+      effects: effects || {},
+      gameDate: gameDate,
+      realTimestamp: Date.now(),
+      companySnapshot: state ? {
+        totalAssets: state.company?.totalAssets || 0,
+        cashFlow: state.company?.cashFlow || 0,
+        dailyNet: state.company?.dailyNet || 0
+      } : {}
+    };
+
+    decisions.unshift(decision);
+
+    // 最多保留500条
+    if (decisions.length > 500) {
+      decisions = decisions.slice(0, 500);
+    }
+
+    save();
+    return decision;
+  }
+
+  // ═══════════════════════════════════════════════
+  // 获取决策列表
+  // ═══════════════════════════════════════════════
+
+  function getDecisions(filter) {
+    if (!filter) return decisions.slice();
+
+    return decisions.filter(d => {
+      if (filter.category && d.category !== filter.category) return false;
+      if (filter.type && d.type !== filter.type) return false;
+      if (filter.gameDate && d.gameDate !== filter.gameDate) return false;
+      if (filter.startDate && d.gameDate < filter.startDate) return false;
+      if (filter.endDate && d.gameDate > filter.endDate) return false;
+      return true;
+    });
+  }
+
+  // ═══════════════════════════════════════════════
+  // 按日期分组（时间线）
+  // ═══════════════════════════════════════════════
+
+  function getTimeline(limit) {
+    const max = limit || 50;
+    const timeline = {};
+
+    for (let i = 0; i < Math.min(decisions.length, max); i++) {
+      const d = decisions[i];
+      if (!timeline[d.gameDate]) {
+        timeline[d.gameDate] = [];
+      }
+      timeline[d.gameDate].push(d);
+    }
+
+    return timeline;
+  }
+
+  // ═══════════════════════════════════════════════
+  // 统计
+  // ═══════════════════════════════════════════════
+
+  function getStats() {
+    const stats = {
+      total: decisions.length,
+      byCategory: {},
+      byImpact: { high: 0, medium: 0, low: 0 },
+      recent7Days: 0,
+      recent30Days: 0
+    };
+
+    const now = Date.now();
+    const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+    const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+
+    for (const d of decisions) {
+      stats.byCategory[d.category] = (stats.byCategory[d.category] || 0) + 1;
+      stats.byImpact[d.impact] = (stats.byImpact[d.impact] || 0) + 1;
+      if (d.realTimestamp >= sevenDaysAgo) stats.recent7Days++;
+      if (d.realTimestamp >= thirtyDaysAgo) stats.recent30Days++;
+    }
+
+    return stats;
+  }
+
+  // ═══════════════════════════════════════════════
+  // 生成周期性复盘报告
+  // ═══════════════════════════════════════════════
+
+  function generatePeriodReport(period) {
+    const days = period === 'weekly' ? 7 : period === 'monthly' ? 30 : 7;
+    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+    const periodDecisions = decisions.filter(d => d.realTimestamp >= cutoff);
+
+    const report = {
+      period: period,
+      days: days,
+      totalDecisions: periodDecisions.length,
+      byCategory: {},
+      highImpactCount: 0,
+      keyDecisions: [],
+      summary: ''
+    };
+
+    for (const d of periodDecisions) {
+      report.byCategory[d.category] = (report.byCategory[d.category] || 0) + 1;
+      if (d.impact === 'high') {
+        report.highImpactCount++;
+        if (report.keyDecisions.length < 5) {
+          report.keyDecisions.push({
+            date: d.gameDate,
+            title: d.title,
+            type: d.typeLabel
+          });
+        }
+      }
+    }
+
+    // 生成摘要
+    const categoryNames = Object.keys(report.byCategory);
+    let summary = `过去${days}天共做出${report.totalDecisions}项决策，`;
+    summary += `其中${report.highImpactCount}项为重大决策。`;
+    if (categoryNames.length > 0) {
+      summary += `主要集中在${categoryNames.slice(0, 3).join('、')}领域。`;
+    }
+    report.summary = summary;
+
+    return report;
+  }
+
+  // ═══════════════════════════════════════════════
+  // 清空日志
+  // ═══════════════════════════════════════════════
+
+  function clear() {
+    decisions = [];
+    save();
+  }
+
+  // ═══════════════════════════════════════════════
+  // 导出
+  // ═══════════════════════════════════════════════
+
+  return {
+    init: init,
+    recordDecision: recordDecision,
+    getDecisions: getDecisions,
+    getTimeline: getTimeline,
+    getStats: getStats,
+    generatePeriodReport: generatePeriodReport,
+    clear: clear,
+    DECISION_TYPES: DECISION_TYPES
+  };
+})();
+
+// 兼容浏览器全局
+if (typeof window !== 'undefined') {
+  window.SongDecisionLog = SongDecisionLog;
+}
+
+
 /* ===== js/modules/events.js ===== */
 /**
  * 松氏家族办公室 - 事件生成系统
@@ -22060,6 +22301,11 @@ const SongApp = (function () {
       // 3. 初始化日期系统（会自动推进游戏日期）
       updateInitProgress('正在初始化日期系统...');
       await SongDate.init();
+
+      // 3.1 初始化经营日志模块
+      if (typeof SongDecisionLog !== 'undefined') {
+        SongDecisionLog.init();
+      }
 
       // 3.5 初始化子公司数据（如果为空）
       updateInitProgress('正在加载公司数据...');
