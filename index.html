@@ -18464,11 +18464,9 @@ const PageMarket = (function () {
       expanded.add(type);
     }
     saveExpandedFundTypes(expanded);
-    // 重新渲染基金市场视图（使用记录的渲染容器）
+    // 重新渲染（通过render函数，和初始渲染逻辑保持一致）
     if (lastContainer) {
-      const state = SongState.getState();
-      const funds = state.funds || [];
-      renderFundMarketView(lastContainer, funds, state);
+      render(lastContainer);
     }
   }
 
