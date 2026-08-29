@@ -17132,7 +17132,25 @@ const PageCompany = (function () {
    * 渲染集团协同效应卡片
    */
   function renderSynergyOverview(subsidiaries) {
-    if (typeof SongSynergy === 'undefined') return '';
+    // 诊断信息：直接显示在页面上
+    const debugInfo = `
+      <div class="card" style="border: 2px dashed #c9a96e; background: rgba(201,169,110,0.05);">
+        <div class="card-header">
+          <span class="card-title">🔧 协同效应诊断</span>
+          <span class="tag tag-gold">调试中</span>
+        </div>
+        <div style="padding: 16px; font-size: 13px; line-height: 1.8;">
+          <div>函数被调用: ✅</div>
+          <div>subsidiaries数量: ${subsidiaries?.length || 0}</div>
+          <div>typeof SongSynergy: ${typeof SongSynergy}</div>
+          <div>SongSynergy方法: ${typeof SongSynergy !== 'undefined' ? Object.keys(SongSynergy).join(', ') : 'N/A'}</div>
+        </div>
+      </div>
+    `;
+
+    if (typeof SongSynergy === 'undefined') {
+      return debugInfo; // 返回诊断信息而不是空字符串
+    }
 
     const overview = SongSynergy.calculateGroupSynergyOverview(subsidiaries);
     const { synergyScore, healthyCount, crisisCount, totalSynergyRevenue, totalSynergyProfit, activeSynergies, activeContagions } = overview;
