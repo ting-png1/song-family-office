@@ -18454,20 +18454,47 @@ const PageMarket = (function () {
     console.log('[Market] toggleFundType 被调用:', type);
     try {
       const expanded = getExpandedFundTypes();
-      console.log('[Market] 展开前:', Array.from(expanded));
       if (expanded.has(type)) {
         expanded.delete(type);
       } else {
         expanded.add(type);
       }
-      console.log('[Market] 展开后:', Array.from(expanded));
       saveExpandedFundTypes(expanded);
-      console.log('[Market] lastContainer:', lastContainer ? '存在' : 'null');
-      // 重新渲染（通过render函数，和初始渲染逻辑保持一致）
-      if (lastContainer) {
-        render(lastContainer);
-        console.log('[Market] 重新渲染完成');
+      
+      // 直接修改DOM，不重新渲染整个页面
+      const sections = document.querySelectorAll('.collapsible-section');
+      for (const section of sections) {
+        const header = section.querySelector('.collapsible-section-header');
+        if (!header) continue;
+        const titleSpan = header.querySelector('.collapsible-section-title span');
+        if (!titleSpan || titleSpan.textContent.trim() !== type) continue;
+        
+        const arrow = header.querySelector('.expand-arrow');
+        let content = section.querySelector('.collapsible-section-content');
+        
+        if (expanded.has(type)) {
+          // 展开
+          if (arrow) arrow.classList.add('expanded');
+          if (!content) {
+            // 需要动态生成内容
+            const state = SongState.getState();
+            const funds = state.funds || [];
+            const typeFunds = funds.filter(f => (f.type || '混合型') === type);
+            content = document.createElement('div');
+            content.className = 'collapsible-section-content';
+            content.innerHTML = `<div class="fund-list">${typeFunds.map(fund => renderFundCardMarket(fund)).join('')}</div>`;
+            section.appendChild(content);
+          } else {
+            content.style.display = 'block';
+          }
+        } else {
+          // 折叠
+          if (arrow) arrow.classList.remove('expanded');
+          if (content) content.style.display = 'none';
+        }
+        break;
       }
+      console.log('[Market] toggleFundType 完成，展开状态:', Array.from(expanded));
     } catch (e) {
       console.error('[Market] toggleFundType 错误:', e);
     }
