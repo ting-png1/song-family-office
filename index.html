@@ -10533,6 +10533,197 @@ if (typeof window !== 'undefined') {
 }
 
 
+/* ===== js/modules/performance-utils.js ===== */
+/**
+ * 松氏家族办公室 - 性能优化工具模块
+ * 提供防抖、节流、缓存、批量更新等性能优化工具
+ */
+
+const SongPerf = (function () {
+  'use strict';
+
+  // ═══════════════════════════════════════════════
+  // 防抖
+  // ═══════════════════════════════════════════════
+
+  function debounce(fn, delay) {
+    let timer = null;
+    return function () {
+      const context = this;
+      const args = arguments;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(function () {
+        fn.apply(context, args);
+        timer = null;
+      }, delay || 300);
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  // 节流
+  // ═══════════════════════════════════════════════
+
+  function throttle(fn, interval) {
+    let lastTime = 0;
+    let timer = null;
+    return function () {
+      const context = this;
+      const args = arguments;
+      const now = Date.now();
+      const remaining = (interval || 200) - (now - lastTime);
+      if (remaining <= 0) {
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+        lastTime = now;
+        fn.apply(context, args);
+      } else if (!timer) {
+        timer = setTimeout(function () {
+          lastTime = Date.now();
+          timer = null;
+          fn.apply(context, args);
+        }, remaining);
+      }
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  // 简单缓存（LRU）
+  // ═══════════════════════════════════════════════
+
+  function createCache(maxSize) {
+    const cache = new Map();
+    const max = maxSize || 100;
+
+    return {
+      get: function (key) {
+        if (!cache.has(key)) return null;
+        // 移动到末尾（最近使用）
+        const value = cache.get(key);
+        cache.delete(key);
+        cache.set(key, value);
+        return value;
+      },
+      set: function (key, value) {
+        if (cache.has(key)) {
+          cache.delete(key);
+        }
+        cache.set(key, value);
+        // 超过最大容量，删除最旧的
+        if (cache.size > max) {
+          const firstKey = cache.keys().next().value;
+          cache.delete(firstKey);
+        }
+      },
+      has: function (key) {
+        return cache.has(key);
+      },
+      clear: function () {
+        cache.clear();
+      },
+      size: function () {
+        return cache.size;
+      }
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  // 批量更新队列
+  // ═══════════════════════════════════════════════
+
+  function createBatchUpdater(flushFn, delay) {
+    const queue = [];
+    let timer = null;
+    const d = delay || 100;
+
+    function schedule() {
+      if (timer) return;
+      timer = setTimeout(function () {
+        timer = null;
+        const items = queue.splice(0);
+        if (items.length > 0) {
+          try {
+            flushFn(items);
+          } catch (e) {
+            console.warn('[Perf] batch update error:', e);
+          }
+        }
+      }, d);
+    }
+
+    return {
+      push: function (item) {
+        queue.push(item);
+        schedule();
+      },
+      flush: function () {
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+        const items = queue.splice(0);
+        if (items.length > 0) {
+          flushFn(items);
+        }
+      },
+      size: function () {
+        return queue.length;
+      }
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  // 渲染性能监控
+  // ═══════════════════════════════════════════════
+
+  const renderStats = {
+    totalRenders: 0,
+    lastRenderTime: 0,
+    avgRenderTime: 0,
+    slowRenders: 0
+  };
+
+  function measureRender(name, fn) {
+    const start = performance.now();
+    const result = fn();
+    const duration = performance.now() - start;
+
+    renderStats.totalRenders++;
+    renderStats.lastRenderTime = duration;
+    renderStats.avgRenderTime = renderStats.avgRenderTime * 0.9 + duration * 0.1;
+    if (duration > 100) {
+      renderStats.slowRenders++;
+      console.warn('[Perf] 慢渲染:', name, duration.toFixed(1) + 'ms');
+    }
+
+    return result;
+  }
+
+  function getRenderStats() {
+    return { ...renderStats };
+  }
+
+  // ═══════════════════════════════════════════════
+  // 导出
+  // ═══════════════════════════════════════════════
+
+  return {
+    debounce: debounce,
+    throttle: throttle,
+    createCache: createCache,
+    createBatchUpdater: createBatchUpdater,
+    measureRender: measureRender,
+    getRenderStats: getRenderStats
+  };
+})();
+
+// 兼容浏览器全局
+if (typeof window !== 'undefined') {
+  window.SongPerf = SongPerf;
+}
+
+
 /* ===== js/modules/events.js ===== */
 /**
  * 松氏家族办公室 - 事件生成系统
