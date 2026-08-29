@@ -14818,7 +14818,7 @@ const PageDashboard = (function () {
         </div>
         <div class="today-focus-list">
           ${todayFocus.map((item, i) => `
-            <div class="focus-item" onclick="SongApp.navigateTo('${item.actionPage}')">
+            <div class="focus-item" onclick="${item.subsidiaryId ? `SongApp.openSubsidiaryDetail('${item.subsidiaryId}')` : `SongApp.navigateTo('${item.actionPage}')`}">
               <div class="focus-priority">${i + 1}</div>
               <div class="focus-content">
                 <div class="focus-title">${item.title}</div>
