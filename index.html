@@ -16727,18 +16727,8 @@ const PageCompany = (function () {
    * 渲染集团协同效应卡片
    */
   function renderSynergyOverview(subsidiaries) {
-    // 简化测试：只返回静态HTML
-    return `
-      <div class="card" style="border: 2px solid green; background: rgba(0,255,0,0.05);">
-        <div class="card-header">
-          <span class="card-title">✅ renderSynergyOverview 被调用</span>
-        </div>
-        <div style="padding: 16px;">
-          <div>subsidiaries数量: ${subsidiaries?.length || 0}</div>
-          <div>typeof SongSynergy: ${typeof SongSynergy}</div>
-        </div>
-      </div>
-    `;
+    // 最简化测试：只返回纯字符串
+    return '<div style="padding:16px;background:green;color:white;font-weight:bold;">renderSynergyOverview 函数正常工作！subsidiaries数量：' + (subsidiaries ? subsidiaries.length : 0) + '</div>';
   }
 
     // 协同效应评分颜色
