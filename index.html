@@ -16731,63 +16731,6 @@ const PageCompany = (function () {
     return '<div style="padding:16px;background:green;color:white;font-weight:bold;">renderSynergyOverview 函数正常工作！subsidiaries数量：' + (subsidiaries ? subsidiaries.length : 0) + '</div>';
   }
 
-    // 协同效应评分颜色
-    let scoreColor = 'positive';
-    if (synergyScore < 40) scoreColor = 'negative';
-    else if (synergyScore < 60) scoreColor = 'warning';
-
-    return `
-      <div class="card synergy-card">
-        <div class="card-header">
-          <span class="card-title">集团协同效应</span>
-          <span class="tag tag-gold">${healthyCount} 健康 / ${crisisCount} 关注</span>
-        </div>
-        <div class="synergy-overview">
-          <div class="synergy-score">
-            <div class="synergy-score-value ${scoreColor}">${synergyScore}</div>
-            <div class="synergy-score-label">协同评分</div>
-          </div>
-          <div class="synergy-metrics">
-            <div class="synergy-metric">
-              <div class="synergy-metric-value positive">+${totalSynergyRevenue.toFixed(1)}%</div>
-              <div class="synergy-metric-label">协同营收提升</div>
-            </div>
-            <div class="synergy-metric">
-              <div class="synergy-metric-value positive">+${totalSynergyProfit.toFixed(1)}%</div>
-              <div class="synergy-metric-label">协同利润提升</div>
-            </div>
-          </div>
-        </div>
-        ${activeSynergies.length > 0 ? `
-          <div class="synergy-section">
-            <div class="synergy-section-title">活跃协同效应</div>
-            <div class="synergy-list">
-              ${activeSynergies.slice(0, 3).map(s => `
-                <div class="synergy-item">
-                  <span class="synergy-target">${s.target}</span>
-                  <span class="synergy-effect positive">营收 +${s.revenueBoost.toFixed(1)}% / 利润 +${s.profitBoost.toFixed(1)}%</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        ` : ''}
-        ${activeContagions.length > 0 ? `
-          <div class="synergy-section">
-            <div class="synergy-section-title">风险传染预警</div>
-            <div class="synergy-list">
-              ${activeContagions.slice(0, 3).map(c => `
-                <div class="synergy-item">
-                  <span class="synergy-target">${c.target}</span>
-                  <span class="synergy-effect negative">营收 ${c.revenueLoss.toFixed(1)}% / 利润 ${c.profitLoss.toFixed(1)}%</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        ` : ''}
-      </div>
-    `;
-  }
-
   /**
    * 渲染财务总览卡片
    */
