@@ -14990,11 +14990,15 @@ const PageTasks = (function () {
   let currentDetailEvent = null;
   // 当前筛选的优先级（all / high / medium / low）
   let currentFilter = 'all';
+  // 跟踪当前渲染容器（支持资产页Tab容器和独立页面两种模式）
+  let lastContainer = null;
 
   /**
    * 渲染待办事务页面
    */
   function render(container) {
+    // 记录当前渲染容器（支持资产页Tab容器和独立页面）
+    lastContainer = container;
     const state = SongState.getState();
     const pending = state.events?.pending || [];
     const history = state.events?.history || [];
@@ -15270,7 +15274,7 @@ const PageTasks = (function () {
     const event = state.events?.pending?.find(e => e.id === eventId);
     if (event) {
       currentDetailEvent = { ...event };
-      render(document.getElementById('app-content'));
+      if (lastContainer) render(lastContainer);
     }
   }
 
@@ -15286,7 +15290,7 @@ const PageTasks = (function () {
     }
     // 回退：历史栈为空时，重置详情并重新渲染
     currentDetailEvent = null;
-    render(document.getElementById('app-content'));
+    if (lastContainer) render(lastContainer);
   }
 
   /**
@@ -15416,7 +15420,7 @@ const PageTasks = (function () {
         // 返回列表
         currentDetailEvent = null;
         setTimeout(() => {
-          render(document.getElementById('app-content'));
+          if (lastContainer) render(lastContainer);
         }, 300);
       } else {
         hideProcessing();
@@ -15440,7 +15444,7 @@ const PageTasks = (function () {
 
     await SongState.update('events.pending', updatedPending);
     SongApp.showToast('已生成 2 条新事务');
-    render(document.getElementById('app-content'));
+    if (lastContainer) render(lastContainer);
   }
 
   /**
@@ -15448,7 +15452,7 @@ const PageTasks = (function () {
    */
   function setFilter(filter) {
     currentFilter = filter;
-    render(document.getElementById('app-content'));
+    if (lastContainer) render(lastContainer);
   }
 
   /**
@@ -15499,7 +15503,7 @@ const PageTasks = (function () {
     });
 
     SongApp.showToast(`✅ 已清理 ${expired.length} 条过期事务`);
-    render(document.getElementById('app-content'));
+    if (lastContainer) render(lastContainer);
   }
 
   // 公开 API
@@ -16838,7 +16842,7 @@ const PageCompany = (function () {
    */
   function showDetail(id) {
     currentDetailId = id;
-    render(document.getElementById('app-content'));
+    if (lastContainer) render(lastContainer);
     // 滚动到顶部
     const content = document.getElementById('app-content');
     if (content) content.scrollTop = 0;
@@ -16863,7 +16867,7 @@ const PageCompany = (function () {
     }
     // 回退：历史栈为空时，重置详情并重新渲染
     currentDetailId = null;
-    render(document.getElementById('app-content'));
+    if (lastContainer) render(lastContainer);
   }
 
   /**
@@ -16966,7 +16970,7 @@ const PageCompany = (function () {
    */
   function backToOverview() {
     currentDetailId = null;
-    render(document.getElementById('app-content'));
+    if (lastContainer) render(lastContainer);
   }
 
   /**
@@ -18019,7 +18023,7 @@ const PageMarket = (function () {
    */
   function showStockDetail(id) {
     currentStockId = id;
-    render(document.getElementById('app-content'));
+    if (lastContainer) render(lastContainer);
     const content = document.getElementById('app-content');
     if (content) content.scrollTop = 0;
   }
@@ -18043,7 +18047,7 @@ const PageMarket = (function () {
     }
     // 回退：历史栈为空时，重置详情并重新渲染
     currentStockId = null;
-    render(document.getElementById('app-content'));
+    if (lastContainer) render(lastContainer);
   }
 
   /**
@@ -18073,7 +18077,7 @@ const PageMarket = (function () {
    */
   function openTradeModal(stockId, type) {
     tradeModal = { stockId, type, shares: 100 };
-    render(document.getElementById('app-content'));
+    if (lastContainer) render(lastContainer);
   }
 
   /**
@@ -18081,7 +18085,7 @@ const PageMarket = (function () {
    */
   function closeTradeModal() {
     tradeModal = null;
-    render(document.getElementById('app-content'));
+    if (lastContainer) render(lastContainer);
   }
 
   /**
@@ -18277,7 +18281,7 @@ const PageMarket = (function () {
 
       // 关闭弹窗
       tradeModal = null;
-      render(document.getElementById('app-content'));
+      if (lastContainer) render(lastContainer);
     } catch (e) {
       console.error('[Market] 交易异常:', e);
       SongApp.showToast('交易异常，请重试');
@@ -18520,7 +18524,7 @@ const PageMarket = (function () {
   function goToFundMarket() {
     // 在市场页面内部显示基金市场视图，不跳转到投资页面
     showFundMarketView = true;
-    render(document.getElementById('app-content'));
+    if (lastContainer) render(lastContainer);
   }
 
   // 公开 API
@@ -18564,11 +18568,15 @@ const PageInvestment = (function () {
   let fundTradeModal = null;
   // 当前 tab
   let currentTab = 'overview'; // overview / stocks / funds / market / records
+  // 跟踪当前渲染容器（支持资产页Tab容器和独立页面两种模式）
+  let lastContainer = null;
 
   /**
    * 渲染投资页面
    */
   function render(container) {
+    // 记录当前渲染容器（支持资产页Tab容器和独立页面）
+    lastContainer = container;
     const state = SongState.getState();
     let funds = state.funds || [];
     let stockPortfolio = state.portfolio || [];
@@ -19442,14 +19450,19 @@ const PageInvestment = (function () {
 
   function switchTab(tab) {
     currentTab = tab;
-    render(document.getElementById('app-content'));
+    // 使用记录的渲染容器（支持资产页Tab容器和独立页面）
+    if (lastContainer) {
+      render(lastContainer);
+    }
   }
 
   function showFundDetail(id) {
     currentFundId = id;
-    render(document.getElementById('app-content'));
-    const content = document.getElementById('app-content');
-    if (content) content.scrollTop = 0;
+    // 使用记录的渲染容器（支持资产页Tab容器和独立页面）
+    if (lastContainer) {
+      render(lastContainer);
+      lastContainer.scrollTop = 0;
+    }
   }
 
   /**
