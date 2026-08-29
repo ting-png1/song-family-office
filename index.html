@@ -21565,10 +21565,56 @@ const SongApp = (function () {
 
   /**
    * 直接打开子公司详情页（从首页风险预警/子公司概览点击跳转）
+   * 改进：先切换到资产页，再切换到公司经营tab，最后打开子公司详情
+   * 这样子公司详情页在资产页结构中展示，有返回按钮可返回到公司经营列表
    * @param {string} subsidiaryId - 子公司 ID
    */
   function openSubsidiaryDetail(subsidiaryId) {
-    openDetail('company', subsidiaryId, 'subsidiary');
+    console.log('[SongApp] openSubsidiaryDetail:', subsidiaryId);
+    
+    // 1. 保存当前页面状态到导航历史栈（如果还没在详情页状态）
+    const isAlreadyInDetail = navigationStack.length > 0;
+    if (!isAlreadyInDetail) {
+      const currentState = saveCurrentPageState();
+      navigationStack.push(currentState);
+      console.log('[SongApp] 导航历史栈:', navigationStack);
+    }
+    
+    // 2. 切换到底部导航的"资产"tab
+    currentPage = 'assets';
+    renderCurrentPage();
+    updateNavigation();
+    
+    // 3. 延迟一帧，等资产页渲染完成后，切换到"公司经营"二级tab
+    requestAnimationFrame(() => {
+      if (typeof PageAssets !== 'undefined' && typeof PageAssets.switchTab === 'function') {
+        PageAssets.switchTab('company');
+        console.log('[SongApp] 已切换到资产页-公司经营tab');
+      }
+      
+      // 4. 再延迟一帧，等公司经营tab渲染完成后，打开子公司详情
+      requestAnimationFrame(() => {
+        if (typeof PageCompany !== 'undefined' && typeof PageCompany.showDetail === 'function') {
+          PageCompany.showDetail(subsidiaryId);
+          console.log('[SongApp] 已打开子公司详情:', subsidiaryId);
+        }
+      });
+    });
+    
+    // 兜底：50ms后再执行一次（防止 requestAnimationFrame 没执行）
+    setTimeout(() => {
+      if (typeof PageCompany !== 'undefined' && typeof PageCompany.showDetail === 'function') {
+        // 检查是否已经打开了详情（避免重复打开）
+        const detailEl = document.querySelector('.company-detail-page, .subsidiary-detail');
+        if (!detailEl) {
+          PageCompany.showDetail(subsidiaryId);
+        }
+      }
+    }, 100);
+    
+    // 滚动到顶部
+    const content = document.getElementById('app-content');
+    if (content) content.scrollTop = 0;
   }
 
   /**
