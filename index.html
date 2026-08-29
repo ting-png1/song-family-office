@@ -17281,6 +17281,16 @@ const PageMarket = (function () {
       : '0.00';
     const fundUpCount = funds.filter(f => f.return1d >= 0).length;
 
+    // 基金按类型分组（用于二次折叠：外层基金市场整体，内层各类型基金）
+    const fundTypesList = ['股票型', '债券型', '混合型', '货币型', '指数型'];
+    const fundsByType = {};
+    fundTypesList.forEach(type => { fundsByType[type] = []; });
+    funds.forEach(fund => {
+      const type = fund.type || '混合型';
+      if (!fundsByType[type]) fundsByType[type] = [];
+      fundsByType[type].push(fund);
+    });
+
     // 宏观经济数据
     const macroData = (typeof SongMacroEconomy !== 'undefined') ? SongMacroEconomy.getMacroData() : null;
     const economicCycle = (typeof SongMacroEconomy !== 'undefined') ? SongMacroEconomy.getEconomicCycle() : null;
@@ -17361,29 +17371,73 @@ const PageMarket = (function () {
         </div>
       </div>
 
-      <!-- 基金市场入口 -->
-      <div class="fund-market-entry card" onclick="PageMarket.goToFundMarket()">
-        <div class="fund-entry-header">
-          <div class="fund-entry-info">
-            <h3 class="fund-entry-title">基金市场</h3>
-            <p class="fund-entry-subtitle">${funds.length} 只基金 · 股票型/债券型/混合型/货币型</p>
+      <!-- 基金市场（折叠式，二次折叠：外层是基金市场整体，内层是各类型基金） -->
+      <div class="collapsible-section">
+        <div class="collapsible-section-header" onclick="PageMarket.toggleSection('fundMarket')">
+          <div class="collapsible-section-title">
+            <span>基金市场</span>
+            <span class="collapsible-section-count">${funds.length} 只</span>
           </div>
-          <div class="fund-entry-stats">
-            <div class="fund-entry-stat">
-              <span class="fund-entry-stat-value ${fundAvgReturn >= 0 ? 'positive' : 'negative'}">${fundAvgReturn >= 0 ? '+' : ''}${fundAvgReturn}%</span>
-              <span class="fund-entry-stat-label">年均收益</span>
+          <span class="expand-arrow ${getExpandedSections().has('fundMarket') ? 'expanded' : ''}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </span>
+        </div>
+        ${getExpandedSections().has('fundMarket') ? `
+        <div class="collapsible-section-content">
+          <!-- 基金市场概览 -->
+          <div class="card market-index-card" style="margin-bottom: 16px;">
+            <div class="market-index-main">
+              <div class="index-value-large ${fundAvgReturn >= 0 ? 'positive' : 'negative'}">${fundAvgReturn >= 0 ? '+' : ''}${fundAvgReturn}%</div>
+              <div class="index-label">平均近一年收益</div>
             </div>
-            <div class="fund-entry-stat">
-              <span class="fund-entry-stat-value">${fundUpCount}/${funds.length}</span>
-              <span class="fund-entry-stat-label">今日上涨</span>
+            <div class="market-stats-row">
+              <div class="market-stat">
+                <span class="stat-label">上涨</span>
+                <span class="stat-value positive">${fundUpCount}</span>
+              </div>
+              <div class="market-stat">
+                <span class="stat-label">下跌</span>
+                <span class="stat-value negative">${funds.length - fundUpCount}</span>
+              </div>
+              <div class="market-stat">
+                <span class="stat-label">基金数</span>
+                <span class="stat-value">${funds.length}</span>
+              </div>
             </div>
           </div>
+          
+          <!-- 基金类型列表（二次折叠） -->
+          ${fundTypesList.map(type => {
+            const typeFunds = fundsByType[type] || [];
+            if (typeFunds.length === 0) return '';
+            const isExpanded = getExpandedFundTypes().has(type);
+            return `
+              <div class="collapsible-section">
+                <div class="collapsible-section-header" onclick="PageMarket.toggleFundType('${type}')">
+                  <div class="collapsible-section-title">
+                    <span>${type}</span>
+                    <span class="collapsible-section-count">${typeFunds.length} 只</span>
+                  </div>
+                  <span class="expand-arrow ${isExpanded ? 'expanded' : ''}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </span>
+                </div>
+                ${isExpanded ? `
+                <div class="collapsible-section-content">
+                  <div class="fund-list">
+                    ${typeFunds.map(fund => renderFundCardMarket(fund)).join('')}
+                  </div>
+                </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('')}
         </div>
-        <div class="fund-entry-arrow">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
-        </div>
+        ` : ''}
       </div>
 
       <!-- 市场新闻（折叠式） -->
