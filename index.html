@@ -15552,7 +15552,7 @@ const PageCompany = (function () {
     const state = SongState.getState();
     if (!state.uiState) state.uiState = {};
     state.uiState.expandedCompanies = Array.from(set);
-    SongState.setState(state);
+    // 注意：uiState是纯UI状态，不需要持久化保存，刷新后重置即可
   }
 
   /**
@@ -17205,7 +17205,7 @@ const PageMarket = (function () {
     const state = SongState.getState();
     if (!state.uiState) state.uiState = {};
     state.uiState.expandedMarketSections = Array.from(set);
-    SongState.setState(state);
+    // 注意：uiState是纯UI状态，不需要持久化保存，刷新后重置即可
   }
 
   // 基金类型展开状态 - 从 SongState 读取
@@ -17218,7 +17218,7 @@ const PageMarket = (function () {
     const state = SongState.getState();
     if (!state.uiState) state.uiState = {};
     state.uiState.expandedFundTypes = Array.from(set);
-    SongState.setState(state);
+    // 注意：uiState是纯UI状态，不需要持久化保存，刷新后重置即可
   }
 
   /**
