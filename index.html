@@ -18457,16 +18457,25 @@ const PageMarket = (function () {
    * 切换基金类型展开/折叠
    */
   function toggleFundType(type) {
-    const expanded = getExpandedFundTypes();
-    if (expanded.has(type)) {
-      expanded.delete(type);
-    } else {
-      expanded.add(type);
-    }
-    saveExpandedFundTypes(expanded);
-    // 重新渲染（通过render函数，和初始渲染逻辑保持一致）
-    if (lastContainer) {
-      render(lastContainer);
+    console.log('[Market] toggleFundType 被调用:', type);
+    try {
+      const expanded = getExpandedFundTypes();
+      console.log('[Market] 展开前:', Array.from(expanded));
+      if (expanded.has(type)) {
+        expanded.delete(type);
+      } else {
+        expanded.add(type);
+      }
+      console.log('[Market] 展开后:', Array.from(expanded));
+      saveExpandedFundTypes(expanded);
+      console.log('[Market] lastContainer:', lastContainer ? '存在' : 'null');
+      // 重新渲染（通过render函数，和初始渲染逻辑保持一致）
+      if (lastContainer) {
+        render(lastContainer);
+        console.log('[Market] 重新渲染完成');
+      }
+    } catch (e) {
+      console.error('[Market] toggleFundType 错误:', e);
     }
   }
 
