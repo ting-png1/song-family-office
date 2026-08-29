@@ -15542,17 +15542,15 @@ const PageCompany = (function () {
   // 跟踪当前渲染容器（支持资产页Tab容器和独立页面两种模式）
   let lastContainer = null;
 
-  // 子公司卡片展开状态（折叠式列表）- 从 SongState 读取，页面切换后保持
+  // 子公司卡片展开状态（折叠式列表）- 使用模块级变量，避免SongState状态管理问题
+  let expandedCompanyIdsSet = new Set();
+
   function getExpandedCompanyIds() {
-    const state = SongState.getState();
-    return new Set(state.uiState?.expandedCompanies || []);
+    return expandedCompanyIdsSet;
   }
 
   function saveExpandedCompanyIds(set) {
-    const state = SongState.getState();
-    if (!state.uiState) state.uiState = {};
-    state.uiState.expandedCompanies = Array.from(set);
-    // 注意：uiState是纯UI状态，不需要持久化保存，刷新后重置即可
+    expandedCompanyIdsSet = new Set(set);
   }
 
   /**
@@ -17195,30 +17193,26 @@ const PageMarket = (function () {
   let showFundMarketView = false;
   // 跟踪当前渲染容器（支持资产页Tab容器和独立页面两种模式）
   let lastContainer = null;
-  // 折叠区域展开状态 - 从 SongState 读取，页面切换后保持
+  // 折叠区域展开状态 - 使用模块级变量，避免SongState状态管理问题
+  let expandedSectionsSet = new Set(['macroeconomy']);
+
   function getExpandedSections() {
-    const state = SongState.getState();
-    return new Set(state.uiState?.expandedMarketSections || ['macroeconomy']);
+    return expandedSectionsSet;
   }
 
   function saveExpandedSections(set) {
-    const state = SongState.getState();
-    if (!state.uiState) state.uiState = {};
-    state.uiState.expandedMarketSections = Array.from(set);
-    // 注意：uiState是纯UI状态，不需要持久化保存，刷新后重置即可
+    expandedSectionsSet = new Set(set);
   }
 
-  // 基金类型展开状态 - 从 SongState 读取
+  // 基金类型展开状态 - 使用模块级变量，避免SongState状态管理问题
+  let expandedFundTypesSet = new Set();
+
   function getExpandedFundTypes() {
-    const state = SongState.getState();
-    return new Set(state.uiState?.expandedFundTypes || []);
+    return expandedFundTypesSet;
   }
 
   function saveExpandedFundTypes(set) {
-    const state = SongState.getState();
-    if (!state.uiState) state.uiState = {};
-    state.uiState.expandedFundTypes = Array.from(set);
-    // 注意：uiState是纯UI状态，不需要持久化保存，刷新后重置即可
+    expandedFundTypesSet = new Set(set);
   }
 
   /**
